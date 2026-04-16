@@ -210,35 +210,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
   return null;
 };
 
-// Custom line that colors each segment based on whether values are in normal range
-const SegmentedLine = ({ points, data, normalMin, normalMax }: {
-  points: { x: number; y: number }[];
-  data: { month: string; value: number }[];
-  normalMin: number;
-  normalMax: number;
-}) => {
-  if (!points || points.length < 2) return null;
-  return (
-    <g>
-      {points.map((point, i) => {
-        if (i === 0) return null;
-        const color = getSegmentColor(data[i - 1].value, data[i].value, normalMin, normalMax);
-        return (
-          <line
-            key={i}
-            x1={points[i - 1].x}
-            y1={points[i - 1].y}
-            x2={point.x}
-            y2={point.y}
-            stroke={color}
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-        );
-      })}
-    </g>
-  );
-};
+
 
 const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => void }) => {
   const statusLabel = result.status === "normal" ? "Normāls" : result.status === "warning" ? "Ārpus normas" : "Kritisks";
