@@ -105,10 +105,10 @@
 
 @layer components {
   .glass-card {
-    background: hsl(var(--glass-bg));
+    background: hsl(0 0% 100% / 0.7);
     backdrop-filter: blur(var(--glass-blur));
     -webkit-backdrop-filter: blur(var(--glass-blur));
-    border: 1px solid hsl(var(--glass-border));
+    border: 1px solid hsl(0 0% 100% / 0.7);
     box-shadow: 0 8px 32px hsl(var(--glass-shadow));
   }
 
