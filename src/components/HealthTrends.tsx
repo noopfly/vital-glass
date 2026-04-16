@@ -255,7 +255,7 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-xl glass-card rounded-2xl p-6 animate-in zoom-in-95 fade-in duration-200"
+        className="relative w-full max-w-xl bg-white rounded-2xl p-6 shadow-xl border border-[hsl(210,20%,92%)] animate-in zoom-in-95 fade-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-4">
