@@ -377,7 +377,7 @@ const HealthTrends = () => {
   const expandedResult = labResults.find((r) => r.id === expandedId);
 
   return (
-    <div className="rounded-2xl p-6 bg-[hsl(0,0%,100%/0.75)] backdrop-blur-xl border border-[hsl(0,0%,100%/0.8)] shadow-[0_8px_32px_hsl(210,40%,70%/0.12)]">
+    <div className="glass-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-xl bg-[hsl(var(--icon-bg-blue))] flex items-center justify-center text-primary">
           <TrendingUp size={20} />
