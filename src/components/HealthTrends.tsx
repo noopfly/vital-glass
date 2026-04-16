@@ -339,7 +339,7 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                 }}
                 activeDot={{ r: 7, strokeWidth: 2, stroke: "white" }}
               />
-              <customized
+              <Customized
                 component={({ formattedGraphicalItems }: any) => {
                   if (!formattedGraphicalItems?.[0]?.props?.points) return null;
                   return (
