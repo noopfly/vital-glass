@@ -300,7 +300,15 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
 
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={result.history} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
+            <LineChart data={result.history.map((h, i) => ({
+              ...h,
+              ...Object.fromEntries(
+                result.history.map((_, j) => {
+                  if (j > 0 && (j - 1 === i || j === i)) return [`seg${j}`, h.value];
+                  return [`seg${j}`, undefined];
+                })
+              ),
+            }))} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
               <defs>
                 <linearGradient id="normalRangeGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.15} />
@@ -318,6 +326,27 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                 strokeDasharray="4 4"
               />
               <Tooltip content={<CustomTooltip unit={result.unit} />} />
+              {result.history.map((_, segIdx) => {
+                if (segIdx === 0) return null;
+                const segColor = getSegmentColor(
+                  result.history[segIdx - 1].value,
+                  result.history[segIdx].value,
+                  result.normalMin,
+                  result.normalMax
+                );
+                return (
+                  <Line
+                    key={`seg${segIdx}`}
+                    type="monotone"
+                    dataKey={`seg${segIdx}`}
+                    stroke={segColor}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={false}
+                    connectNulls={false}
+                  />
+                );
+              })}
               <Line
                 type="monotone"
                 dataKey="value"
@@ -338,19 +367,6 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                   );
                 }}
                 activeDot={{ r: 7, strokeWidth: 2, stroke: "white" }}
-              />
-              <Customized
-                component={({ formattedGraphicalItems }: any) => {
-                  if (!formattedGraphicalItems?.[0]?.props?.points) return null;
-                  return (
-                    <SegmentedLine
-                      points={formattedGraphicalItems[0].props.points}
-                      data={result.history}
-                      normalMin={result.normalMin}
-                      normalMax={result.normalMax}
-                    />
-                  );
-                }}
               />
             </LineChart>
           </ResponsiveContainer>
