@@ -10,7 +10,6 @@ import {
   ReferenceArea,
   Area,
   AreaChart,
-  Customized,
 } from "recharts";
 
 type Status = "normal" | "warning" | "critical";
@@ -211,35 +210,7 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
   return null;
 };
 
-// Custom line that colors each segment based on whether values are in normal range
-const SegmentedLine = ({ points, data, normalMin, normalMax }: {
-  points: { x: number; y: number }[];
-  data: { month: string; value: number }[];
-  normalMin: number;
-  normalMax: number;
-}) => {
-  if (!points || points.length < 2) return null;
-  return (
-    <g>
-      {points.map((point, i) => {
-        if (i === 0) return null;
-        const color = getSegmentColor(data[i - 1].value, data[i].value, normalMin, normalMax);
-        return (
-          <line
-            key={i}
-            x1={points[i - 1].x}
-            y1={points[i - 1].y}
-            x2={point.x}
-            y2={point.y}
-            stroke={color}
-            strokeWidth={2.5}
-            strokeLinecap="round"
-          />
-        );
-      })}
-    </g>
-  );
-};
+
 
 const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => void }) => {
   const statusLabel = result.status === "normal" ? "Normāls" : result.status === "warning" ? "Ārpus normas" : "Kritisks";
@@ -255,7 +226,7 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
       <div className="absolute inset-0 bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm" />
       <div
-        className="relative w-full max-w-xl glass-card rounded-2xl p-6 animate-in zoom-in-95 fade-in duration-200"
+        className="relative w-full max-w-xl bg-white rounded-2xl p-6 shadow-xl border border-[hsl(210,20%,92%)] animate-in zoom-in-95 fade-in duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-4">
@@ -300,7 +271,15 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
 
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={result.history} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
+            <LineChart data={result.history.map((h, i) => ({
+              ...h,
+              ...Object.fromEntries(
+                result.history.map((_, j) => {
+                  if (j > 0 && (j - 1 === i || j === i)) return [`seg${j}`, h.value];
+                  return [`seg${j}`, undefined];
+                })
+              ),
+            }))} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
               <defs>
                 <linearGradient id="normalRangeGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.15} />
@@ -318,6 +297,27 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                 strokeDasharray="4 4"
               />
               <Tooltip content={<CustomTooltip unit={result.unit} />} />
+              {result.history.map((_, segIdx) => {
+                if (segIdx === 0) return null;
+                const segColor = getSegmentColor(
+                  result.history[segIdx - 1].value,
+                  result.history[segIdx].value,
+                  result.normalMin,
+                  result.normalMax
+                );
+                return (
+                  <Line
+                    key={`seg${segIdx}`}
+                    type="monotone"
+                    dataKey={`seg${segIdx}`}
+                    stroke={segColor}
+                    strokeWidth={2.5}
+                    dot={false}
+                    activeDot={false}
+                    connectNulls={false}
+                  />
+                );
+              })}
               <Line
                 type="monotone"
                 dataKey="value"
@@ -338,19 +338,6 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                   );
                 }}
                 activeDot={{ r: 7, strokeWidth: 2, stroke: "white" }}
-              />
-              <Customized
-                component={({ formattedGraphicalItems }: any) => {
-                  if (!formattedGraphicalItems?.[0]?.props?.points) return null;
-                  return (
-                    <SegmentedLine
-                      points={formattedGraphicalItems[0].props.points}
-                      data={result.history}
-                      normalMin={result.normalMin}
-                      normalMax={result.normalMax}
-                    />
-                  );
-                }}
               />
             </LineChart>
           </ResponsiveContainer>
@@ -377,7 +364,7 @@ const HealthTrends = () => {
   const expandedResult = labResults.find((r) => r.id === expandedId);
 
   return (
-    <div className="rounded-2xl p-6 bg-[hsl(0,0%,100%/0.75)] backdrop-blur-xl border border-[hsl(0,0%,100%/0.8)] shadow-[0_8px_32px_hsl(210,40%,70%/0.12)]">
+    <div className="glass-card rounded-2xl p-6">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-xl bg-[hsl(var(--icon-bg-blue))] flex items-center justify-center text-primary">
           <TrendingUp size={20} />
