@@ -10,7 +10,6 @@ import {
   ReferenceArea,
   Area,
   AreaChart,
-  Customized,
 } from "recharts";
 
 type Status = "normal" | "warning" | "critical";
