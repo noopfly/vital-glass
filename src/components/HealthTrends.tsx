@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Activity, Droplets, FlaskConical, Heart, TrendingUp, X } from "lucide-react";
+import { Activity, Droplets, FlaskConical, Heart, TrendingUp, TrendingDown, X } from "lucide-react";
 import {
   LineChart,
   Line,
@@ -7,9 +7,10 @@ import {
   YAxis,
   Tooltip,
   ResponsiveContainer,
-  ReferenceLine,
+  ReferenceArea,
   Area,
   AreaChart,
+  Customized,
 } from "recharts";
 
 type Status = "normal" | "warning" | "critical";
@@ -27,7 +28,6 @@ interface LabResult {
   changePositive: boolean;
   status: Status;
   history: { month: string; value: number }[];
-  iconBgClass: string;
 }
 
 const statusColors: Record<Status, string> = {
@@ -48,6 +48,12 @@ const statusTextClass: Record<Status, string> = {
   critical: "text-status-critical",
 };
 
+const statusIconBg: Record<Status, string> = {
+  normal: "bg-[hsl(152,50%,92%)]",
+  warning: "bg-[hsl(40,80%,92%)]",
+  critical: "bg-[hsl(0,85%,95%)]",
+};
+
 const labResults: LabResult[] = [
   {
     id: "bp",
@@ -61,7 +67,6 @@ const labResults: LabResult[] = [
     change: "+0.8%",
     changePositive: false,
     status: "warning",
-    iconBgClass: "bg-[hsl(var(--icon-bg-red))]",
     history: [
       { month: "Jan", value: 118 },
       { month: "Feb", value: 115 },
@@ -85,7 +90,6 @@ const labResults: LabResult[] = [
     change: "-2.1%",
     changePositive: true,
     status: "normal",
-    iconBgClass: "bg-[hsl(var(--icon-bg-blue))]",
     history: [
       { month: "Jan", value: 110 },
       { month: "Feb", value: 105 },
@@ -109,7 +113,6 @@ const labResults: LabResult[] = [
     change: "+1.1%",
     changePositive: false,
     status: "normal",
-    iconBgClass: "bg-[hsl(var(--icon-bg-green))]",
     history: [
       { month: "Jan", value: 210 },
       { month: "Feb", value: 205 },
@@ -133,7 +136,6 @@ const labResults: LabResult[] = [
     change: "+0.7%",
     changePositive: true,
     status: "normal",
-    iconBgClass: "bg-[hsl(var(--icon-bg-pink))]",
     history: [
       { month: "Jan", value: 13.8 },
       { month: "Feb", value: 14.0 },
@@ -152,6 +154,14 @@ function getPointStatus(value: number, min: number, max: number): Status {
   const rangeDiff = max - min;
   if (value < min - rangeDiff * 0.3 || value > max + rangeDiff * 0.3) return "critical";
   return "warning";
+}
+
+function getSegmentColor(v1: number, v2: number, min: number, max: number): string {
+  const s1 = getPointStatus(v1, min, max);
+  const s2 = getPointStatus(v2, min, max);
+  if (s1 === "critical" || s2 === "critical") return statusColors.critical;
+  if (s1 === "warning" || s2 === "warning") return statusColors.warning;
+  return statusColors.normal;
 }
 
 const MiniSparkline = ({ data, status }: { data: { month: string; value: number }[]; status: Status }) => {
@@ -201,98 +211,162 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
   return null;
 };
 
+// Custom line that colors each segment based on whether values are in normal range
+const SegmentedLine = ({ points, data, normalMin, normalMax }: {
+  points: { x: number; y: number }[];
+  data: { month: string; value: number }[];
+  normalMin: number;
+  normalMax: number;
+}) => {
+  if (!points || points.length < 2) return null;
+  return (
+    <g>
+      {points.map((point, i) => {
+        if (i === 0) return null;
+        const color = getSegmentColor(data[i - 1].value, data[i].value, normalMin, normalMax);
+        return (
+          <line
+            key={i}
+            x1={points[i - 1].x}
+            y1={points[i - 1].y}
+            x2={point.x}
+            y2={point.y}
+            stroke={color}
+            strokeWidth={2.5}
+            strokeLinecap="round"
+          />
+        );
+      })}
+    </g>
+  );
+};
+
 const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => void }) => {
   const statusLabel = result.status === "normal" ? "Normāls" : result.status === "warning" ? "Ārpus normas" : "Kritisks";
-  
+
+  // Compute Y domain for reference area
+  const allValues = result.history.map(h => h.value);
+  const dataMin = Math.min(...allValues);
+  const dataMax = Math.max(...allValues);
+  const yMin = Math.min(dataMin, result.normalMin) * 0.95;
+  const yMax = Math.max(dataMax, result.normalMax) * 1.05;
+
   return (
-    <div className="glass-card rounded-2xl p-6 mb-2 animate-in slide-in-from-top-2 duration-300">
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${result.iconBgClass} ${statusTextClass[result.status]}`}>
-            {result.icon}
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
+      <div className="absolute inset-0 bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm" />
+      <div
+        className="relative w-full max-w-xl glass-card rounded-2xl p-6 animate-in zoom-in-95 fade-in duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-start justify-between mb-4">
+          <div className="flex items-center gap-3">
+            <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}>
+              {result.icon}
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-text-dark">{result.name}</h3>
+              <p className="text-sm text-heading">Normāls diapazons: {result.normalRange} {result.unit}</p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-heading hover:text-text-dark transition-colors"
+          >
+            <X size={16} />
+          </button>
+        </div>
+
+        <div className="flex gap-8 mb-6">
+          <div>
+            <p className="text-xs uppercase tracking-wider text-heading font-semibold">Pašreizējā vērtība</p>
+            <p className="text-3xl font-bold text-text-dark">
+              {result.id === "bp" ? "124/79" : result.value} <span className="text-sm font-normal text-heading">{result.unit}</span>
+            </p>
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-text-dark">{result.name}</h3>
-            <p className="text-sm text-heading">Normāls diapazons: {result.normalRange} {result.unit}</p>
+            <p className="text-xs uppercase tracking-wider text-heading font-semibold">Izmaiņas</p>
+            <p className={`text-lg font-bold flex items-center gap-1 ${result.changePositive ? "text-status-normal" : "text-status-warning"}`}>
+              {result.changePositive ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
+              {result.change}
+            </p>
+          </div>
+          <div>
+            <p className="text-xs uppercase tracking-wider text-heading font-semibold">Statuss</p>
+            <p className={`text-lg font-bold ${statusTextClass[result.status]}`}>{statusLabel}</p>
           </div>
         </div>
-        <button
-          onClick={onClose}
-          className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-heading hover:text-text-dark transition-colors"
-        >
-          <X size={16} />
-        </button>
-      </div>
 
-      <div className="flex gap-8 mb-6">
-        <div>
-          <p className="text-xs uppercase tracking-wider text-heading font-semibold">Pašreizējā vērtība</p>
-          <p className="text-3xl font-bold text-text-dark">
-            {result.id === "bp" ? "124/79" : result.value} <span className="text-sm font-normal text-heading">{result.unit}</span>
-          </p>
+        <p className="text-xs uppercase tracking-wider text-heading font-bold mb-3">Vēsture (pēdējie 8 mēneši)</p>
+
+        <div className="h-56">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={result.history} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
+              <defs>
+                <linearGradient id="normalRangeGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.15} />
+                  <stop offset="100%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.05} />
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }} />
+              <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }} domain={[yMin, yMax]} />
+              <ReferenceArea
+                y1={result.normalMin}
+                y2={result.normalMax}
+                fill="url(#normalRangeGrad)"
+                stroke="hsl(152, 60%, 45%)"
+                strokeOpacity={0.2}
+                strokeDasharray="4 4"
+              />
+              <Tooltip content={<CustomTooltip unit={result.unit} />} />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="transparent"
+                strokeWidth={0}
+                dot={(props: any) => {
+                  const pointStatus = getPointStatus(props.payload.value, result.normalMin, result.normalMax);
+                  return (
+                    <circle
+                      key={props.index}
+                      cx={props.cx}
+                      cy={props.cy}
+                      r={5}
+                      fill={statusColors[pointStatus]}
+                      stroke="white"
+                      strokeWidth={2}
+                    />
+                  );
+                }}
+                activeDot={{ r: 7, strokeWidth: 2, stroke: "white" }}
+              />
+              <Customized
+                component={({ formattedGraphicalItems }: any) => {
+                  if (!formattedGraphicalItems?.[0]?.props?.points) return null;
+                  return (
+                    <SegmentedLine
+                      points={formattedGraphicalItems[0].props.points}
+                      data={result.history}
+                      normalMin={result.normalMin}
+                      normalMax={result.normalMax}
+                    />
+                  );
+                }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
         </div>
-        <div>
-          <p className="text-xs uppercase tracking-wider text-heading font-semibold">Izmaiņas</p>
-          <p className={`text-lg font-bold ${result.changePositive ? "text-status-normal" : "text-status-warning"}`}>
-            {result.change}
-          </p>
-        </div>
-        <div>
-          <p className="text-xs uppercase tracking-wider text-heading font-semibold">Statuss</p>
-          <p className={`text-lg font-bold ${statusTextClass[result.status]}`}>{statusLabel}</p>
-        </div>
-      </div>
 
-      <p className="text-xs uppercase tracking-wider text-primary font-bold mb-3">Vēsture (pēdējie 8 mēneši)</p>
-
-      <div className="h-56">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart data={result.history} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
-            <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }} />
-            <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }} domain={["auto", "auto"]} />
-            {result.normalMin > 0 && (
-              <ReferenceLine y={result.normalMin} stroke="hsl(152, 60%, 45%)" strokeDasharray="4 4" strokeOpacity={0.5} />
-            )}
-            <ReferenceLine y={result.normalMax} stroke="hsl(152, 60%, 45%)" strokeDasharray="4 4" strokeOpacity={0.5} />
-            <Tooltip content={<CustomTooltip unit={result.unit} />} />
-            <Line
-              type="monotone"
-              dataKey="value"
-              stroke={statusColors[result.status]}
-              strokeWidth={2.5}
-              dot={(props: any) => {
-                const pointStatus = getPointStatus(props.payload.value, result.normalMin, result.normalMax);
-                return (
-                  <circle
-                    key={props.index}
-                    cx={props.cx}
-                    cy={props.cy}
-                    r={5}
-                    fill={statusColors[pointStatus]}
-                    stroke="white"
-                    strokeWidth={2}
-                  />
-                );
-              }}
-              activeDot={{ r: 7, strokeWidth: 2, stroke: "white" }}
-            />
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-
-      <div className="flex gap-2 mt-4">
-        {result.history.map((h) => {
-          const pStatus = getPointStatus(h.value, result.normalMin, result.normalMax);
-          return (
+        <div className="flex gap-2 mt-4">
+          {result.history.map((h) => (
             <div
               key={h.month}
               className="flex-1 glass-card-solid rounded-lg py-2 px-1 text-center"
             >
               <p className="text-xs text-heading font-medium">{h.month}</p>
-              <p className={`text-sm font-bold ${statusTextClass[pStatus]}`}>{h.value}</p>
+              <p className="text-sm font-bold text-text-dark">{h.value}</p>
             </div>
-          );
-        })}
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -303,7 +377,7 @@ const HealthTrends = () => {
   const expandedResult = labResults.find((r) => r.id === expandedId);
 
   return (
-    <div className="glass-card rounded-2xl p-6">
+    <div className="rounded-2xl p-6 bg-[hsl(0,0%,100%/0.75)] backdrop-blur-xl border border-[hsl(0,0%,100%/0.8)] shadow-[0_8px_32px_hsl(210,40%,70%/0.12)]">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-10 h-10 rounded-xl bg-[hsl(var(--icon-bg-blue))] flex items-center justify-center text-primary">
           <TrendingUp size={20} />
@@ -345,7 +419,7 @@ const HealthTrends = () => {
               expandedId === result.id ? "ring-2 ring-primary/30" : ""
             }`}
           >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${result.iconBgClass} ${statusTextClass[result.status]}`}>
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}>
               {result.icon}
             </div>
             <div className="flex-1 min-w-0">
@@ -361,8 +435,9 @@ const HealthTrends = () => {
                 {result.id === "bp" ? "124/79" : result.value}{" "}
                 <span className="text-xs font-normal text-heading">{result.unit}</span>
               </p>
-              <p className={`text-xs font-medium ${result.changePositive ? "text-status-normal" : "text-status-warning"}`}>
-                {result.changePositive ? "↘" : "↗"} {result.change}
+              <p className={`text-xs font-medium flex items-center justify-end gap-0.5 ${result.changePositive ? "text-status-normal" : "text-status-warning"}`}>
+                {result.changePositive ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
+                {result.change}
               </p>
             </div>
             <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="text-heading ml-1">
