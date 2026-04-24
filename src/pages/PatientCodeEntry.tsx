@@ -54,7 +54,7 @@ const PatientCodeEntry = () => {
             to="/register"
             className="text-[13px] font-semibold text-[hsl(206,74%,49%)] transition hover:text-[hsl(206,74%,42%)]"
           >
-            Registrācija
+            Reģistrācija
           </Link>
         </div>
 
