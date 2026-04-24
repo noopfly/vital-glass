@@ -102,7 +102,7 @@ const WaitingScreen = () => {
         <div className="flex items-center justify-between border-b border-[rgba(166,197,223,0.30)] px-5 py-4">
           <div className="flex items-center gap-2.5 text-[hsl(211,74%,54%)]">
             <span className="text-lg font-semibold tracking-[-0.02em] text-[hsl(213,54%,34%)]">
-              Omnis
+            Omnus
             </span>
           </div>
         </div>
