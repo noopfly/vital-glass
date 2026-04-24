@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Activity, Droplets, FlaskConical, Heart, TrendingUp, TrendingDown, X } from "lucide-react";
+import {
+  Activity,
+  Droplets,
+  FlaskConical,
+  Heart,
+  TrendingUp,
+  TrendingDown,
+  X,
+} from "lucide-react";
+import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import {
   LineChart,
   Line,
@@ -53,15 +62,17 @@ const statusIconBg: Record<Status, string> = {
   critical: "bg-[hsl(0,85%,95%)]",
 };
 
+const sectionIconClass =
+  "flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]";
 const labResults: LabResult[] = [
   {
     id: "bp",
     name: "Asinsspiediens",
     icon: <Activity size={20} />,
-    normalRange: "90–120 / 60–80",
+    normalRange: "90-120 / 60-80",
     normalMin: 90,
     normalMax: 120,
-    value: 124,
+    value: 135,
     unit: "mmHg",
     change: "+0.8%",
     changePositive: false,
@@ -72,16 +83,16 @@ const labResults: LabResult[] = [
       { month: "Mar", value: 120 },
       { month: "Apr", value: 122 },
       { month: "Mai", value: 119 },
-      { month: "Jūn", value: 121 },
-      { month: "Jūl", value: 123 },
-      { month: "Aug", value: 124 },
+      { month: "Jun", value: 121 },
+      { month: "Jul", value: 123 },
+      { month: "Aug", value: 135 },
     ],
   },
   {
     id: "glucose",
     name: "Glikoze",
     icon: <Droplets size={20} />,
-    normalRange: "70–100",
+    normalRange: "70-100",
     normalMin: 70,
     normalMax: 100,
     value: 95,
@@ -95,8 +106,8 @@ const labResults: LabResult[] = [
       { month: "Mar", value: 108 },
       { month: "Apr", value: 100 },
       { month: "Mai", value: 98 },
-      { month: "Jūn", value: 102 },
-      { month: "Jūl", value: 97 },
+      { month: "Jun", value: 102 },
+      { month: "Jul", value: 97 },
       { month: "Aug", value: 95 },
     ],
   },
@@ -118,8 +129,8 @@ const labResults: LabResult[] = [
       { month: "Mar", value: 200 },
       { month: "Apr", value: 198 },
       { month: "Mai", value: 195 },
-      { month: "Jūn", value: 197 },
-      { month: "Jūl", value: 194 },
+      { month: "Jun", value: 197 },
+      { month: "Jul", value: 194 },
       { month: "Aug", value: 192 },
     ],
   },
@@ -127,7 +138,7 @@ const labResults: LabResult[] = [
     id: "hemoglobin",
     name: "Hemoglobīns",
     icon: <Heart size={20} />,
-    normalRange: "13.5–17.5",
+    normalRange: "13.5-17.5",
     normalMin: 13.5,
     normalMax: 17.5,
     value: 14.2,
@@ -141,8 +152,8 @@ const labResults: LabResult[] = [
       { month: "Mar", value: 13.5 },
       { month: "Apr", value: 13.9 },
       { month: "Mai", value: 14.1 },
-      { month: "Jūn", value: 14.0 },
-      { month: "Jūl", value: 14.3 },
+      { month: "Jun", value: 14.0 },
+      { month: "Jul", value: 14.3 },
       { month: "Aug", value: 14.2 },
     ],
   },
@@ -163,15 +174,22 @@ function getSegmentColor(v1: number, v2: number, min: number, max: number): stri
   return statusColors.normal;
 }
 
-const MiniSparkline = ({ data, status }: { data: { month: string; value: number }[]; status: Status }) => {
+const MiniSparkline = ({
+  data,
+  status,
+}: {
+  data: { month: string; value: number }[];
+  status: Status;
+}) => {
   const color = statusColors[status];
+
   return (
-    <div className="w-24 h-10">
+    <div className="mx-auto h-11 w-[118px]">
       <ResponsiveContainer width="100%" height="100%">
-        <AreaChart data={data}>
+        <AreaChart data={data} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
           <defs>
             <linearGradient id={`grad-${status}`} x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor={color} stopOpacity={0.3} />
+              <stop offset="0%" stopColor={color} stopOpacity={0.32} />
               <stop offset="100%" stopColor={color} stopOpacity={0.05} />
             </linearGradient>
           </defs>
@@ -202,7 +220,10 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
       <div className="glass-card-solid rounded-lg px-3 py-2 text-sm shadow-lg">
         <p className="font-semibold text-text-dark">{label}</p>
         <p className="text-heading">
-          vērtība: <span className="font-bold text-text-dark">{payload[0].value} {unit}</span>
+          vērtība:{" "}
+          <span className="font-bold text-text-dark">
+            {payload[0].value} {unit}
+          </span>
         </p>
       </div>
     );
@@ -210,84 +231,120 @@ const CustomTooltip = ({ active, payload, label, unit }: CustomTooltipProps) => 
   return null;
 };
 
-
+interface ChartDotProps {
+  cx?: number;
+  cy?: number;
+  index?: number;
+  payload: {
+    value: number;
+  };
+}
 
 const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => void }) => {
-  const statusLabel = result.status === "normal" ? "Normāls" : result.status === "warning" ? "Ārpus normas" : "Kritisks";
+  const statusLabel =
+    result.status === "normal"
+      ? "Norma"
+      : result.status === "warning"
+        ? "Ārpus normas"
+        : "Kritisks";
 
-  // Compute Y domain for reference area
-  const allValues = result.history.map(h => h.value);
+  const allValues = result.history.map((h) => h.value);
   const dataMin = Math.min(...allValues);
   const dataMax = Math.max(...allValues);
   const yMin = Math.min(dataMin, result.normalMin) * 0.95;
   const yMax = Math.max(dataMax, result.normalMax) * 1.05;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="absolute inset-0 bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm" />
-      <div
-        className="relative w-full max-w-xl bg-white rounded-2xl p-6 shadow-xl border border-[hsl(210,20%,92%)] animate-in zoom-in-95 fade-in duration-200"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="flex items-start justify-between mb-4">
+    <CenteredOverlay onClose={onClose} overlayClassName="bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm">
+      <div className="mx-auto w-full max-w-xl rounded-2xl border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+        <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className={`w-11 h-11 rounded-xl flex items-center justify-center ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}>
+            <div
+              className={`flex h-11 w-11 items-center justify-center rounded-xl ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+            >
               {result.icon}
             </div>
             <div>
               <h3 className="text-lg font-semibold text-text-dark">{result.name}</h3>
-              <p className="text-sm text-heading">Normāls diapazons: {result.normalRange} {result.unit}</p>
+              <p className="text-sm text-heading">
+                Normas robežas: {result.normalRange} {result.unit}
+              </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-heading hover:text-text-dark transition-colors"
+            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-heading transition-colors hover:text-text-dark"
           >
             <X size={16} />
           </button>
         </div>
 
-        <div className="flex gap-8 mb-6">
+        <div className="mb-6 flex gap-8">
           <div>
-            <p className="text-xs uppercase tracking-wider text-heading font-semibold">Pašreizējā vērtība</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-heading">
+              Pašreizējā vērtība
+            </p>
             <p className="text-3xl font-bold text-text-dark">
-              {result.id === "bp" ? "124/79" : result.value} <span className="text-sm font-normal text-heading">{result.unit}</span>
+              {result.id === "bp" ? "135/94" : result.value}{" "}
+              <span className="text-sm font-normal text-heading">{result.unit}</span>
             </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-heading font-semibold">Izmaiņas</p>
-            <p className={`text-lg font-bold flex items-center gap-1 ${result.changePositive ? "text-status-normal" : "text-status-warning"}`}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-heading">
+              Izmaiņas
+            </p>
+            <p
+              className={`flex items-center gap-1 text-lg font-bold ${result.changePositive ? "text-status-normal" : "text-status-warning"
+                }`}
+            >
               {result.changePositive ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
               {result.change}
             </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-heading font-semibold">Statuss</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-heading">
+              Statuss
+            </p>
             <p className={`text-lg font-bold ${statusTextClass[result.status]}`}>{statusLabel}</p>
           </div>
         </div>
 
-        <p className="text-xs uppercase tracking-wider text-heading font-bold mb-3">Vēsture (pēdējie 8 mēneši)</p>
+        <p className="mb-3 text-xs font-bold uppercase tracking-wider text-heading">
+          Vēsture (pēdējie 8 mēneši)
+        </p>
 
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={result.history.map((h, i) => ({
-              ...h,
-              ...Object.fromEntries(
-                result.history.map((_, j) => {
-                  if (j > 0 && (j - 1 === i || j === i)) return [`seg${j}`, h.value];
-                  return [`seg${j}`, undefined];
-                })
-              ),
-            }))} margin={{ top: 10, right: 10, bottom: 0, left: -10 }}>
+            <LineChart
+              data={result.history.map((h, i) => ({
+                ...h,
+                ...Object.fromEntries(
+                  result.history.map((_, j) => {
+                    if (j > 0 && (j - 1 === i || j === i)) return [`seg${j}`, h.value];
+                    return [`seg${j}`, undefined];
+                  }),
+                ),
+              }))}
+              margin={{ top: 10, right: 10, bottom: 0, left: -10 }}
+            >
               <defs>
                 <linearGradient id="normalRangeGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.15} />
                   <stop offset="100%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.05} />
                 </linearGradient>
               </defs>
-              <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }} />
-              <YAxis axisLine={false} tickLine={false} tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }} domain={[yMin, yMax]} />
+              <XAxis
+                dataKey="month"
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }}
+              />
+              <YAxis
+                axisLine={false}
+                tickLine={false}
+                tick={{ fill: "hsl(215, 14%, 50%)", fontSize: 12 }}
+                domain={[yMin, yMax]}
+              />
               <ReferenceArea
                 y1={result.normalMin}
                 y2={result.normalMax}
@@ -303,7 +360,7 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                   result.history[segIdx - 1].value,
                   result.history[segIdx].value,
                   result.normalMin,
-                  result.normalMax
+                  result.normalMax,
                 );
                 return (
                   <Line
@@ -323,8 +380,12 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
                 dataKey="value"
                 stroke="transparent"
                 strokeWidth={0}
-                dot={(props: any) => {
-                  const pointStatus = getPointStatus(props.payload.value, result.normalMin, result.normalMax);
+                dot={(props: ChartDotProps) => {
+                  const pointStatus = getPointStatus(
+                    props.payload.value,
+                    result.normalMin,
+                    result.normalMax,
+                  );
                   return (
                     <circle
                       key={props.index}
@@ -343,99 +404,222 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
           </ResponsiveContainer>
         </div>
 
-        <div className="flex gap-2 mt-4">
+        <div className="mt-4 flex gap-2">
           {result.history.map((h) => (
             <div
               key={h.month}
-              className="flex-1 glass-card-solid rounded-lg py-2 px-1 text-center"
+              className="glass-card-solid flex-1 rounded-lg px-1 py-2 text-center"
             >
-              <p className="text-xs text-heading font-medium">{h.month}</p>
+              <p className="text-xs font-medium text-heading">{h.month}</p>
               <p className="text-sm font-bold text-text-dark">{h.value}</p>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </CenteredOverlay>
   );
 };
 
-const HealthTrends = () => {
-  const [expandedId, setExpandedId] = useState<string | null>(null);
-  const expandedResult = labResults.find((r) => r.id === expandedId);
-
+function TrendsList({
+  results,
+  expandedId,
+  onToggleExpanded,
+}: {
+  results: LabResult[];
+  expandedId: string | null;
+  onToggleExpanded: (id: string) => void;
+}) {
   return (
-    <div className="glass-card rounded-2xl p-6">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-[hsl(var(--icon-bg-blue))] flex items-center justify-center text-primary">
-          <TrendingUp size={20} />
+    <div className="space-y-2">
+      {results.map((result) => (
+        <button
+          key={result.id}
+          onClick={() => onToggleExpanded(result.id)}
+          className={`grid w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_132px_88px_auto] ${expandedId === result.id
+            ? "glass-card-solid ring-2 ring-primary/30"
+            : "glass-card-solid hover:shadow-md"
+            }`}
+        >
+          <div
+            className={`flex h-9 w-9 items-center justify-center rounded-xl ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+          >
+            {result.icon}
+          </div>
+
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <p className="text-[12px] font-semibold text-text-dark">{result.name}</p>
+            </div>
+            <p className="text-[10px] text-heading">Norma: {result.normalRange}</p>
+          </div>
+
+          <div className="flex justify-center md:justify-center">
+            <MiniSparkline data={result.history} status={result.status} />
+          </div>
+
+          <div className="min-w-[72px] text-left md:text-right">
+            <p className="text-[1.35rem] font-bold leading-none text-text-dark">
+              {result.id === "bp" ? "135/94" : result.value}{" "}
+              <span className="text-[10px] font-normal text-heading">{result.unit}</span>
+            </p>
+            <p
+              className={`mt-1 flex items-center gap-0.5 text-[10px] font-medium md:justify-end ${result.changePositive ? "text-status-normal" : "text-status-warning"
+                }`}
+            >
+              {result.changePositive ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
+              {result.change}
+            </p>
+          </div>
+
+          <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="ml-1 text-heading">
+            <path
+              d="M1 1L7 7L1 13"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function HealthTrendsContent({
+  results,
+  expandedId,
+  onToggleExpanded,
+  onOpenAll,
+  showOpenAll,
+  compact,
+}: {
+  results: LabResult[];
+  expandedId: string | null;
+  onToggleExpanded: (id: string) => void;
+  onOpenAll?: () => void;
+  showOpenAll?: boolean;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      className={
+        compact
+          ? "flex h-full flex-col overflow-hidden rounded-2xl border border-white/75 bg-[linear-gradient(180deg,hsla(0,0%,100%,0.96),hsla(195,42%,99%,0.84))] p-6 shadow-[0_10px_24px_hsl(var(--glass-shadow))] backdrop-blur-xl"
+          : "flex flex-col"
+      }
+    >
+      <div className="mb-6 flex items-center gap-3">
+        <div className={sectionIconClass}>
+          <TrendingUp size={18} className="text-current" />
         </div>
+
         <div>
-          <h2 className="text-lg font-semibold text-text-dark">Veselības tendences</h2>
-          <p className="text-sm text-heading">Laboratorijas rezultāti un vitālie rādītāji</p>
+          <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
+            Klīniskie rādītāji
+          </p>
+          <p className="text-xs text-heading">
+            Laboratorijas rezultātu pārskats un izmaiņas laikā
+          </p>
         </div>
       </div>
 
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex gap-4 text-xs font-medium">
-          <span className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${statusDotClass.normal}`} />
-            <span className="text-heading">Normāls</span>
+      <div className="mb-2 flex items-center justify-between">
+        <div className="ml-2 flex gap-2.5 text-[9px] font-medium uppercase tracking-wider text-heading">
+          <span className="flex items-center gap-1">
+            <span className={`h-2 w-2 rounded-full ${statusDotClass.normal}`} />
+            <span className="text-heading">Norma</span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${statusDotClass.warning}`} />
+          <span className="flex items-center gap-1">
+            <span className={`h-2 w-2 rounded-full ${statusDotClass.warning}`} />
             <span className="text-heading">Ārpus normas</span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className={`w-2 h-2 rounded-full ${statusDotClass.critical}`} />
+          <span className="flex items-center gap-1">
+            <span className={`h-2 w-2 rounded-full ${statusDotClass.critical}`} />
             <span className="text-heading">Kritisks</span>
           </span>
         </div>
-        <p className="text-xs italic text-heading">Noklikšķiniet, lai skatītu detaļas</p>
+        <p className="mr-2 text-[9px] italic text-heading">
+          Noklikšķiniet, lai skatītu sīkāk
+        </p>
       </div>
 
+      <TrendsList
+        results={results}
+        expandedId={expandedId}
+        onToggleExpanded={onToggleExpanded}
+      />
+
+      <div className="mt-auto pt-3">
+        {showOpenAll && onOpenAll && labResults.length > 3 && (
+          <button
+            type="button"
+            onClick={onOpenAll}
+            className="text-xs font-medium text-[hsl(210,78%,56%)] transition hover:opacity-80"
+          >
+            Skatīt visus rādītājus →
+          </button>
+        )}
+        <p className="mt-3 text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 04.08.2025.</p>
+      </div>
+    </div>
+  );
+}
+
+const HealthTrends = () => {
+  const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [expandedFullId, setExpandedFullId] = useState<string | null>(null);
+  const [isAllLabsOpen, setIsAllLabsOpen] = useState(false);
+
+  const expandedResult = labResults.find((r) => r.id === expandedId);
+  const expandedFullResult = labResults.find((r) => r.id === expandedFullId);
+
+  return (
+    <>
       {expandedResult && (
         <DetailPanel result={expandedResult} onClose={() => setExpandedId(null)} />
       )}
 
-      <div className="space-y-2">
-        {labResults.map((result) => (
-          <button
-            key={result.id}
-            onClick={() => setExpandedId(expandedId === result.id ? null : result.id)}
-            className={`w-full glass-card-solid rounded-xl p-4 flex items-center gap-4 transition-all duration-200 hover:shadow-md cursor-pointer text-left ${
-              expandedId === result.id ? "ring-2 ring-primary/30" : ""
-            }`}
-          >
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}>
-              {result.icon}
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="font-semibold text-text-dark text-sm">{result.name}</p>
-                <span className={`w-2 h-2 rounded-full ${statusDotClass[result.status]}`} />
-              </div>
-              <p className="text-xs text-heading">Norma: {result.normalRange}</p>
-            </div>
-            <MiniSparkline data={result.history} status={result.status} />
-            <div className="text-right min-w-[80px]">
-              <p className="text-xl font-bold text-text-dark">
-                {result.id === "bp" ? "124/79" : result.value}{" "}
-                <span className="text-xs font-normal text-heading">{result.unit}</span>
-              </p>
-              <p className={`text-xs font-medium flex items-center justify-end gap-0.5 ${result.changePositive ? "text-status-normal" : "text-status-warning"}`}>
-                {result.changePositive ? <TrendingDown size={12} /> : <TrendingUp size={12} />}
-                {result.change}
-              </p>
-            </div>
-            <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="text-heading ml-1">
-              <path d="M1 1L7 7L1 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </button>
-        ))}
-      </div>
+      {expandedFullResult && (
+        <DetailPanel result={expandedFullResult} onClose={() => setExpandedFullId(null)} />
+      )}
 
-      <p className="text-xs text-heading mt-4">Atjaunināts: Aug 2024</p>
-    </div>
+      <HealthTrendsContent
+        results={labResults.slice(0, 3)}
+        expandedId={expandedId}
+        onToggleExpanded={(id) => setExpandedId(expandedId === id ? null : id)}
+        onOpenAll={() => setIsAllLabsOpen(true)}
+        showOpenAll
+        compact
+      />
+
+      {isAllLabsOpen && (
+        <CenteredOverlay
+          onClose={() => setIsAllLabsOpen(false)}
+          overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
+          contentClassName="max-w-3xl"
+        >
+          <div className="relative mx-auto w-full overflow-hidden rounded-[28px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+            <button
+              type="button"
+              onClick={() => setIsAllLabsOpen(false)}
+              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+              aria-label="Aizvert"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="max-h-[84vh] overflow-y-auto px-6 py-6 md:px-8">
+              <HealthTrendsContent
+                results={labResults}
+                expandedId={expandedFullId}
+                onToggleExpanded={(id) => setExpandedFullId(expandedFullId === id ? null : id)}
+              />
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
+    </>
   );
 };
 
