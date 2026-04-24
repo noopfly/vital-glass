@@ -12,7 +12,7 @@ import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import rtKruskurvjaAugsdalaImage from "@/assets/rt-kruskurvja-augsdala.png";
 
 type ImagingType = "X-RAY" | "CT" | "MRI" | "USG";
-type ImagingStatus = "Norma" | "Izmainas" | "Patologiskas izmainas";
+type ImagingStatus = "Norma" | "Izmaiņas" | "Patologiskas izmaiņas";
 
 interface ImagingStudy {
   id: string;
@@ -33,7 +33,7 @@ const studies: ImagingStudy[] = [
     title: "RT - kruskurvja augsdala",
     bodyPart: "Kruskurvja augsdala",
     date: "2026-04-14",
-    status: "Patologiskas izmainas",
+    status: "Patologiskas izmaiņas",
     doctor: "Dr. Kalniņš",
     hospitalLocation: "Rīgas Austrumu klīniskā universitātes slimnīca",
     imageSrc: rtKruskurvjaAugsdalaImage,
@@ -44,7 +44,7 @@ const studies: ImagingStudy[] = [
     title: "MRI - galvas zona",
     bodyPart: "Galvas zona",
     date: "2026-03-04",
-    status: "Izmainas",
+    status: "Izmaiņas",
     doctor: "Dr. Krūmiņa",
     hospitalLocation: "Paula Stradiņa klīniskā universitātes slimnīca",
   },
@@ -80,9 +80,9 @@ const typeAccentClass: Record<ImagingType, string> = {
 const statusStyles: Record<ImagingStatus, string> = {
   Norma:
     "border-white/50 bg-[linear-gradient(180deg,hsla(145,55%,94%,0.82),hsla(145,45%,90%,0.58))] text-[hsl(145,45%,38%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]",
-  Izmainas:
+  Izmaiņas:
     "border-white/50 bg-[linear-gradient(180deg,hsla(36,100%,94%,0.84),hsla(36,92%,90%,0.6))] text-[hsl(33,85%,45%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]",
-  "Patologiskas izmainas":
+  "Patologiskas izmaiņas":
     "border-white/50 bg-[linear-gradient(180deg,hsla(0,90%,95%,0.86),hsla(0,84%,91%,0.62))] text-[hsl(0,72%,56%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.78)]",
 };
 

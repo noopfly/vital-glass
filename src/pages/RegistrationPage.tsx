@@ -19,15 +19,6 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 type StepDefinition = {
@@ -54,31 +45,11 @@ type ModuleOption = {
 };
 
 type RegistrationForm = {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  certificateNumber: string;
-  specialty: string;
-  institution: string;
-  city: string;
   modules: ModuleId[];
   layoutOrder: ModuleId[];
 };
 
-type TextField =
-  | "firstName"
-  | "lastName"
-  | "email"
-  | "password"
-  | "certificateNumber"
-  | "institution"
-  | "city";
-
-type SelectField = "specialty";
-
 const steps: StepDefinition[] = [
-  { title: "Konts", subtitle: "Profesionālie dati" },
   { title: "Komponentes", subtitle: "Izvēlieties saturu" },
   { title: "Izkārtojums", subtitle: "Sakārtojiet secību" },
 ];
@@ -138,15 +109,6 @@ const moduleOptions: ModuleOption[] = [
     description: "Īss pacienta veselības stāvokļa kopsavilkums",
     icon: ClipboardList,
   },
-];
-
-const specialties = [
-  "Ginekologs",
-  "Kardiologs",
-  "Radiologs",
-  "Neirologs",
-  "Internists",
-  "Ķirurgs",
 ];
 
 const defaultLayoutOrder: ModuleId[] = [
@@ -224,22 +186,8 @@ const previewCardInfo: Record<
   },
 };
 
-const inputClassName =
-  "mt-1.5 h-10 rounded-[14px] border-[rgba(166,197,223,0.32)] bg-white px-4 text-[13px] font-normal text-[hsl(213,42%,22%)] shadow-[0_1px_3px_rgba(0,0,0,0.06)] placeholder:text-[hsl(208,18%,62%)] focus-visible:ring-[hsl(203,64%,52%)]";
-
-const labelClassName =
-  "text-[13px] font-semibold tracking-[-0.01em] text-[hsl(213,42%,22%)]";
-
 const initialForm: RegistrationForm = {
-  firstName: "",
-  lastName: "",
-  email: "",
-  password: "",
-  certificateNumber: "",
-  specialty: "",
-  institution: "",
-  city: "",
-  modules: ["alerts", "timeline", "body-model"],
+  modules: [],
   layoutOrder: defaultLayoutOrder,
 };
 
@@ -268,35 +216,6 @@ export default function RegistrationPage() {
         .map((item) => moduleMap[item]),
     [form.layoutOrder, form.modules, moduleMap],
   );
-
-  const handleInputChange =
-    (field: TextField) =>
-    (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value = event.target.value;
-      setForm((current) => ({ ...current, [field]: value }));
-      setErrors((current) => {
-        if (!current[field]) {
-          return current;
-        }
-
-        const nextErrors = { ...current };
-        delete nextErrors[field];
-        return nextErrors;
-      });
-    };
-
-  const handleSelectChange = (field: SelectField, value: string) => {
-    setForm((current) => ({ ...current, [field]: value }));
-    setErrors((current) => {
-      if (!current[field]) {
-        return current;
-      }
-
-      const nextErrors = { ...current };
-      delete nextErrors[field];
-      return nextErrors;
-    });
-  };
 
   const toggleModule = (moduleId: ModuleId) => {
     setForm((current) => {
@@ -381,24 +300,7 @@ export default function RegistrationPage() {
   const validateStep = () => {
     const nextErrors: Record<string, string> = {};
 
-    if (step === 0) {
-      if (!form.firstName.trim()) nextErrors.firstName = "Ievadiet vārdu.";
-      if (!form.lastName.trim()) nextErrors.lastName = "Ievadiet uzvārdu.";
-      if (!form.email.trim()) nextErrors.email = "Ievadiet e-pastu.";
-      if (!form.password.trim()) nextErrors.password = "Ievadiet paroli.";
-      if (!form.certificateNumber.trim()) {
-        nextErrors.certificateNumber = "Norādiet sertifikāta numuru.";
-      }
-      if (!form.specialty.trim()) {
-        nextErrors.specialty = "Izvēlieties specialitāti.";
-      }
-      if (!form.institution.trim()) {
-        nextErrors.institution = "Norādiet iestādi.";
-      }
-      if (!form.city.trim()) nextErrors.city = "Norādiet pilsētu.";
-    }
-
-    if (step === 1 && form.modules.length < 3) {
+    if (step === 0 && form.modules.length < 3) {
       nextErrors.modules = "Izvēlieties vismaz 3 komponentes.";
     }
 
@@ -543,22 +445,19 @@ export default function RegistrationPage() {
             <div className="flex flex-col gap-2 border-b border-[rgba(173,197,221,0.42)] pb-4 md:flex-row md:items-end md:justify-between">
               <div>
                 <h2 className="mt-2 text-[2.1rem] font-semibold tracking-[-0.03em] text-[hsl(213,58%,18%)]">
-                  {step === 0 && "Profila uzstādīšana"}
-                  {step === 1 && "Izvēlieties paneļa komponentes"}
-                  {step === 2 && "Pabeidziet darba vides iestatījumus"}
+                  {step === 0 && "Izvēlieties paneļa komponentes"}
+                  {step === 1 && "Pabeidziet darba vides iestatījumus"}
                 </h2>
 
                 <p className="mt-2 max-w-[680px] text-[15px] leading-6 text-[hsl(212,24%,45%)]">
                   {step === 0 &&
-                    "Aizpildiet savus pamatdatus, lai izveidotu ārsta profilu."}
-                  {step === 1 &&
                     "Atlasiet, kādu informāciju vēlaties redzēt savā pacienta panelī."}
-                  {step === 2 &&
+                  {step === 1 &&
                     "Nosakiet, kāds skats atvērsies pēc ielogošanās un kā sistēma jums piegādās svarīgos signālus."}
                 </p>
               </div>
 
-              {step === 1 ? (
+              {step === 0 ? (
                 <div className="flex items-center gap-3 self-start">
                   <p className="text-[14px] text-[hsl(212,24%,45%)]">
                     Atlasīts:{" "}
@@ -584,166 +483,6 @@ export default function RegistrationPage() {
 
             <div className="pt-6">
               {step === 0 && (
-                <div className="grid gap-x-6 gap-y-5 md:grid-cols-2">
-                  <div>
-                    <Label htmlFor="firstName" className={labelClassName}>
-                      Vārds
-                    </Label>
-                    <Input
-                      id="firstName"
-                      value={form.firstName}
-                      onChange={handleInputChange("firstName")}
-                      placeholder="Laura"
-                      className={inputClassName}
-                    />
-                    {errors.firstName && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.firstName}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="lastName" className={labelClassName}>
-                      Uzvārds
-                    </Label>
-                    <Input
-                      id="lastName"
-                      value={form.lastName}
-                      onChange={handleInputChange("lastName")}
-                      placeholder="Bērziņa"
-                      className={inputClassName}
-                    />
-                    {errors.lastName && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.lastName}
-                      </p>
-                    )}
-                  </div>
-
-                  <div className="md:col-span-2">
-                    <Label htmlFor="email" className={labelClassName}>
-                      E-pasts
-                    </Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={form.email}
-                      onChange={handleInputChange("email")}
-                      placeholder="laura@prakse.lv"
-                      className={inputClassName}
-                    />
-                    {errors.email && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.email}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="password" className={labelClassName}>
-                      Parole
-                    </Label>
-                    <Input
-                      id="password"
-                      type="password"
-                      value={form.password}
-                      onChange={handleInputChange("password")}
-                      placeholder="Ievadiet drošu paroli"
-                      className={inputClassName}
-                    />
-                    {errors.password && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.password}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="certificateNumber" className={labelClassName}>
-                      Ārsta sertifikāta nr.
-                    </Label>
-                    <Input
-                      id="certificateNumber"
-                      value={form.certificateNumber}
-                      onChange={handleInputChange("certificateNumber")}
-                      placeholder="LV-24813"
-                      className={inputClassName}
-                    />
-                    {errors.certificateNumber && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.certificateNumber}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="specialty" className={labelClassName}>
-                      Specialitāte
-                    </Label>
-                    <Select
-                      value={form.specialty}
-                      onValueChange={(value) =>
-                        handleSelectChange("specialty", value)
-                      }
-                    >
-                      <SelectTrigger id="specialty" className={inputClassName}>
-                        <SelectValue placeholder="Izvēlieties specialitāti" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {specialties.map((specialty) => (
-                          <SelectItem key={specialty} value={specialty}>
-                            {specialty}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    {errors.specialty && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.specialty}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="institution" className={labelClassName}>
-                      Iestāde
-                    </Label>
-                    <Input
-                      id="institution"
-                      value={form.institution}
-                      onChange={handleInputChange("institution")}
-                      placeholder="Centra medicīna"
-                      className={inputClassName}
-                    />
-                    {errors.institution && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.institution}
-                      </p>
-                    )}
-                  </div>
-
-                  <div>
-                    <Label htmlFor="city" className={labelClassName}>
-                      Pilsēta
-                    </Label>
-                    <Input
-                      id="city"
-                      value={form.city}
-                      onChange={handleInputChange("city")}
-                      placeholder="Rīga"
-                      className={inputClassName}
-                    />
-                    {errors.city && (
-                      <p className="mt-2 text-sm text-[hsl(0,72%,55%)]">
-                        {errors.city}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {step === 1 && (
                 <div className="space-y-6">
                   <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {moduleOptions.map((option) => {
@@ -816,7 +555,7 @@ export default function RegistrationPage() {
                 </div>
               )}
 
-              {step === 2 && (
+              {step === 1 && (
                 <div className="space-y-5">
                   <div className="rounded-[28px] border border-white/70 bg-[linear-gradient(180deg,rgba(255,255,255,0.72),rgba(241,248,255,0.82))] p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)] md:p-4">
                     <div className="mx-auto max-w-[760px] rounded-[28px] border border-[rgba(220,228,236,0.92)] bg-[#f5f7fa] p-3 shadow-[0_14px_36px_rgba(111,161,198,0.10)]">
@@ -893,9 +632,7 @@ export default function RegistrationPage() {
                                           "inline-flex rounded-full px-2 py-0.5 text-[8px] font-semibold uppercase tracking-[0.08em]",
                                           previewInfo.accentClass,
                                         )}
-                                      >
-                                       
-                                      </span>
+                                      />
                                     </div>
 
                                     <p className="mt-1 line-clamp-2 text-[10px] leading-4 text-[hsl(214,18%,50%)]">
@@ -908,9 +645,6 @@ export default function RegistrationPage() {
                                   <div className="space-y-1.5">
                                     <div className="h-1.5 w-[78%] rounded-full bg-[hsl(210,32%,90%)]" />
                                     <div className="h-1.5 w-[54%] rounded-full bg-[hsl(210,32%,93%)]" />
-                                  </div>
-                                  <div className="mt-2 flex items-center gap-2">
-                                    
                                   </div>
                                 </div>
                               </div>

@@ -158,7 +158,7 @@ const Index = () => {
               Pacienta panelis
             </p>
             <p className="mt-1 text-[14px] text-[hsl(214,18%,52%)]">
-              Pārskats par pacienta veselības datiem un nesenajām izmaiņām
+              Pārskats par pacienta veselības datiem un nesenām izmaiņām
             </p>
           </div>
 
