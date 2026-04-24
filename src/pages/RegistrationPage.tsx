@@ -1,7 +1,7 @@
 import * as React from "react";
 import { Link } from "react-router-dom";
 import {
-  Accessibility,
+  PersonStanding,
   Activity,
   AlertTriangle,
   ArrowLeft,
@@ -124,7 +124,7 @@ const moduleOptions: ModuleOption[] = [
     id: "body-model",
     title: "Ķermeņa modelis",
     description: "Pacienta ķermeņa apskats ar atradnēm",
-    icon: Accessibility,
+    icon: PersonStanding,
   },
   {
     id: "referrals",

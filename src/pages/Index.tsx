@@ -1,5 +1,5 @@
 ﻿import * as React from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import PatientCard from "@/components/PatientCard";
 import HealthTrends from "@/components/HealthTrends";
 import MedicationTable from "@/components/MedicationTable";
@@ -23,7 +23,6 @@ import {
   SidebarSeparator,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { patients } from "@/data/patients";
 import { Patient } from "@/types/patient";
 
 type ComponentKey = "patientCard" | "healthTrends" | "medicalImagingViewer" | "medicationTable" | "alertsCard" | "eventTimeline" | "humanBodyModel" | "referralHistory" | "patientSummaryCard";
@@ -87,7 +86,8 @@ const sectionIconClass =
 
 const Index = () => {
   const location = useLocation();
-  const patient = (location.state?.patient as Patient | undefined) ?? patients[0];
+  const navigate = useNavigate();
+  const patient = location.state?.patient as Patient | undefined;
 
   const [selection, setSelection] = React.useState<SelectionState>(defaultSelection);
   const [order, setOrder] = React.useState<ComponentKey[]>(defaultOrder);
@@ -115,12 +115,17 @@ const Index = () => {
   const selectedCount = Object.values(selection).filter(Boolean).length;
 
   React.useEffect(() => {
+    if (!patient) {
+      navigate("/", { replace: true });
+      return;
+    }
+
     setSelection(defaultSelection);
     setOrder(defaultOrder);
     setDraggedKey(null);
     setLastRefreshedAt(new Date());
     setIsRefreshing(false);
-  }, [patient.id]);
+  }, [navigate, patient]);
 
   React.useEffect(() => {
     if (!isRefreshing) {
@@ -184,6 +189,10 @@ const Index = () => {
         .filter((item): item is (typeof componentItems)[number] => Boolean(item) && selection[item.key]),
     [componentItems, order, selection],
   );
+
+  if (!patient) {
+    return null;
+  }
 
   return (
     <SidebarProvider className="min-h-screen">
