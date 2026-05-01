@@ -1,23 +1,35 @@
 ﻿import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import PatientCard from "@/components/PatientCard";
-import HealthTrends from "@/components/HealthTrends";
-import MedicationTable from "@/components/MedicationTable";
-import PatientSummaryCard from "@/components/PatientSummaryCard";
+import { GripVertical, Mail, Phone, RefreshCw } from "lucide-react";
+
 import AlertsCard from "@/components/AlertsCard";
-import MedicalImagingViewer from "@/components/MedicalImagingViewer";
+import DashboardSidebar from "@/components/DashboardSidebar";
 import EventTimelineHorizontal from "@/components/EventTimelineHorizontal";
+import HealthTrends from "@/components/HealthTrends";
 import HumanBodyModel from "@/components/HumanBodyModel";
+import MedicalImagingViewer from "@/components/MedicalImagingViewer";
+import MedicationTable from "@/components/MedicationTable";
+import PatientCard from "@/components/PatientCard";
+import PatientSummaryCard from "@/components/PatientSummaryCard";
 import ReferralHistory from "@/components/ReferralHistory";
-import { GripVertical, RefreshCw } from "lucide-react";
+import { patients } from "@/data/patients";
 import { Patient } from "@/types/patient";
 
-type ComponentKey = "patientCard" | "healthTrends" | "medicalImagingViewer" | "medicationTable" | "alertsCard" | "eventTimeline" | "humanBodyModel" | "referralHistory" | "patientSummaryCard";
+type ComponentKey =
+  | "patientCard"
+  | "healthTrends"
+  | "medicalImagingViewer"
+  | "medicationTable"
+  | "alertsCard"
+  | "eventTimeline"
+  | "humanBodyModel"
+  | "referralHistory"
+  | "patientSummaryCard";
 
 const layoutClasses: Record<ComponentKey, string> = {
   patientCard: "lg:col-span-3",
   healthTrends: "lg:col-span-2 lg:aspect-[2/1]",
-  medicalImagingViewer: "lg:row-span-2",
+  medicalImagingViewer: "",
   medicationTable: "",
   alertsCard: "lg:aspect-square",
   patientSummaryCard: "lg:col-span-3",
@@ -25,15 +37,6 @@ const layoutClasses: Record<ComponentKey, string> = {
   humanBodyModel: "lg:row-span-2",
   referralHistory: "",
 };
-
-const fillHeightKeys: ComponentKey[] = [
-  "healthTrends",
-  "medicalImagingViewer",
-  "medicationTable",
-  "alertsCard",
-  "humanBodyModel",
-  "referralHistory",
-];
 
 const defaultOrder: ComponentKey[] = [
   "patientCard",
@@ -54,8 +57,9 @@ function formatRefreshTime(date: Date) {
   }).format(date);
 }
 
-const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]";
+const InfoDivider = () => (
+  <span className="text-[hsl(210,18%,70%)] mx-1">|</span>
+);
 
 const Index = () => {
   const location = useLocation();
@@ -64,198 +68,185 @@ const Index = () => {
 
   const [order, setOrder] = React.useState<ComponentKey[]>(defaultOrder);
   const [draggedKey, setDraggedKey] = React.useState<ComponentKey | null>(null);
-  const [lastRefreshedAt, setLastRefreshedAt] = React.useState(() => new Date());
+  const [lastRefreshedAt, setLastRefreshedAt] = React.useState(new Date());
   const [isRefreshing, setIsRefreshing] = React.useState(false);
+  const [isScrolled, setIsScrolled] = React.useState(false);
 
-  const componentItems = React.useMemo(() => [
-    { key: "patientCard" as const, label: "Patient Card", element: <PatientCard patient={patient} /> },
-    { key: "healthTrends" as const, label: "Health Trends", element: <HealthTrends /> },
-    { key: "medicalImagingViewer" as const, label: "Medical Imaging Viewer", element: <MedicalImagingViewer /> },
-    { key: "medicationTable" as const, label: "Medication Table", element: <MedicationTable /> },
-    { key: "alertsCard" as const, label: "Alerts Card", element: <AlertsCard /> },
-    { key: "eventTimeline" as const, label: "Event Timeline", element: <EventTimelineHorizontal /> },
-    { key: "humanBodyModel" as const, label: "Human Body Model", element: <HumanBodyModel /> },
-    { key: "referralHistory" as const, label: "Referral History", element: <ReferralHistory /> },
-    { key: "patientSummaryCard" as const, label: "Patient Summary", element: (
-        <PatientSummaryCard
-          summary={patient.summary}
-          updatedAt={patient.updatedAt}
-        />
-      ) },
-  ], [patient]);
+  React.useEffect(() => {
+    const onScroll = () => setIsScrolled(window.scrollY > 32);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   React.useEffect(() => {
     if (!patient) {
       navigate("/", { replace: true });
-      return;
     }
-
-    setOrder(defaultOrder);
-    setDraggedKey(null);
-    setLastRefreshedAt(new Date());
-    setIsRefreshing(false);
   }, [navigate, patient]);
 
   React.useEffect(() => {
-    if (!isRefreshing) {
-      return undefined;
-    }
-
-    const timeoutId = window.setTimeout(() => {
+    if (!isRefreshing) return;
+    const t = setTimeout(() => {
       setLastRefreshedAt(new Date());
       setIsRefreshing(false);
     }, 1200);
-
-    return () => window.clearTimeout(timeoutId);
+    return () => clearTimeout(t);
   }, [isRefreshing]);
 
-  const moveDraggedKey = React.useCallback(
-    (targetIndex: number) => {
-      if (!draggedKey) {
-        return;
-      }
+  if (!patient) return null;
 
-      setOrder((currentOrder) => {
-        const nextOrder = [...currentOrder];
-        const fromIndex = nextOrder.indexOf(draggedKey);
+  const phone =
+    "phone" in patient
+      ? patient.phone
+      : "";
 
-        if (fromIndex === -1) {
-          return nextOrder;
-        }
+  const email = "email" in patient ? patient.email : "";
 
-        const boundedIndex = Math.max(0, Math.min(targetIndex, nextOrder.length - 1));
-
-        if (fromIndex === boundedIndex) {
-          return nextOrder;
-        }
-
-        nextOrder.splice(fromIndex, 1);
-        nextOrder.splice(boundedIndex, 0, draggedKey);
-        return nextOrder;
-      });
+  const componentItems = [
+    { key: "patientCard" as const, element: <PatientCard patient={patient} /> },
+    { key: "healthTrends" as const, element: <HealthTrends /> },
+    { key: "medicalImagingViewer" as const, element: <MedicalImagingViewer /> },
+    { key: "medicationTable" as const, element: <MedicationTable /> },
+    { key: "alertsCard" as const, element: <AlertsCard /> },
+    { key: "eventTimeline" as const, element: <EventTimelineHorizontal /> },
+    { key: "humanBodyModel" as const, element: <HumanBodyModel /> },
+    { key: "referralHistory" as const, element: <ReferralHistory /> },
+    {
+      key: "patientSummaryCard" as const,
+      element: (
+        <PatientSummaryCard
+          summary={patient.summary}
+          updatedAt={patient.updatedAt}
+        />
+      ),
     },
-    [draggedKey],
-  );
+  ];
 
-  const visibleItems = React.useMemo(
-    () =>
-      order
-        .map((key) => componentItems.find((item) => item.key === key))
-        .filter((item): item is (typeof componentItems)[number] => Boolean(item)),
-    [componentItems, order],
-  );
-
-  if (!patient) {
-    return null;
-  }
+  const visibleItems = order
+    .map((key) => componentItems.find((i) => i.key === key))
+    .filter(Boolean) as typeof componentItems;
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-[#F5F7FA]">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1320px] flex-col gap-5 px-5 py-5 md:px-8 lg:px-10 xl:px-12">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[12px] font-semibold uppercase tracking-[0.18em] text-[hsl(214,20%,58%)]">
-              Pacienta panelis
-            </p>
-            <p className="mt-1 text-[14px] text-[hsl(214,18%,52%)]">
-              Pārskats par pacienta veselības datiem un nesenām izmaiņām
-            </p>
-          </div>
+    <div className="min-h-screen bg-[#F5F7FA]">
+      <DashboardSidebar
+        activePatient={patient}
+        recentPatients={patients}
+        currentView="dashboard"
+        dayListCount={patients.length}
+      />
 
-          <div className="flex items-center gap-2 rounded-[16px] border border-[hsl(210,22%,88%)] bg-[linear-gradient(180deg,hsla(0,0%,100%,0.85),hsla(210,35%,97%,0.9))] px-3 py-2 shadow-[0_6px_18px_hsla(210,30%,70%,0.08)]">
-            <button
-              type="button"
-              onClick={() => {
-                if (!isRefreshing) {
-                  setIsRefreshing(true);
-                }
-              }}
-              disabled={isRefreshing}
-              className={`${sectionIconClass} group relative shrink-0 transition-all duration-200 hover:-translate-y-[1px] disabled:cursor-default disabled:opacity-80`}
-              aria-label="Atjaunot datus"
-            >
-              <RefreshCw
-                size={18}
-                strokeWidth={1.9}
-                className={
-                  isRefreshing
-                    ? "animate-spin"
-                    : "transition-transform duration-200 group-hover:rotate-90"
-                }
-              />
-
-              {isRefreshing && (
-                <span className="absolute -right-0.5 -top-0.5 h-3 w-3 rounded-full border border-white bg-[hsl(168,68%,45%)] shadow-[0_0_0_4px_hsla(168,68%,45%,0.14)]" />
-              )}
-            </button>
-
+      <div className="lg:pl-[280px]">
+        {/* HEADER */}
+        <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
+          <div className="mx-auto max-w-[1280px] px-4 py-4 md:px-6 flex items-center justify-between">
+            
+            {/* LEFT */}
             <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <p className="text-[13px] font-semibold tracking-[-0.01em] text-[hsl(210,68%,42%)]">
-                  {isRefreshing ? "Notiek atjaunošana..." : "Atjaunot datus"}
-                </p>
-                {!isRefreshing && (
-                  <span className="h-1.5 w-1.5 rounded-full bg-[hsl(168,68%,45%)] opacity-80" />
-                )}
-              </div>
+              <h1
+                className={`font-bold text-[hsl(214,42%,17%)] transition-all ${
+                  isScrolled ? "text-[24px]" : "text-[42px]"
+                }`}
+              >
+                {patient.name}
+              </h1>
 
-              <p className="text-[12px] text-[hsl(214,18%,58%)]">
-                Pēdējo reizi atjaunots: šodien {formatRefreshTime(lastRefreshedAt)}
-              </p>
+              {!isScrolled && (
+                <div className="mt-3 flex flex-wrap items-center text-[14px]">
+
+                  <span className="text-[hsl(214,18%,55%)]">Personas kods</span>
+                  <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                    {patient.personalCode}
+                  </span>
+
+                  <InfoDivider />
+
+                  <span className="text-[hsl(214,18%,55%)]">Vecums</span>
+                  <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                    {patient.age} gadi
+                  </span>
+
+                  {phone && (
+                    <>
+                      <InfoDivider />
+                      <Phone className="h-3.5 w-3.5 text-[hsl(214,18%,55%)] ml-1" />
+                      <span className="text-[hsl(214,18%,55%)] ml-1">
+                        Telefona nr.
+                      </span>
+                      <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                        {phone}
+                      </span>
+                    </>
+                  )}
+
+                  {email && (
+                    <>
+                      <InfoDivider />
+                      <Mail className="h-3.5 w-3.5 text-[hsl(214,18%,55%)] ml-1" />
+                      <span className="text-[hsl(214,18%,55%)] ml-1">
+                        E-pasts
+                      </span>
+                      <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                        {email}
+                      </span>
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+
+            {/* RIGHT */}
+            <div
+              className={`flex items-center gap-3 transition-all ${
+                isScrolled
+                  ? ""
+                  : "rounded-[16px] border bg-[hsl(214,20%,98%)] px-4 py-3"
+              }`}
+            >
+              <button
+                onClick={() => !isRefreshing && setIsRefreshing(true)}
+                className="relative flex h-10 w-10 items-center justify-center rounded-[14px] border bg-[hsl(214,22%,97%)]"
+              >
+                <RefreshCw
+                  className={isRefreshing ? "animate-spin" : ""}
+                  size={18}
+                />
+              </button>
+
+              {!isScrolled && (
+                <div>
+                  <div className="text-sm font-semibold">
+                    {isRefreshing ? "Notiek atjaunošana..." : "Atjaunot datus"}
+                  </div>
+                  <div className="text-xs text-gray-500">
+                    Pēdējo reizi: {formatRefreshTime(lastRefreshedAt)}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </header>
 
-        <div
-          className="grid gap-4 lg:grid-cols-3 lg:grid-flow-dense"
-          onDragOver={(event) => {
-            event.preventDefault();
-
-            if (!draggedKey) {
-              return;
-            }
-
-            const target = event.target as HTMLElement;
-            const hoveredItem = target.closest("[data-grid-item='true']");
-
-            if (!hoveredItem) {
-              moveDraggedKey(order.length - 1);
-            }
-          }}
-        >
-          {visibleItems.map((item) => (
-            <div
-              key={item.key}
-              data-grid-item="true"
-              draggable
-              onDragStart={() => setDraggedKey(item.key)}
-              onDragEnd={() => setDraggedKey(null)}
-              onDragOver={(event) => {
-                event.preventDefault();
-                if (!draggedKey || draggedKey === item.key) {
-                  return;
-                }
-
-                const toIndex = order.indexOf(item.key);
-                if (toIndex !== -1) {
-                  moveDraggedKey(toIndex);
-                }
-              }}
-              className={
-                "group relative h-full w-full self-stretch overflow-hidden rounded-[22px] border border-[#dfe4eb] bg-white/70 shadow-[0_6px_20px_hsla(210,25%,82%,0.08)] transition-opacity " +
-                layoutClasses[item.key] +
-                " " +
-                (fillHeightKeys.includes(item.key) ? "[&>*]:h-full " : "") +
-                (draggedKey === item.key ? "opacity-80" : "")
-              }
-            >
-              <div className="absolute right-3 top-3 z-10 cursor-grab text-muted-foreground opacity-0 transition-opacity group-hover:opacity-100">
-                <GripVertical className="h-3 w-3" />
+        {/* GRID */}
+        <main className="px-4 py-5 md:px-6">
+          <div className="mx-auto max-w-[1280px] grid gap-4 lg:grid-cols-3">
+            {visibleItems.map((item) => (
+              <div
+                key={item.key}
+                draggable
+                onDragStart={() => setDraggedKey(item.key)}
+                onDragEnd={() => setDraggedKey(null)}
+                className={`group relative rounded-[16px] border bg-white shadow ${
+                  layoutClasses[item.key]
+                }`}
+              >
+                <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100">
+                  <GripVertical className="h-3 w-3" />
+                </div>
+                {item.element}
               </div>
-              {item.element}
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        </main>
       </div>
     </div>
   );

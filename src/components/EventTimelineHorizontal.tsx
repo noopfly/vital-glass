@@ -127,7 +127,7 @@ const events: TimelineEvent[] = [
 ];
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]";
+  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const typeConfig: Record<
   EventType,
@@ -151,91 +151,91 @@ const typeConfig: Record<
     label: "Laboratorija",
     icon: <Beaker size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(196,62%,76%)] bg-[hsl(194,100%,97%)] shadow-[0_0_0_4px_hsl(194_100%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(195,72%,48%)]",
+      "border-[hsl(214,18%,82%)] bg-[hsl(214,20%,97%)] shadow-[0_0_0_4px_hsl(214_20%_97%/0.95)]",
+    dotInnerClass: "bg-[hsl(214,18%,46%)]",
     activeDotOuterClass:
-      "border-[hsl(196,62%,76%)] bg-[hsl(194,100%,97%)] shadow-[0_0_0_4px_hsl(194_100%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(195,72%,48%)]",
-    textClass: "text-[hsl(195,72%,42%)]",
+      "border-[hsl(214,18%,82%)] bg-[hsl(214,20%,97%)] shadow-[0_0_0_4px_hsl(214_20%_97%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(214,18%,46%)]",
+    textClass: "text-[hsl(214,18%,40%)]",
     badgeClass:
-      "border-[hsl(196,58%,84%)] bg-[hsl(193,100%,96%)] text-[hsl(195,72%,42%)]",
-    activeBorderClass: "border-[hsl(196,58%,84%)]",
-    activeTextClass: "text-[hsl(195,72%,42%)]",
-    activeBackgroundClass: "bg-[hsl(193,100%,97%)]",
-    detailDotClass: "bg-[hsl(195,72%,42%)]",
-    activeConnectorClass: "bg-[hsl(196,50%,76%)]",
+      "border-[hsl(214,18%,84%)] bg-[hsl(214,20%,96%)] text-[hsl(214,18%,40%)]",
+    activeBorderClass: "border-[hsl(214,18%,84%)]",
+    activeTextClass: "text-[hsl(214,18%,40%)]",
+    activeBackgroundClass: "bg-[hsl(214,20%,96%)]",
+    detailDotClass: "bg-[hsl(214,18%,40%)]",
+    activeConnectorClass: "bg-[hsl(214,18%,78%)]",
   },
   ambulatora_vizite: {
     label: "Ambulatorā vizīte",
     icon: <Stethoscope size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(154,34%,78%)] bg-[hsl(152,50%,97%)] shadow-[0_0_0_4px_hsl(152_50%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(156,48%,46%)]",
+      "border-[hsl(152,22%,80%)] bg-[hsl(150,20%,97%)] shadow-[0_0_0_4px_hsl(150_20%_97%/0.95)]",
+    dotInnerClass: "bg-[hsl(152,24%,42%)]",
     activeDotOuterClass:
-      "border-[hsl(154,34%,78%)] bg-[hsl(152,50%,97%)] shadow-[0_0_0_4px_hsl(152_50%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(156,48%,46%)]",
-    textClass: "text-[hsl(156,54%,38%)]",
+      "border-[hsl(152,22%,80%)] bg-[hsl(150,20%,97%)] shadow-[0_0_0_4px_hsl(150_20%_97%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(152,24%,42%)]",
+    textClass: "text-[hsl(152,24%,38%)]",
     badgeClass:
-      "border-[hsl(154,32%,84%)] bg-[hsl(154,58%,96%)] text-[hsl(156,54%,38%)]",
-    activeBorderClass: "border-[hsl(154,32%,84%)]",
-    activeTextClass: "text-[hsl(156,54%,38%)]",
-    activeBackgroundClass: "bg-[hsl(154,58%,97%)]",
-    detailDotClass: "bg-[hsl(156,54%,38%)]",
-    activeConnectorClass: "bg-[hsl(154,34%,76%)]",
+      "border-[hsl(152,22%,84%)] bg-[hsl(150,20%,96%)] text-[hsl(152,24%,38%)]",
+    activeBorderClass: "border-[hsl(152,22%,84%)]",
+    activeTextClass: "text-[hsl(152,24%,38%)]",
+    activeBackgroundClass: "bg-[hsl(150,20%,96%)]",
+    detailDotClass: "bg-[hsl(152,24%,38%)]",
+    activeConnectorClass: "bg-[hsl(152,20%,78%)]",
   },
   stacionars: {
     label: "Stacionārs",
     icon: <Hospital size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(344,44%,80%)] bg-[hsl(345,75%,98%)] shadow-[0_0_0_4px_hsl(345_75%_98%/0.95)]",
-    dotInnerClass: "bg-[hsl(345,68%,58%)]",
+      "border-[hsl(0,24%,82%)] bg-[hsl(0,20%,97%)] shadow-[0_0_0_4px_hsl(0_20%_97%/0.95)]",
+    dotInnerClass: "bg-[hsl(0,28%,52%)]",
     activeDotOuterClass:
-      "border-[hsl(344,44%,80%)] bg-[hsl(345,75%,98%)] shadow-[0_0_0_4px_hsl(345_75%_98%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(345,68%,58%)]",
-    textClass: "text-[hsl(345,62%,50%)]",
+      "border-[hsl(0,24%,82%)] bg-[hsl(0,20%,97%)] shadow-[0_0_0_4px_hsl(0_20%_97%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(0,28%,52%)]",
+    textClass: "text-[hsl(0,28%,46%)]",
     badgeClass:
-      "border-[hsl(344,38%,84%)] bg-[hsl(343,100%,97%)] text-[hsl(345,62%,50%)]",
-    activeBorderClass: "border-[hsl(344,38%,84%)]",
-    activeTextClass: "text-[hsl(345,62%,50%)]",
-    activeBackgroundClass: "bg-[hsl(343,100%,98%)]",
-    detailDotClass: "bg-[hsl(345,62%,50%)]",
-    activeConnectorClass: "bg-[hsl(344,42%,78%)]",
+      "border-[hsl(0,24%,84%)] bg-[hsl(0,20%,96%)] text-[hsl(0,28%,46%)]",
+    activeBorderClass: "border-[hsl(0,24%,84%)]",
+    activeTextClass: "text-[hsl(0,28%,46%)]",
+    activeBackgroundClass: "bg-[hsl(0,20%,96%)]",
+    detailDotClass: "bg-[hsl(0,28%,46%)]",
+    activeConnectorClass: "bg-[hsl(0,22%,78%)]",
   },
   procedura: {
     label: "Procedūra",
     icon: <Scissors size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(41,56%,78%)] bg-[hsl(45,100%,97%)] shadow-[0_0_0_4px_hsl(45_100%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(39,84%,54%)]",
+      "border-[hsl(38,28%,82%)] bg-[hsl(40,20%,97%)] shadow-[0_0_0_4px_hsl(40_20%_97%/0.95)]",
+    dotInnerClass: "bg-[hsl(38,34%,48%)]",
     activeDotOuterClass:
-      "border-[hsl(41,56%,78%)] bg-[hsl(45,100%,97%)] shadow-[0_0_0_4px_hsl(45_100%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(39,84%,54%)]",
-    textClass: "text-[hsl(38,84%,44%)]",
+      "border-[hsl(38,28%,82%)] bg-[hsl(40,20%,97%)] shadow-[0_0_0_4px_hsl(40_20%_97%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(38,34%,48%)]",
+    textClass: "text-[hsl(38,34%,42%)]",
     badgeClass:
-      "border-[hsl(42,42%,82%)] bg-[hsl(45,100%,96%)] text-[hsl(38,84%,44%)]",
-    activeBorderClass: "border-[hsl(42,42%,82%)]",
-    activeTextClass: "text-[hsl(38,84%,44%)]",
-    activeBackgroundClass: "bg-[hsl(45,100%,98%)]",
-    detailDotClass: "bg-[hsl(38,84%,44%)]",
-    activeConnectorClass: "bg-[hsl(42,48%,76%)]",
+      "border-[hsl(38,28%,84%)] bg-[hsl(40,20%,96%)] text-[hsl(38,34%,42%)]",
+    activeBorderClass: "border-[hsl(38,28%,84%)]",
+    activeTextClass: "text-[hsl(38,34%,42%)]",
+    activeBackgroundClass: "bg-[hsl(40,20%,96%)]",
+    detailDotClass: "bg-[hsl(38,34%,42%)]",
+    activeConnectorClass: "bg-[hsl(38,26%,78%)]",
   },
   atteldiagnostika: {
     label: "Attēldiagnostika",
     icon: <Activity size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(263,42%,82%)] bg-[hsl(264,100%,98%)] shadow-[0_0_0_4px_hsl(264_100%_98%/0.95)]",
-    dotInnerClass: "bg-[hsl(263,56%,62%)]",
+      "border-[hsl(220,18%,82%)] bg-[hsl(220,20%,97%)] shadow-[0_0_0_4px_hsl(220_20%_97%/0.95)]",
+    dotInnerClass: "bg-[hsl(220,18%,46%)]",
     activeDotOuterClass:
-      "border-[hsl(263,42%,82%)] bg-[hsl(264,100%,98%)] shadow-[0_0_0_4px_hsl(264_100%_98%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(263,56%,62%)]",
-    textClass: "text-[hsl(263,48%,54%)]",
+      "border-[hsl(220,18%,82%)] bg-[hsl(220,20%,97%)] shadow-[0_0_0_4px_hsl(220_20%_97%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(220,18%,46%)]",
+    textClass: "text-[hsl(220,18%,40%)]",
     badgeClass:
-      "border-[hsl(264,34%,84%)] bg-[hsl(266,100%,97%)] text-[hsl(263,48%,54%)]",
-    activeBorderClass: "border-[hsl(266,46%,82%)]",
-    activeTextClass: "text-[hsl(263,48%,54%)]",
-    activeBackgroundClass: "bg-[hsl(266,100%,98%)]",
-    detailDotClass: "bg-[hsl(263,48%,54%)]",
-    activeConnectorClass: "bg-[hsl(264,42%,78%)]",
+      "border-[hsl(220,18%,84%)] bg-[hsl(220,20%,96%)] text-[hsl(220,18%,40%)]",
+    activeBorderClass: "border-[hsl(220,18%,84%)]",
+    activeTextClass: "text-[hsl(220,18%,40%)]",
+    activeBackgroundClass: "bg-[hsl(220,20%,96%)]",
+    detailDotClass: "bg-[hsl(220,18%,40%)]",
+    activeConnectorClass: "bg-[hsl(220,18%,78%)]",
   },
 };
 
@@ -315,7 +315,10 @@ const EventTimelineHorizontal = () => {
   }, [filteredEvents]);
 
   return (
-    <div ref={containerRef} className="glass-card rounded-2xl p-5">
+    <div
+      ref={containerRef}
+      className="rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+    >
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className={sectionIconClass}>
           <History size={18} />
@@ -337,7 +340,7 @@ const EventTimelineHorizontal = () => {
                 onClick={() => toggleType(type)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[10px] font-medium transition-all ${isSelected
                     ? `${config.badgeClass} shadow-sm`
-                    : "border-[hsl(214,20%,88%)] bg-white/65 text-heading opacity-75"
+                    : "border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] text-heading opacity-80"
                   }`}
               >
                 <span className={config.textClass}>{config.icon}</span>
@@ -349,7 +352,7 @@ const EventTimelineHorizontal = () => {
       </div>
 
       {filteredEvents.length === 0 ? (
-        <div className="flex min-h-[110px] items-center justify-center rounded-xl border border-dashed border-[hsl(211,24%,86%)] bg-white/60 px-4 text-center text-[12px] text-heading">
+        <div className="flex min-h-[110px] items-center justify-center rounded-[14px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
           Nav atlasītu notikumu tipu.
         </div>
       ) : (
@@ -451,8 +454,8 @@ const EventTimelineHorizontal = () => {
                         }}
                         aria-expanded={active}
                         className={`relative w-full text-left transition-all duration-300 ease-out ${active
-                            ? `rounded-[22px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-[0_12px_28px_rgba(177,155,234,0.12)]`
-                            : "rounded-[14px] border border-[hsl(210,22%,88%)] bg-white/94 px-2.5 py-3 shadow-[0_10px_24px_rgba(148,163,184,0.11)] backdrop-blur-sm hover:bg-white"
+                            ? `rounded-[16px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-[0_10px_24px_rgba(29,53,87,0.08)]`
+                            : "rounded-[12px] border border-[hsl(210,22%,88%)] bg-[hsl(214,20%,98%)] px-2.5 py-3 shadow-[0_6px_18px_rgba(29,53,87,0.05)] hover:bg-white"
                           }`}
                       >
                         {active ? (

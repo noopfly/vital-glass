@@ -1,189 +1,129 @@
-import { useState } from "react";
 import {
   Activity,
   AlertTriangle,
-  ChevronDown,
   HeartPulse,
-  User,
+  ShieldAlert,
 } from "lucide-react";
 import { Patient } from "@/types/patient";
 
 const labelClass =
   "text-[11px] font-semibold uppercase tracking-wider text-heading";
-const valueClass = "text-sm font-semibold text-text-dark";
-
-const glowIcon =
-  "flex items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]";
 
 interface PatientCardProps {
   patient: Patient;
 }
 
 const PatientCard = ({ patient }: PatientCardProps) => {
-  const [expanded, setExpanded] = useState(false);
-
   return (
-    <div className="overflow-hidden rounded-2xl border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_20px_hsl(210_25%_85%/0.15)]">
-      <button
-        type="button"
-        onClick={() => setExpanded((prev) => !prev)}
-        className="w-full text-left"
-      >
-        <div className="relative grid w-full gap-6 px-5 py-3 lg:grid-cols-[1fr_auto_0.95fr] lg:items-center">
-<div className="flex items-center gap-4">            <div className={`${glowIcon} h-10 w-10`}>
-              <User size={18} className="text-current" />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-7">
-              <div>
-                <p className={labelClass}>Vards Uzvards</p>
-                <p className={valueClass}>{patient.name}</p>
-              </div>
-
-              <div>
-                <p className={labelClass}>Personas kods</p>
-                <p className={`${valueClass} whitespace-nowrap`}>
-                  {patient.personalCode}
-                </p>
-              </div>
-
-              <div>
-                <p className={labelClass}>Vecums</p>
-                <p className={`${valueClass} whitespace-nowrap`}>
-                  {patient.age} gadi
-                </p>
-              </div>
-            </div>
+    <div className="overflow-hidden rounded-[16px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      
+      {/* 🔹 TOP HEADER */}
+      <div className="border-b border-[hsl(208,22%,92%)] px-7 py-5">
+        <div className="flex items-start gap-4">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)]">
+            <Activity className="h-5 w-5 text-heading" />
           </div>
 
-          <div className="hidden h-16 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+          <div>
+            <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-heading">
+              Pacienta klīniskais profils
+            </p>
+            <p className="mt-1 text-[14px] text-[hsl(214,16%,48%)]">
+              Galvenie medicīniskie rādītāji, diagnozes un riska faktori
+            </p>
+          </div>
+        </div>
+      </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:pl-6">
-            <div>
-              <div className="mb-1.5 flex items-center gap-1.5">
-                <Activity size={12} className="text-heading" />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-heading">
-                  Esošās diagnozes
-                </p>
-              </div>
+      {/* 🔹 CONTENT */}
+      <div className="grid w-full gap-5 px-6 py-6 lg:grid-cols-[0.84fr_auto_1.24fr_auto_1fr_auto_0.9fr] lg:items-start">
+        
+        {/* Novirzes */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <AlertTriangle size={15} className="text-heading" />
+            <p className={labelClass}>Novirzes no normas</p>
+          </div>
 
-              <ul className="space-y-0.5 text-[12px] leading-[1.15rem] text-text-dark">
-                {patient.diagnoses
-                  .slice(0, expanded ? patient.diagnoses.length : 2)
-                  .map((diag, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="mt-[5px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-                      <span>
-                        <strong>{diag.code}</strong> - {diag.description}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-
-            <div>
-              <div className="mb-1.5 flex items-center gap-1.5">
-                <HeartPulse size={12} className="text-heading" />
-                <p className="text-[10px] font-semibold uppercase tracking-wider text-heading">
-                  Hroniskas slimibas
-                </p>
-              </div>
-
-              <ul
-                className={`text-[12px] text-text-dark ${
-                  expanded ? "space-y-1 leading-4" : "space-y-0.5 leading-[1.15rem]"
-                }`}
+          <div className="flex flex-wrap gap-2">
+            {patient.deviations.slice(0, 3).map((deviation, index) => (
+              <span
+                key={index}
+                className="rounded-[999px] bg-[hsl(0,56%,96%)] px-3 py-1 text-[13px] font-semibold text-[hsl(0,54%,52%)]"
               >
-                {patient.chronicDiseases
-                  .slice(0, expanded ? patient.chronicDiseases.length : 2)
-                  .map((disease, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="mt-[5px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-                      <span>
-                        <strong>{disease.code}</strong> - {disease.description}
-                      </span>
-                    </li>
-                  ))}
-              </ul>
-            </div>
-          </div>
-
-          <div className="absolute right-5 top-1/2 -translate-y-1/2">
-            <span className={`${glowIcon} h-9 w-9`}>
-              <ChevronDown
-                size={14}
-                className={`text-current transition-transform duration-200 ${
-                  expanded ? "rotate-180" : ""
-                }`}
-              />
-            </span>
+                {deviation}
+              </span>
+            ))}
           </div>
         </div>
-      </button>
 
-      {expanded && (
-        <div className="border-t border-[hsl(208,22%,92%)] px-5 py-4">
-          <div className="grid gap-9 lg:grid-cols-[1fr_auto_0.95fr]">
-            <div>
-              <div className="flex flex-wrap items-start gap-10 pl-16">
-                <div>
-                  <p className={labelClass}>Telefona nr.</p>
-                  <p className="text-sm font-semibold text-text-dark">
-                    {patient.phone}
-                  </p>
-                </div>
+        <div className="hidden h-24 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
 
-                <div>
-                  <p className={labelClass}>E-pasts</p>
-                  <p className="text-sm font-semibold text-text-dark">
-                    {patient.email}
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div className="hidden h-full w-px bg-[linear-gradient(180deg,hsla(206,26%,92%,0),hsla(206,26%,92%,0.75),hsla(206,26%,92%,0))] lg:block" />
-
-            <div className="ml-3 grid gap-8 sm:grid-cols-2">
-              <div>
-                <div className="mb-2 flex items-center gap-2">
-                  <AlertTriangle size={14} className="text-heading" />
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-heading">
-                    Novirzes no normas
-                  </p>
-                </div>
-
-                <ul className="space-y-1 text-[12px] leading-4 text-text-dark">
-                  {patient.deviations.map((deviation, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="mt-[5px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-                      <span>{deviation}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-
-              <div>
-                <div className="mb-2 flex items-center gap-2">
-                  <AlertTriangle size={14} className="text-heading" />
-                  <p className="text-[10px] font-semibold uppercase tracking-wider text-heading">
-                    Riska faktori
-                  </p>
-                </div>
-
-                <ul className="space-y-1 text-[12px] leading-4 text-text-dark">
-                  {patient.riskFactors.map((riskFactor, index) => (
-                    <li key={index} className="flex items-start gap-2">
-                      <span className="mt-[5px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-                      <span>{riskFactor}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
+        {/* Diagnozes */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <Activity size={15} className="text-heading" />
+            <p className={labelClass}>Esošās diagnozes</p>
           </div>
+
+          <ul className="space-y-1 text-sm leading-5 text-text-dark">
+            {patient.diagnoses.slice(0, 2).map((diag, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
+                <span>
+                  <strong>{diag.code}</strong> - {diag.description}
+                  {diag.diagnosedAt && (
+                    <span className="whitespace-nowrap text-[hsl(214,14%,62%)]"> ({diag.diagnosedAt})</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
-      )}
+
+        <div className="hidden h-24 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+
+        {/* Hroniskās */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <HeartPulse size={15} className="text-heading" />
+            <p className={labelClass}>Hroniskās slimības</p>
+          </div>
+
+          <ul className="space-y-1 text-sm leading-5 text-text-dark">
+            {patient.chronicDiseases.slice(0, 2).map((disease, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
+                <span>
+                  <strong>{disease.code}</strong> - {disease.description}
+                  {disease.diagnosedAt && (
+                    <span className="whitespace-nowrap text-[hsl(214,14%,62%)]"> ({disease.diagnosedAt})</span>
+                  )}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="hidden h-24 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+
+        {/* Riska faktori */}
+        <div>
+          <div className="mb-2 flex items-center gap-2">
+            <ShieldAlert size={15} className="text-heading" />
+            <p className={labelClass}>Riska faktori</p>
+          </div>
+
+          <ul className="space-y-1 text-sm leading-5 text-text-dark">
+            {patient.riskFactors.slice(0, 3).map((riskFactor, index) => (
+              <li key={index} className="flex items-start gap-2">
+                <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
+                <span>{riskFactor}</span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
     </div>
   );
 };

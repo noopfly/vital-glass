@@ -114,19 +114,19 @@ const visibleReferrals = referrals.slice(0, 3);
 
 const statusStyles = {
   aktivs: {
-    icon: "text-[hsl(210,60%,45%)] border-[hsla(210,62%,82%,0.42)]",
-    pill: "bg-[hsla(210,60%,92%,0.82)] text-[hsl(210,60%,45%)]",
-    dot: "bg-[hsl(210,60%,45%)]",
+    icon: "text-[hsl(152,42%,34%)] border-[rgba(199,223,210,0.96)]",
+    pill: "bg-[hsl(152,34%,94%)] text-[hsl(152,42%,34%)]",
+    dot: "bg-[hsl(152,42%,34%)]",
   },
   izlietots: {
-    icon: "text-[hsl(152,60%,35%)] border-[hsla(152,52%,80%,0.42)]",
-    pill: "bg-[hsla(152,52%,90%,0.85)] text-[hsl(152,60%,35%)]",
-    dot: "bg-[hsl(152,60%,35%)]",
+    icon: "text-[hsl(220,18%,44%)] border-[rgba(210,219,228,0.96)]",
+    pill: "bg-[hsl(214,22%,95%)] text-[hsl(220,18%,44%)]",
+    dot: "bg-[hsl(220,18%,44%)]",
   },
   atcelts: {
-    icon: "text-[hsl(0,75%,55%)] border-[hsla(0,74%,82%,0.46)]",
-    pill: "bg-[hsla(0,90%,92%,0.9)] text-[hsl(0,70%,45%)]",
-    dot: "bg-[hsl(0,70%,45%)]",
+    icon: "text-[hsl(0,54%,52%)] border-[rgba(239,208,208,0.96)]",
+    pill: "bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
+    dot: "bg-[hsl(0,54%,52%)]",
   },
 };
 
@@ -167,7 +167,7 @@ const ReferralTimeline = ({ referral }: { referral: ReferralHistoryItem }) => {
         Notikumu vēsture
       </p>
 
-      <div className="rounded-2xl border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.94))] px-4 py-4">
+      <div className="rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-4 py-4">
         <div className="space-y-0">
           {sortedEvents.map((event, index) => {
             const isLast = index === sortedEvents.length - 1;
@@ -187,7 +187,7 @@ const ReferralTimeline = ({ referral }: { referral: ReferralHistoryItem }) => {
                     <p className="text-[12px] font-semibold text-[hsl(222,28%,20%)]">
                       {event.label}
                     </p>
-                    <span className="rounded-full bg-[hsl(210,60%,96%)] px-2.5 py-1 text-[10px] font-medium text-[hsl(210,38%,42%)]">
+                    <span className="rounded-full bg-[hsl(214,22%,95%)] px-2.5 py-1 text-[10px] font-medium text-[hsl(220,24%,34%)]">
                       {event.date}
                     </span>
                   </div>
@@ -216,12 +216,12 @@ const ReferralDetailOverlay = ({
       overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
       contentClassName="max-w-3xl"
     >
-      <div className="relative mx-auto w-full overflow-hidden rounded-[26px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+      <div className="relative mx-auto w-full overflow-hidden rounded-[18px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
         <div className="border-b border-[hsl(214,22%,88%)] px-6 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+            className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
             aria-label="Aizvērt"
           >
             <X className="h-4 w-4" />
@@ -229,7 +229,7 @@ const ReferralDetailOverlay = ({
 
           <div className="flex items-center gap-3 pr-12">
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-2xl border bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,40%,97%,0.9)_52%,hsla(210,28%,95%,0.78))] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.6)] ${style.icon}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-[12px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${style.icon}`}
             >
               <StatusIcon status={referral.status} />
             </div>
@@ -247,7 +247,7 @@ const ReferralDetailOverlay = ({
 
         <div className="max-h-[78vh] space-y-4 overflow-y-auto px-6 py-5">
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-2xl border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.94))] p-3.5">
+            <div className="rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
                 Statuss
               </p>
@@ -258,7 +258,7 @@ const ReferralDetailOverlay = ({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.94))] p-3.5">
+            <div className="rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
                 Datums
               </p>
@@ -267,7 +267,7 @@ const ReferralDetailOverlay = ({
               </p>
             </div>
 
-            <div className="rounded-2xl border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.94))] p-3.5">
+            <div className="rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
                 Derīgs līdz
               </p>
@@ -277,7 +277,7 @@ const ReferralDetailOverlay = ({
             </div>
           </div>
 
-          <div className="rounded-2xl border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.94))] p-3.5">
+          <div className="rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
             <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
               Iemesls
             </p>
@@ -310,11 +310,11 @@ const ReferralList = ({
             key={referral.id}
             type="button"
             onClick={() => onSelect(referral)}
-            className="flex w-full items-start justify-between gap-3 rounded-xl border border-white/60 bg-white/50 px-3 py-2 text-left backdrop-blur-sm transition hover:bg-white/70"
+            className="flex w-full items-start justify-between gap-3 rounded-[13px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2.5 text-left transition hover:bg-white"
           >
             <div className="flex min-w-0 flex-1 items-start gap-2.5">
               <div
-                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg border bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.96),hsla(210,38%,97%,0.84)_52%,hsla(210,28%,94%,0.7))] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.62)] ${style.icon}`}
+                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${style.icon}`}
               >
                 <StatusIcon status={referral.status} />
               </div>
@@ -367,19 +367,19 @@ const AllReferralsOverlay = ({
       overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
       contentClassName="max-w-4xl"
     >
-      <div className="relative mx-auto w-full overflow-hidden rounded-[26px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+      <div className="relative mx-auto w-full overflow-hidden rounded-[18px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
         <div className="border-b border-[hsl(214,22%,88%)] px-6 py-5">
           <button
             type="button"
             onClick={onClose}
-            className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+            className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
             aria-label="Aizvērt"
           >
             <X className="h-4 w-4" />
           </button>
 
           <div className="flex items-center gap-3 pr-12">
-            <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
               <FileText size={18} />
             </div>
 
@@ -409,14 +409,14 @@ const ReferralHistory = () => {
 
   return (
     <>
-      <section className="flex h-full w-full flex-col overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white p-5 shadow-sm">
+      <section className="flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="flex items-center gap-3 border-b border-[hsl(214,22%,88%)] pb-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
             <FileText size={18} />
           </div>
 
           <div>
-            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[hsl(210,60%,45%)]">
+            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
               E-nosūtījumi
             </p>
             <p className="text-[10px] text-heading">
@@ -436,7 +436,7 @@ const ReferralHistory = () => {
           <button
             type="button"
             onClick={() => setShowAll(true)}
-            className="text-[12px] font-medium text-[hsl(210,78%,56%)] transition hover:opacity-80"
+            className="inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus e-nosūtījumus →
           </button>

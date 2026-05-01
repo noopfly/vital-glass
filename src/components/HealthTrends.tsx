@@ -57,13 +57,13 @@ const statusTextClass: Record<Status, string> = {
 };
 
 const statusIconBg: Record<Status, string> = {
-  normal: "bg-[hsl(152,50%,92%)]",
-  warning: "bg-[hsl(40,80%,92%)]",
-  critical: "bg-[hsl(0,85%,95%)]",
+  normal: "bg-[hsl(152,34%,94%)]",
+  warning: "bg-[hsl(40,56%,94%)]",
+  critical: "bg-[hsl(0,56%,96%)]",
 };
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]";
+  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,97%)] text-[hsl(220,36%,18%)]";
 const labResults: LabResult[] = [
   {
     id: "bp",
@@ -256,11 +256,11 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
 
   return (
     <CenteredOverlay onClose={onClose} overlayClassName="bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm">
-      <div className="mx-auto w-full max-w-xl rounded-2xl border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
+      <div className="mx-auto w-full max-w-xl rounded-[16px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl animate-in fade-in zoom-in-95 duration-200">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-11 w-11 items-center justify-center rounded-xl ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+              className={`flex h-11 w-11 items-center justify-center rounded-[14px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
             >
               {result.icon}
             </div>
@@ -273,7 +273,7 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
           </div>
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-full bg-muted text-heading transition-colors hover:text-text-dark"
+            className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-muted text-heading transition-colors hover:text-text-dark"
           >
             <X size={16} />
           </button>
@@ -408,7 +408,7 @@ const DetailPanel = ({ result, onClose }: { result: LabResult; onClose: () => vo
           {result.history.map((h) => (
             <div
               key={h.month}
-              className="glass-card-solid flex-1 rounded-lg px-1 py-2 text-center"
+              className="glass-card-solid flex-1 rounded-[12px] px-1 py-2 text-center"
             >
               <p className="text-xs font-medium text-heading">{h.month}</p>
               <p className="text-sm font-bold text-text-dark">{h.value}</p>
@@ -435,13 +435,13 @@ function TrendsList({
         <button
           key={result.id}
           onClick={() => onToggleExpanded(result.id)}
-          className={`grid w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_132px_88px_auto] ${expandedId === result.id
+          className={`grid w-full cursor-pointer items-center gap-3 rounded-[14px] px-3 py-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_132px_88px_auto] ${expandedId === result.id
             ? "glass-card-solid ring-2 ring-primary/30"
             : "glass-card-solid hover:shadow-md"
             }`}
         >
           <div
-            className={`flex h-9 w-9 items-center justify-center rounded-xl ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+            className={`flex h-9 w-9 items-center justify-center rounded-[12px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
           >
             {result.icon}
           </div>
@@ -505,7 +505,7 @@ function HealthTrendsContent({
     <div
       className={
         compact
-          ? "flex h-full flex-col overflow-hidden rounded-2xl border border-white/75 bg-[linear-gradient(180deg,hsla(0,0%,100%,0.96),hsla(195,42%,99%,0.84))] p-6 shadow-[0_10px_24px_hsl(var(--glass-shadow))] backdrop-blur-xl"
+          ? "flex h-full flex-col overflow-hidden rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-white p-6 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
           : "flex flex-col"
       }
     >
@@ -550,17 +550,17 @@ function HealthTrendsContent({
         onToggleExpanded={onToggleExpanded}
       />
 
-      <div className="mt-auto pt-3">
+      <div className="mt-auto flex items-center justify-between gap-4 pt-3">
+        <p className="text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 04.08.2025.</p>
         {showOpenAll && onOpenAll && labResults.length > 3 && (
           <button
             type="button"
             onClick={onOpenAll}
-            className="text-xs font-medium text-[hsl(210,78%,56%)] transition hover:opacity-80"
+            className="inline-flex items-center text-xs font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus rādītājus →
           </button>
         )}
-        <p className="mt-3 text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 04.08.2025.</p>
       </div>
     </div>
   );
@@ -599,11 +599,11 @@ const HealthTrends = () => {
           overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
           contentClassName="max-w-3xl"
         >
-          <div className="relative mx-auto w-full overflow-hidden rounded-[28px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+          <div className="relative mx-auto w-full overflow-hidden rounded-[16px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
             <button
               type="button"
               onClick={() => setIsAllLabsOpen(false)}
-              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
               aria-label="Aizvert"
             >
               <X className="h-4 w-4" />

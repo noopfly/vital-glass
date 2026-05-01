@@ -42,22 +42,22 @@ const CATEGORY_CONFIG: Record<
     }
 > = {
     stacionars: {
-        color: "hsl(0 74% 60%)",
+        color: "hsl(0 42% 40%)",
         badge: "Stacionāra atradnes",
         Icon: HeartPulse,
     },
     radiologija: {
-        color: "hsl(38 90% 54%)",
+        color: "hsl(34 46% 36%)",
         badge: "Radioloģiskas atradnes",
         Icon: ScanSearch,
     },
     laboratorija: {
-        color: "hsl(198 78% 52%)",
+        color: "hsl(214 30% 32%)",
         badge: "Laboratoriskas novirzes",
         Icon: FlaskConical,
     },
     iedzimtas: {
-        color: "hsl(156 52% 46%)",
+        color: "hsl(152 34% 32%)",
         badge: "Iedzimtas slimības",
         Icon: Dna,
     },
@@ -278,13 +278,6 @@ function getUniqueCategories(problems: OrganProblem[]): Category[] {
     return [...new Set(problems.map((problem) => problem.category))];
 }
 
-function getCategoryCounts(problems: OrganProblem[]) {
-    return problems.reduce((acc, problem) => {
-        acc[problem.category] = (acc[problem.category] ?? 0) + 1;
-        return acc;
-    }, {} as Record<Category, number>);
-}
-
 function CategoryLegend() {
     return (
         <div className="flex flex-wrap gap-1.5">
@@ -363,7 +356,6 @@ function OrganHotspot({
     const [hovered, setHovered] = useState(false);
 
     const categories = getUniqueCategories(organ.problems);
-    const categoryCounts = getCategoryCounts(organ.problems);
     const primaryColor = CATEGORY_CONFIG[categories[0]].color;
     const isHighlighted = hovered || isActive;
 
@@ -388,7 +380,7 @@ function OrganHotspot({
                         className="absolute inset-[-10px] rounded-full animate-ping"
                         style={{
                             backgroundColor: primaryColor,
-                            opacity: 0.12,
+                            opacity: 0.1,
                             animationDuration: "1.8s",
                         }}
                     />
@@ -398,8 +390,8 @@ function OrganHotspot({
                     className="absolute inset-[-10px] rounded-full transition-all duration-200"
                     style={{
                         backgroundColor: primaryColor,
-                        opacity: isHighlighted ? 0.12 : 0.06,
-                        filter: "blur(8px)",
+                        opacity: isHighlighted ? 0.1 : 0.04,
+                        filter: "blur(7px)",
                     }}
                 />
 
@@ -411,8 +403,8 @@ function OrganHotspot({
                         style={{
                             borderColor: "hsl(210 18% 88%)",
                             boxShadow: isHighlighted
-                                ? `0 0 0 5px ${primaryColor}18`
-                                : `0 0 0 3px ${primaryColor}10`,
+                                ? `0 0 0 4px ${primaryColor}18`
+                                : `0 0 0 2px ${primaryColor}10`,
                         }}
                     >
                         <span className="text-[10px] font-bold leading-none text-[hsl(222,28%,20%)]">
@@ -430,55 +422,65 @@ function OrganHotspot({
                     />
                     <div
                         className="absolute left-1/2 top-full h-3 w-[3px] -translate-x-1/2 blur-[2px]"
-                        style={{ backgroundColor: `${primaryColor}55` }}
+                        style={{ backgroundColor: `${primaryColor}45` }}
                     />
 
                     <div
-                        className="w-[280px] rounded-2xl border px-4 py-3 shadow-[0_20px_40px_rgba(15,23,42,0.16)]"
+                        className="w-[280px] rounded-[14px] border px-4 py-3 shadow-[0_18px_36px_rgba(15,23,42,0.12)]"
                         style={{
-                            borderColor: `${primaryColor}22`,
+                            borderColor: `${primaryColor}1a`,
                             backgroundColor: "rgba(255,255,255,0.98)",
                         }}
                     >
-                        <div className="flex items-start gap-3">
-                            <div className="relative mt-0.5 h-[34px] w-[34px] shrink-0">
-                                <OrganRing categories={categories} size={34} strokeWidth={4} />
-                                <div
-                                    className="absolute inset-[5px] flex items-center justify-center rounded-full border bg-white"
-                                    style={{ borderColor: "hsl(210 18% 88%)" }}
-                                >
-                                    <span className="text-[10px] font-bold text-[hsl(222,28%,20%)]">
-                                        {organ.problems.length}
-                                    </span>
-                                </div>
-                            </div>
-
-                            <div className="min-w-0">
+                        <div className="w-full">
+                            <div className="flex items-center justify-between gap-3">
                                 <p className="text-[13px] font-semibold text-[hsl(222,28%,20%)]">
                                     {organ.label}
                                 </p>
 
+                                <span className="text-[11px] font-semibold text-[hsl(214,14%,50%)]">
+                                    {organ.problems.length}
+                                </span>
+                            </div>
 
-                                <div className="mt-2 flex flex-wrap items-center gap-3">
-  {getUniqueCategories(organ.problems).map((category) => {
-    const cfg = CATEGORY_CONFIG[category];
-    const Icon = cfg.Icon;
 
-    return (
-      <span
-        key={category}
-        className="inline-flex items-center gap-1.5 text-[12px] font-medium"
-        style={{ color: cfg.color }}
-      >
-        <Icon className="h-4 w-4" />
-        <span>{cfg.badge}</span>
-      </span>
-    );
-  })}
-</div>
+                                <div className="mt-2 space-y-2">
+                                    {organ.problems.slice(0, 3).map((problem) => {
+                                        const cfg = CATEGORY_CONFIG[problem.category];
+                                        const Icon = cfg.Icon;
+
+                                        return (
+                                            <div
+                                                key={problem.id}
+                                                className="rounded-[10px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2"
+                                            >
+                                                <div className="flex items-start gap-2">
+                                                    <span
+                                                        className="mt-0.5 inline-flex h-5 w-5 items-center justify-center rounded-full"
+                                                        style={{
+                                                            backgroundColor: `${cfg.color}12`,
+                                                            color: cfg.color,
+                                                        }}
+                                                    >
+                                                        <Icon className="h-3 w-3" />
+                                                    </span>
+
+                                                    <p className="min-w-0 text-[12px] font-semibold leading-[16px] text-[hsl(222,28%,20%)]">
+                                                        {problem.title}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+
+                                    {organ.problems.length > 3 && (
+                                        <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
+                                            + {organ.problems.length - 3} papildu diagnozes
+                                        </p>
+                                    )}
+                                </div>
                             </div>
                         </div>
-                    </div>
                 </div>
             )}
         </div>
@@ -498,7 +500,7 @@ function ProblemAccordion({
     const Icon = categoryCfg.Icon;
 
     return (
-        <div className="overflow-hidden rounded-2xl border border-[hsl(210,22%,86%)] bg-[hsl(210,40%,98%)] shadow-[0_6px_18px_rgba(148,163,184,0.08)]">
+        <div className="overflow-hidden rounded-[14px] border border-[hsl(210,22%,86%)] bg-[hsl(214,20%,98%)] shadow-[0_6px_18px_rgba(29,53,87,0.05)]">
             <button
                 type="button"
                 onClick={onToggle}
@@ -615,12 +617,12 @@ function OrganModal({
             onClose={onClose}
             overlayClassName="bg-[rgba(241,245,249,0.72)] backdrop-blur-[6px]"
         >
-            <div className="relative mx-auto max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[28px] border border-[hsl(210,22%,88%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.18)]">
+            <div className="relative mx-auto max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[18px] border border-[hsl(210,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
                 <div className="max-h-[90vh] overflow-y-auto p-6">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-full bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+                        className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
                         aria-label="Aizvērt"
                     >
                         <X className="h-5 w-5" />
@@ -686,9 +688,9 @@ export default function HumanBodyModel() {
 
     return (
         <>
-            <div className="glass-card flex flex-col rounded-2xl p-5">
+            <div className="flex flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
                 <div className="flex items-center justify-between gap-3">
-                    <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(199,58%,44%)]">
+                    <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
                         Ķermeņa pārskats
                     </h2>
                 </div>

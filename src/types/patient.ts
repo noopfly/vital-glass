@@ -7,8 +7,8 @@ export interface Patient {
   email: string;
   summary: string;
   updatedAt: string;
-  diagnoses: { code: string; description: string }[];
-  chronicDiseases: { code: string; description: string }[];
+  diagnoses: { code: string; description: string; diagnosedAt?: string }[];
+  chronicDiseases: { code: string; description: string; diagnosedAt?: string }[];
   deviations: string[];
   riskFactors: string[];
 }

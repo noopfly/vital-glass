@@ -22,93 +22,93 @@ interface Medication {
 const medications: Medication[] = [
   {
     id: "metformin",
-    name: "Metformīns",
+    name: "Metformins",
     dose: "500 mg",
-    frequency: "2x dienā",
+    frequency: "2x diena",
     status: "active",
     interactions: [],
   },
   {
     id: "atorvastatin",
-    name: "Atorvastatīns",
+    name: "Atorvastatins",
     dose: "20 mg",
-    frequency: "1x dienā",
+    frequency: "1x diena",
     status: "active",
     interactions: [
       {
-        with: "Amlodipīns",
+        with: "Amlodipins",
         severity: "viegla",
-        summary: "Amlodipīns var palielināt atorvastatīna koncentrāciju plazmā.",
+        summary: "Amlodipins var palielinat atorvastatina koncentraciju plazma.",
       },
     ],
   },
   {
     id: "amlodipine",
-    name: "Amlodipīns",
+    name: "Amlodipins",
     dose: "5 mg",
     frequency: "1x diena",
     status: "active",
     interactions: [
       {
-        with: "Atorvastatīns",
+        with: "Atorvastatins",
         severity: "viegla",
-        summary: "Ieteicama blakusparādību novērošana.",
+        summary: "Ieteicama blakusparadibu noverosana.",
       },
     ],
   },
   {
     id: "amoxicillin",
-    name: "Amoksicilīns",
+    name: "Amoksicilins",
     dose: "500 mg",
     frequency: "3x diena",
     status: "completed",
-    interactions: [
-    ],
+    interactions: [],
   },
 ];
 
 const statusStyles: Record<MedicationStatus, string> = {
   active:
-    "border-white/45 bg-[linear-gradient(180deg,hsla(191,70%,92%,0.72),hsla(191,58%,88%,0.5))] text-[hsl(191,52%,36%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.7)] backdrop-blur-md",
+    "border-[rgba(199,223,210,0.96)] bg-[hsl(152,34%,94%)] text-[hsl(152,42%,34%)]",
   paused:
-    "border-white/45 bg-[linear-gradient(180deg,hsla(36,100%,94%,0.78),hsla(35,92%,90%,0.52))] text-[hsl(33,82%,48%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.72)] backdrop-blur-md",
+    "border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
   completed:
-    "border-white/40 bg-[linear-gradient(180deg,hsla(213,20%,96%,0.82),hsla(213,18%,91%,0.56))] text-[hsl(215,12%,50%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.68)] backdrop-blur-md",
+    "border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,95%)] text-[hsl(220,14%,48%)]",
 };
 
 const severityStyles: Record<InteractionSeverity, string> = {
   viegla:
-    "border-white/45 bg-[linear-gradient(180deg,hsla(191,70%,92%,0.72),hsla(191,58%,88%,0.5))] text-[hsl(191,52%,36%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.7)] backdrop-blur-md",
+    "border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
   videja:
-    "border-white/45 bg-[linear-gradient(180deg,hsla(36,100%,94%,0.78),hsla(35,92%,90%,0.52))] text-[hsl(33,82%,48%)] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.72)] backdrop-blur-md",
+    "border-[rgba(239,208,208,0.96)] bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
 };
 
 const statusLabels: Record<MedicationStatus, string> = {
-  active: "Aktīvs",
-  paused: "Pārtraukts",
+  active: "Aktivs",
+  paused: "Partraukts",
   completed: "Pabeigts",
 };
 
 const severityLabels: Record<InteractionSeverity, string> = {
   viegla: "Viegla",
-  videja: "Vidēja",
+  videja: "Videja",
 };
 
 const columnLabels = {
   name: "Medikaments",
   dose: "Deva",
-  frequency: "Biežums",
+  frequency: "Biezums",
   status: "Statuss",
 };
 
 const headingClass =
-  "text-[10px] font-semibold uppercase tracking-[0.14em] text-heading";
+  "text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,14%,56%)]";
 
 const tableGridClass =
   "md:grid-cols-[minmax(0,1.4fr)_0.85fr_0.95fr_0.95fr]";
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-2xl border border-[hsla(210,62%,82%,0.42)] bg-[radial-gradient(circle_at_top,hsla(0,100%,100%,0.98),hsla(210,92%,96%,0.96)_48%,hsla(210,78%,92%,0.88))] text-[hsl(210,60%,45%)] shadow-[0_0_0_1px_hsla(0,100%,100%,0.22),0_12px_30px_hsla(210,80%,76%,0.18)]";
+  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+
 function InteractionOverlay({
   medication,
   cursorPosition,
@@ -130,17 +130,17 @@ function InteractionOverlay({
         top: `${cursorPosition.y}px`,
       }}
     >
-      <div className="relative rounded-xl border border-[hsla(215,24%,25%,0.28)] bg-[hsla(0,0%,100%,0.995)] px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.16)]">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(215,18%,52%)]">
-          Mijiedarbība
+      <div className="relative rounded-[14px] border border-[hsl(214,22%,88%)] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
+        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,52%)]">
+          Mijiedarbiba
         </p>
 
         <div className="mb-0.5 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(36,100%,95%)] text-[hsl(33,90%,52%)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]">
             <AlertTriangle size={15} />
           </div>
 
-          <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-text-dark">
+          <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[hsl(222,28%,20%)]">
             {medication.name} ↔ {interaction.with}
           </p>
 
@@ -151,14 +151,9 @@ function InteractionOverlay({
           </span>
         </div>
 
-        <p className="pl-10 text-[13px] text-[hsl(215,18%,42%)]">
+        <p className="pl-10 text-[13px] text-[hsl(214,14%,42%)]">
           {interaction.summary}
         </p>
-
-        <div className="absolute left-1/2 top-full -translate-x-1/2">
-          <div className="h-0 w-0 border-l-[11px] border-r-[11px] border-t-[11px] border-l-transparent border-r-transparent border-t-[hsla(215,24%,25%,0.42)]" />
-          <div className="absolute left-1/2 top-[-1px] h-0 w-0 -translate-x-1/2 border-l-[9px] border-r-[9px] border-t-[9px] border-l-transparent border-r-transparent border-t-[hsla(0,0%,100%,0.995)]" />
-        </div>
       </div>
     </div>
   );
@@ -179,8 +174,9 @@ function MedicationRow({
 
   return (
     <div
-      className={`grid w-full gap-x-2.5 gap-y-1.5 px-4 py-3.5 text-left transition-colors ${tableGridClass} ${interactive ? "cursor-help hover:bg-[hsl(202,64%,97%)]" : ""
-        }`}
+      className={`grid w-full gap-x-2.5 gap-y-1.5 px-4 py-3.5 text-left transition-colors ${tableGridClass} ${
+        interactive ? "cursor-help hover:bg-[hsl(214,20%,99%)]" : ""
+      }`}
       onMouseEnter={(event) => {
         if (!interactive) return;
         onActivate(medication.id, {
@@ -202,29 +198,29 @@ function MedicationRow({
     >
       <div className="min-w-0">
         <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.name}</p>
-        <p className="truncate text-[11px] font-semibold leading-tight text-text-dark">
+        <p className="truncate text-[11px] font-semibold leading-tight text-[hsl(222,28%,20%)]">
           {medication.name}
           {medication.interactions.length > 0 && (
-            <span className="ml-1 text-[hsl(33,82%,48%)]">*</span>
+            <span className="ml-1 text-[hsl(34,52%,42%)]">*</span>
           )}
         </p>
       </div>
 
       <div>
         <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.dose}</p>
-        <p className="text-[11px] text-text-dark">{medication.dose}</p>
+        <p className="text-[11px] text-[hsl(214,18%,36%)]">{medication.dose}</p>
       </div>
 
       <div>
         <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.frequency}</p>
-        <p className="text-[11px] text-text-dark">{medication.frequency}</p>
+        <p className="text-[11px] text-[hsl(214,18%,36%)]">{medication.frequency}</p>
       </div>
 
       <div className="flex items-center md:justify-end">
         <div className="flex flex-col items-start md:items-end">
           <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.status}</p>
           <span
-            className={`inline-flex min-w-[68px] items-center justify-center rounded-full border px-1.5 py-0.5 text-[9px] font-medium leading-none tracking-[0.02em] ${statusStyles[medication.status]}`}
+            className={`inline-flex min-w-[72px] items-center justify-center rounded-full border px-2 py-1 text-[9px] font-medium leading-none tracking-[0.02em] ${statusStyles[medication.status]}`}
           >
             {statusLabels[medication.status]}
           </span>
@@ -266,28 +262,28 @@ const MedicationTable = () => {
   };
 
   return (
-    <section className="flex h-full flex-col rounded-2xl border border-white/75 bg-[linear-gradient(180deg,hsla(0,0%,100%,0.96),hsla(195,42%,99%,0.84))] p-4 shadow-[0_10px_24px_hsl(var(--glass-shadow))] backdrop-blur-xl">
+    <section className="flex h-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
       <div className="mb-3.5 flex items-center gap-3">
         <div className={sectionIconClass}>
           <Pill size={18} className="text-current" />
         </div>
 
         <div className="flex flex-col justify-center">
-          <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
+          <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
             Medikamenti
           </p>
-          <p className="text-xs text-heading">
-            Aktuālie medikamenti, devas un mijiedarbības
+          <p className="text-xs text-[hsl(214,14%,50%)]">
+            Aktualie medikamenti, devas un mijiedarbibas
           </p>
         </div>
       </div>
 
       <div
         ref={containerRef}
-        className="relative flex-1 overflow-visible rounded-xl border border-[hsl(210,24%,90%)] bg-[linear-gradient(180deg,hsla(0,0%,100%,0.9),hsla(205,34%,97%,0.8))] shadow-[inset_0_1px_0_hsla(0,0%,100%,0.8)]"
+        className="relative flex-1 overflow-visible rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
       >
         <div
-          className={`hidden gap-x-2.5 border-b border-[hsl(208,28%,89%)] bg-[linear-gradient(180deg,hsl(204,56%,97%),hsl(208,40%,95%))] px-4 py-2.5 md:grid ${tableGridClass}`}
+          className={`hidden gap-x-2.5 border-b border-[hsl(214,22%,88%)] bg-[hsl(214,20%,96%)] px-4 py-2.5 md:grid ${tableGridClass}`}
         >
           <p className={headingClass}>{columnLabels.name}</p>
           <p className={headingClass}>{columnLabels.dose}</p>
@@ -297,7 +293,7 @@ const MedicationTable = () => {
           </div>
         </div>
 
-        <div className="divide-y divide-[hsl(208,28%,89%)]">
+        <div className="divide-y divide-[hsl(214,22%,88%)]">
           {medications.map((medication) => (
             <MedicationRow
               key={medication.id}
@@ -319,10 +315,6 @@ const MedicationTable = () => {
           />
         )}
       </div>
-
-      <p className="mt-4 ml-1 text-[10px] leading-4 text-muted-foreground">
-        Novietojiet kursoru uz rindas ar <span className="text-[hsl(33,82%,48%)] font-semibold">*</span>, lai skatītu mijiedarbības
-      </p>
     </section>
   );
 };
