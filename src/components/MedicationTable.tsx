@@ -1,7 +1,9 @@
 import { useRef, useState } from "react";
-import { AlertTriangle, Pill } from "lucide-react";
+import { AlertTriangle, Pill, X } from "lucide-react";
 
-type MedicationStatus = "active" | "paused" | "completed";
+import { CenteredOverlay } from "@/components/ui/centered-overlay";
+
+type MedicationStatus = "active" | "historical";
 type InteractionSeverity = "viegla" | "videja";
 
 interface Interaction {
@@ -24,7 +26,7 @@ const medications: Medication[] = [
     id: "metformin",
     name: "Metformins",
     dose: "500 mg",
-    frequency: "2x diena",
+    frequency: "2x dienā",
     status: "active",
     interactions: [],
   },
@@ -32,13 +34,13 @@ const medications: Medication[] = [
     id: "atorvastatin",
     name: "Atorvastatins",
     dose: "20 mg",
-    frequency: "1x diena",
+    frequency: "1x dienā",
     status: "active",
     interactions: [
       {
         with: "Amlodipins",
         severity: "viegla",
-        summary: "Amlodipins var palielinat atorvastatina koncentraciju plazma.",
+        summary: "Amlodipins var palielināt atorvastatīna koncentrāciju plazmā.",
       },
     ],
   },
@@ -46,13 +48,13 @@ const medications: Medication[] = [
     id: "amlodipine",
     name: "Amlodipins",
     dose: "5 mg",
-    frequency: "1x diena",
+    frequency: "1x dienā",
     status: "active",
     interactions: [
       {
         with: "Atorvastatins",
         severity: "viegla",
-        summary: "Ieteicama blakusparadibu noverosana.",
+        summary: "Ieteicama blakusparādību novērošana.",
       },
     ],
   },
@@ -60,8 +62,16 @@ const medications: Medication[] = [
     id: "amoxicillin",
     name: "Amoksicilins",
     dose: "500 mg",
-    frequency: "3x diena",
-    status: "completed",
+    frequency: "3x dienā",
+    status: "historical",
+    interactions: [],
+  },
+  {
+    id: "pantoprazole",
+    name: "Pantoprazols",
+    dose: "20 mg",
+    frequency: "1x dienā",
+    status: "historical",
     interactions: [],
   },
 ];
@@ -69,9 +79,7 @@ const medications: Medication[] = [
 const statusStyles: Record<MedicationStatus, string> = {
   active:
     "border-[rgba(199,223,210,0.96)] bg-[hsl(152,34%,94%)] text-[hsl(152,42%,34%)]",
-  paused:
-    "border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
-  completed:
+  historical:
     "border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,95%)] text-[hsl(220,14%,48%)]",
 };
 
@@ -83,20 +91,19 @@ const severityStyles: Record<InteractionSeverity, string> = {
 };
 
 const statusLabels: Record<MedicationStatus, string> = {
-  active: "Aktivs",
-  paused: "Partraukts",
-  completed: "Pabeigts",
+  active: "Aktīvs",
+  historical: "Vēsturisks",
 };
 
 const severityLabels: Record<InteractionSeverity, string> = {
   viegla: "Viegla",
-  videja: "Videja",
+  videja: "Vidēja",
 };
 
 const columnLabels = {
   name: "Medikaments",
   dose: "Deva",
-  frequency: "Biezums",
+  frequency: "Biežums",
   status: "Statuss",
 };
 
@@ -132,7 +139,7 @@ function InteractionOverlay({
     >
       <div className="relative rounded-[14px] border border-[hsl(214,22%,88%)] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,52%)]">
-          Mijiedarbiba
+          Mijiedarbība
         </p>
 
         <div className="mb-0.5 flex items-center gap-2.5">
@@ -220,7 +227,7 @@ function MedicationRow({
         <div className="flex flex-col items-start md:items-end">
           <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.status}</p>
           <span
-            className={`inline-flex min-w-[72px] items-center justify-center rounded-full border px-2 py-1 text-[9px] font-medium leading-none tracking-[0.02em] ${statusStyles[medication.status]}`}
+            className={`inline-flex min-w-[82px] items-center justify-center rounded-full border px-2 py-1 text-[9px] font-medium leading-none tracking-[0.02em] ${statusStyles[medication.status]}`}
           >
             {statusLabels[medication.status]}
           </span>
@@ -230,13 +237,20 @@ function MedicationRow({
   );
 }
 
-const MedicationTable = () => {
+function MedicationTableContent() {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [hoveredMedicationId, setHoveredMedicationId] = useState<string | null>(null);
   const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
 
+  const activeMedications = medications.filter(
+    (medication) => medication.status === "active",
+  );
+  const historicalMedications = medications.filter(
+    (medication) => medication.status === "historical",
+  );
+
   const hoveredMedication =
-    medications.find((medication) => medication.id === hoveredMedicationId) ?? null;
+    activeMedications.find((medication) => medication.id === hoveredMedicationId) ?? null;
 
   const updateCursorPosition = (position: { x: number; y: number }) => {
     const container = containerRef.current;
@@ -262,25 +276,10 @@ const MedicationTable = () => {
   };
 
   return (
-    <section className="flex h-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-      <div className="mb-3.5 flex items-center gap-3">
-        <div className={sectionIconClass}>
-          <Pill size={18} className="text-current" />
-        </div>
-
-        <div className="flex flex-col justify-center">
-          <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
-            Medikamenti
-          </p>
-          <p className="text-xs text-[hsl(214,14%,50%)]">
-            Aktualie medikamenti, devas un mijiedarbibas
-          </p>
-        </div>
-      </div>
-
+    <>
       <div
         ref={containerRef}
-        className="relative flex-1 overflow-visible rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
+        className="relative overflow-visible rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
       >
         <div
           className={`hidden gap-x-2.5 border-b border-[hsl(214,22%,88%)] bg-[hsl(214,20%,96%)] px-4 py-2.5 md:grid ${tableGridClass}`}
@@ -294,7 +293,7 @@ const MedicationTable = () => {
         </div>
 
         <div className="divide-y divide-[hsl(214,22%,88%)]">
-          {medications.map((medication) => (
+          {activeMedications.map((medication) => (
             <MedicationRow
               key={medication.id}
               medication={medication}
@@ -306,6 +305,24 @@ const MedicationTable = () => {
               onDeactivate={() => setHoveredMedicationId(null)}
             />
           ))}
+
+          {historicalMedications.length > 0 && (
+            <div className="bg-[hsl(214,20%,97%)] px-4 py-1.5">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,14%,56%)]">
+                Vēsturiskie medikamenti
+              </p>
+            </div>
+          )}
+
+          {historicalMedications.map((medication) => (
+            <MedicationRow
+              key={medication.id}
+              medication={medication}
+              onActivate={() => undefined}
+              onPointerMove={() => undefined}
+              onDeactivate={() => undefined}
+            />
+          ))}
         </div>
 
         {hoveredMedication && (
@@ -315,7 +332,88 @@ const MedicationTable = () => {
           />
         )}
       </div>
-    </section>
+
+      <p className="mt-2 text-[10px] text-[hsl(214,14%,52%)]">
+        * Norāda uz iespējamu mijiedarbību.
+      </p>
+    </>
+  );
+}
+
+const MedicationTable = () => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <>
+      <section className="flex h-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+        <div className="mb-3.5 flex items-center gap-3">
+          <div className={sectionIconClass}>
+            <Pill size={18} className="text-current" />
+          </div>
+
+          <div className="flex flex-col justify-center">
+            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+              Medikamenti
+            </p>
+            <p className="text-xs text-[hsl(214,14%,50%)]">
+              Aktuālie medikamenti, devas un mijiedarbības
+            </p>
+          </div>
+        </div>
+
+        <MedicationTableContent />
+
+        <div className="mt-3 border-t border-[hsl(214,22%,88%)] pt-3 text-center">
+          <button
+            type="button"
+            onClick={() => setIsOpen(true)}
+            className="inline-flex items-center justify-center text-sm font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
+          >
+            Skatīt visus medikamentus →
+          </button>
+        </div>
+      </section>
+
+      {isOpen && (
+        <CenteredOverlay
+          onClose={() => setIsOpen(false)}
+          overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
+          contentClassName="max-w-4xl"
+        >
+          <div className="relative mx-auto w-full overflow-hidden rounded-[18px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
+            <div className="border-b border-[hsl(214,22%,88%)] px-6 py-5">
+              <button
+                type="button"
+                onClick={() => setIsOpen(false)}
+                className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+                aria-label="Aizvērt"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="flex items-center gap-3 pr-12">
+                <div className={sectionIconClass}>
+                  <Pill size={18} className="text-current" />
+                </div>
+
+                <div>
+                  <h3 className="text-lg font-semibold text-[hsl(222,28%,20%)]">
+                    Visi medikamenti
+                  </h3>
+                  <p className="text-sm text-[hsl(214,14%,42%)]">
+                    Pilns medikamentu saraksts ar vēsturiskajiem ierakstiem.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="max-h-[78vh] overflow-y-auto px-6 py-5">
+              <MedicationTableContent />
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
+    </>
   );
 };
 

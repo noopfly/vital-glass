@@ -72,6 +72,14 @@ const Index = () => {
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
 
+  const recentPatients = React.useMemo(() => {
+    if (!patient) {
+      return patients;
+    }
+
+    return [patient, ...patients.filter((item) => item.id !== patient.id)];
+  }, [patient]);
+
   React.useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 32);
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -130,7 +138,8 @@ const Index = () => {
     <div className="min-h-screen bg-[#F5F7FA]">
       <DashboardSidebar
         activePatient={patient}
-        recentPatients={patients}
+        recentPatients={recentPatients}
+        allPatients={patients}
         currentView="dashboard"
         dayListCount={patients.length}
       />

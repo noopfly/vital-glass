@@ -557,69 +557,72 @@ export default function RegistrationPage() {
   return (
     <div className="min-h-screen bg-[#f5f7fa] text-[hsl(219,36%,18%)]">
       <main className="mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-5 py-6 md:px-8 lg:px-10">
-        <div className="border-b border-[rgba(220,228,236,0.96)] pb-2">
-          <div className="flex items-start justify-between gap-6">
+        <div className="border-b border-[rgba(220,228,236,0.96)] pb-4">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-4">
-              <div className="flex h-11 w-11 items-center justify-center rounded-[12px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)]">
-                <Check className="h-5 w-5" />
+              <div className="flex items-center gap-3">
+                <p className="text-[15px] font-semibold uppercase tracking-[0.22em] text-[hsl(219,36%,18%)]">
+                  OMNUS
+                </p>
+                <span className="hidden h-4 w-px bg-[rgba(214,222,230,0.96)] md:block" />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[hsl(214,18%,60%)]">
+                  Sākotnējā iestatīšana
+                </p>
               </div>
 
-              <p className="text-[12px] font-semibold uppercase tracking-[0.24em] text-[hsl(214,18%,60%)]">
-                OMNUS
-              </p>
+              <div className="hidden md:flex md:items-center md:gap-6">
+                {steps.map((item, index) => {
+                  const isActive = index === step;
+                  const isComplete = index < step;
+
+                  return (
+                    <button
+                      key={item.subtitle}
+                      type="button"
+                      onClick={() => {
+                        if (index <= step || Boolean(form.specialty)) {
+                          setErrors({});
+                          setStep(index);
+                        }
+                      }}
+                      className="flex items-center gap-2 text-left"
+                    >
+                      <span
+                        className={cn(
+                          "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold transition",
+                          isActive
+                            ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
+                            : isComplete
+                              ? "border-[hsl(220,36%,18%)] bg-white text-[hsl(220,36%,18%)]"
+                              : "border-[rgba(210,219,228,0.96)] bg-white text-[hsl(214,14%,56%)]",
+                        )}
+                      >
+                        {isComplete ? <Check className="h-3 w-3" /> : item.title}
+                      </span>
+
+                      <span
+                        className={cn(
+                          "text-[10px] font-semibold uppercase tracking-[0.18em]",
+                          isActive || isComplete
+                            ? "text-[hsl(219,30%,22%)]"
+                            : "text-[hsl(214,14%,56%)]",
+                        )}
+                      >
+                        {item.subtitle}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          <div className="mx-auto mt-3 hidden w-full max-w-[760px] md:block">
-            <div className="relative flex items-start justify-between">
-              <div className="absolute left-[90px] right-[90px] top-5 h-px bg-[rgba(214,222,230,0.96)]" />
-              <div
-                className="absolute left-[90px] top-5 h-px bg-[hsl(220,36%,18%)] transition-all duration-300"
-                style={{ width: step === 0 ? "180px" : "calc(100% - 180px)" }}
-              />
-
-              {steps.map((item, index) => {
-                const isActive = index === step;
-                const isComplete = index < step;
-
-                return (
-                  <button
-                    key={item.subtitle}
-                    type="button"
-                    onClick={() => {
-                      if (index <= step || Boolean(form.specialty)) {
-                        setErrors({});
-                        setStep(index);
-                      }
-                    }}
-                    className="relative z-10 flex w-[180px] flex-col items-center text-center"
-                  >
-                    <span
-                      className={cn(
-                        "flex h-10 w-10 items-center justify-center rounded-full border bg-white text-[16px] font-semibold transition",
-                        isActive
-                          ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white shadow-[0_8px_20px_rgba(29,53,87,0.14)]"
-                          : isComplete
-                            ? "border-[hsl(220,36%,18%)] bg-white text-[hsl(220,36%,18%)]"
-                            : "border-[rgba(210,219,228,0.96)] text-[hsl(214,14%,56%)]",
-                      )}
-                    >
-                      {isComplete ? <Check className="h-4 w-4" /> : item.title}
-                    </span>
-
-                    <span
-                      className={cn(
-                        "mt-2 text-[14px] font-semibold",
-                        isActive || isComplete
-                          ? "text-[hsl(219,30%,22%)]"
-                          : "text-[hsl(214,14%,56%)]",
-                      )}
-                    >
-                      {item.subtitle}
-                    </span>
-                  </button>
-                );
-              })}
+            <div className="flex items-center gap-2 self-start rounded-full border border-[rgba(220,228,236,0.96)] bg-white px-3 py-2 shadow-[0_4px_16px_rgba(29,53,87,0.04)] md:self-auto">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white">
+                <UserRound className="h-3.5 w-3.5" />
+              </div>
+              <span className="text-[11px] font-medium text-[hsl(219,30%,22%)]">
+                Dr. A. Liepiņa
+              </span>
             </div>
           </div>
         </div>

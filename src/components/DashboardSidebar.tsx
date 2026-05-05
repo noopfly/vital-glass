@@ -5,9 +5,11 @@ import {
   ChevronDown,
   ChevronUp,
   Columns2,
+  GripVertical,
   Info,
   LayoutGrid,
   Plus,
+  RotateCcw,
   X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -19,6 +21,7 @@ import { Patient } from "@/types/patient";
 type DashboardSidebarProps = {
   activePatient: Patient;
   recentPatients: Patient[];
+  allPatients: Patient[];
   currentView: "dashboard" | "day-list" | "search";
   dayListCount?: number;
 };
@@ -51,14 +54,84 @@ const profileMenuItems = [
   },
 ];
 
+const settingsModules = [
+  {
+    key: "patientCard",
+    title: "Pacienta kopsavilkums",
+    description: "Galvenie pacienta dati un kontaktinformacija",
+    sizeLabel: "Plats",
+    previewColumns: 2,
+  },
+  {
+    key: "healthTrends",
+    title: "Kliniskie raditaji",
+    description: "Laboratoriju parskats un izmainas laika",
+    sizeLabel: "Plats",
+    previewColumns: 2,
+  },
+  {
+    key: "alertsCard",
+    title: "Bridinajumi",
+    description: "Kritiskie raditaji un svarigi notikumi",
+    sizeLabel: "Saurs",
+    previewColumns: 1,
+  },
+  {
+    key: "medicalImagingViewer",
+    title: "Atteldiagnostika",
+    description: "RTG, CT un citu izmeklejumu skati",
+    sizeLabel: "Saurs",
+    previewColumns: 1,
+  },
+  {
+    key: "humanBodyModel",
+    title: "Kermena parskats",
+    description: "Interaktiva problemu zonu karte",
+    sizeLabel: "Saurs",
+    previewColumns: 1,
+  },
+  {
+    key: "medicationTable",
+    title: "Medikamenti",
+    description: "Aktuala terapija un mijiedarbibas",
+    sizeLabel: "Saurs",
+    previewColumns: 1,
+  },
+  {
+    key: "referralHistory",
+    title: "E-nosutijumi",
+    description: "Aktivie un vesturiskie nosutijumi",
+    sizeLabel: "Saurs",
+    previewColumns: 1,
+  },
+  {
+    key: "eventTimeline",
+    title: "Notikumu laika linija",
+    description: "Laika skala ar kliniskajiem notikumiem",
+    sizeLabel: "Plats",
+    previewColumns: 2,
+  },
+  {
+    key: "patientSummaryCard",
+    title: "Pacienta panelis",
+    description: "Paplasinats kopsavilkums ar jaunakajiem datiem",
+    sizeLabel: "Plats",
+    previewColumns: 2,
+  },
+] as const;
+
 export default function DashboardSidebar({
   activePatient,
   recentPatients,
+  allPatients,
   currentView,
   dayListCount = 0,
 }: DashboardSidebarProps) {
   const navigate = useNavigate();
   const footerRef = React.useRef<HTMLDivElement | null>(null);
+  const settingsListRef = React.useRef<HTMLDivElement | null>(null);
+  const settingsPreviewRef = React.useRef<HTMLDivElement | null>(null);
+  const shouldHighlightActivePatient = currentView === "dashboard";
   const [isCollapsed, setIsCollapsed] = React.useState(() => {
     if (typeof window === "undefined") {
       return false;
@@ -69,7 +142,35 @@ export default function DashboardSidebar({
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = React.useState(false);
+  const [isAllPatientsOpen, setIsAllPatientsOpen] = React.useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
+  const [draggedSettingsKey, setDraggedSettingsKey] = React.useState<
+    string | null
+  >(null);
+  const [settingsOrder, setSettingsOrder] = React.useState<string[]>(
+    settingsModules.map((module) => module.key),
+  );
   const [supportMessage, setSupportMessage] = React.useState("");
+
+  const orderedPatients = React.useMemo(
+    () => [
+      activePatient,
+      ...allPatients.filter((patient) => patient.id !== activePatient.id),
+    ],
+    [activePatient, allPatients],
+  );
+
+  const settingsModuleMap = React.useMemo(
+    () =>
+      Object.fromEntries(
+        settingsModules.map((module) => [module.key, module]),
+      ) as Record<string, (typeof settingsModules)[number]>,
+    [],
+  );
+
+  const orderedSettingsModules = settingsOrder
+    .map((key) => settingsModuleMap[key])
+    .filter(Boolean);
 
   React.useEffect(() => {
     window.localStorage.setItem(storageKey, String(isCollapsed));
@@ -117,6 +218,15 @@ export default function DashboardSidebar({
     }
   }, [isCollapsed]);
 
+  React.useEffect(() => {
+    if (!isSettingsOpen) {
+      return;
+    }
+
+    settingsListRef.current?.scrollTo({ top: 0 });
+    settingsPreviewRef.current?.scrollTo({ top: 0 });
+  }, [isSettingsOpen]);
+
   const handleProfileMenuItemClick = (title: string) => {
     if (title === "Uzzināt vairāk") {
       setIsProfileMenuOpen(false);
@@ -132,8 +242,32 @@ export default function DashboardSidebar({
 
     if (title === "Iestatījumi") {
       setIsProfileMenuOpen(false);
-      navigate("/settings", { state: { patient: activePatient } });
+      setIsSettingsOpen(true);
     }
+  };
+
+  const handleSettingsDragOver = (targetKey: string) => {
+    if (!draggedSettingsKey || draggedSettingsKey === targetKey) {
+      return;
+    }
+
+    setSettingsOrder((current) => {
+      const next = [...current];
+      const fromIndex = next.indexOf(draggedSettingsKey);
+      const toIndex = next.indexOf(targetKey);
+
+      if (fromIndex === -1 || toIndex === -1) {
+        return current;
+      }
+
+      next.splice(fromIndex, 1);
+      next.splice(toIndex, 0, draggedSettingsKey);
+      return next;
+    });
+  };
+
+  const handleResetSettings = () => {
+    setSettingsOrder(settingsModules.map((module) => module.key));
   };
 
   return (
@@ -231,25 +365,48 @@ export default function DashboardSidebar({
               Nesen skatītie
             </p>
 
-            <div className="mt-4 space-y-3">
-              {recentPatients.slice(0, 3).map((patient) => (
-                <Link
-                  key={patient.id}
-                  to="/components"
-                  state={{ patient }}
-                  className="block w-full text-left"
-                >
-                  <p className="truncate text-[15px] font-semibold leading-5">
-                    {patient.name}
-                  </p>
-                  <p className="mt-0.5 text-[11px] text-[hsl(214,16%,62%)]">
-                    {patient.personalCode}
-                  </p>
-                </Link>
-              ))}
+            <div className="mt-3 space-y-1">
+              {recentPatients.slice(0, 3).map((patient) => {
+                const isActivePatient =
+                  shouldHighlightActivePatient &&
+                  patient.id === activePatient.id;
+
+                return (
+                  <Link
+                    key={patient.id}
+                    to="/components"
+                    state={{ patient }}
+                    aria-current={isActivePatient ? "page" : undefined}
+                    className={cn(
+                      "block rounded-[12px] px-3 py-1.5 text-left transition",
+                      isActivePatient
+                        ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.16)]"
+                        : "text-[hsl(220,36%,18%)] hover:bg-[hsl(214,22%,98%)]",
+                    )}
+                  >
+                    <p className="truncate text-[15px] font-semibold leading-5">
+                      {patient.name}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-0.5 text-[11px]",
+                        isActivePatient
+                          ? "text-white/72"
+                          : "text-[hsl(214,16%,62%)]",
+                      )}
+                    >
+                      {patient.personalCode}
+                    </p>
+                  </Link>
+                );
+              })}
             </div>
 
-            <button className="mt-4 inline-flex items-center gap-2 text-[13px] font-medium">
+            <button
+              type="button"
+              onClick={() => setIsAllPatientsOpen(true)}
+              className="mt-4 inline-flex items-center gap-2 text-[13px] font-medium"
+            >
               Visi pacienti
               <ArrowRight className="h-3.5 w-3.5" />
             </button>
@@ -333,15 +490,15 @@ export default function DashboardSidebar({
         <CenteredOverlay
           onClose={() => setIsHelpOpen(false)}
           overlayClassName="bg-[rgba(16,24,40,0.18)] backdrop-blur-[6px]"
-          contentClassName="max-w-[820px]"
+          contentClassName="max-w-[560px]"
         >
           <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
-            <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-10 py-8">
+            <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-6 py-5">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
                   Atbalsts
                 </p>
-                <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Sazināties ar komandu
                 </h2>
               </div>
@@ -349,15 +506,15 @@ export default function DashboardSidebar({
               <button
                 type="button"
                 onClick={() => setIsHelpOpen(false)}
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
                 aria-label="Aizvērt atbalsta logu"
               >
-                <X className="h-6 w-6" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
-            <div className="px-10 py-10">
-              <p className="max-w-[620px] text-[18px] leading-10 text-[hsl(220,20%,34%)]">
+            <div className="px-6 py-6">
+              <p className="text-[14px] leading-6 text-[hsl(220,20%,34%)]">
                 Aprakstiet problēmu vai jautājumu. Mēs atbildēsim uz jūsu
                 reģistrēto e-pasta adresi.
               </p>
@@ -366,14 +523,14 @@ export default function DashboardSidebar({
                 value={supportMessage}
                 onChange={(event) => setSupportMessage(event.target.value)}
                 placeholder="Jūsu ziņa..."
-                className="mt-8 min-h-[230px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-6 py-5 text-[18px] text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
+                className="mt-5 min-h-[140px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-3 text-[14px] text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
               />
 
-              <div className="mt-7 flex justify-end gap-4">
+              <div className="mt-5 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsHelpOpen(false)}
-                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-8 py-3 text-[18px] font-medium text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
+                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-5 py-2.5 text-[14px] font-medium text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
                 >
                   Atcelt
                 </button>
@@ -383,7 +540,7 @@ export default function DashboardSidebar({
                     setIsHelpOpen(false);
                     setSupportMessage("");
                   }}
-                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-8 py-3 text-[18px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >
                   Nosūtīt
                 </button>
@@ -397,15 +554,15 @@ export default function DashboardSidebar({
         <CenteredOverlay
           onClose={() => setIsResourcesOpen(false)}
           overlayClassName="bg-[rgba(16,24,40,0.18)] backdrop-blur-[6px]"
-          contentClassName="max-w-[820px]"
+          contentClassName="max-w-[560px]"
         >
           <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
-            <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-10 py-8">
+            <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-6 py-5">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
                   Resursi
                 </p>
-                <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Uzzināt vairāk
                 </h2>
               </div>
@@ -413,10 +570,10 @@ export default function DashboardSidebar({
               <button
                 type="button"
                 onClick={() => setIsResourcesOpen(false)}
-                className="flex h-14 w-14 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
                 aria-label="Aizvērt resursu logu"
               >
-                <X className="h-6 w-6" />
+                <X className="h-4 w-4" />
               </button>
             </div>
 
@@ -442,25 +599,282 @@ export default function DashboardSidebar({
                   key={item.title}
                   type="button"
                   className={cn(
-                    "flex w-full items-center justify-between gap-5 px-10 py-8 text-left transition hover:bg-[hsl(214,22%,98%)]",
+                    "flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition hover:bg-[hsl(214,22%,98%)]",
                     index !== 2 &&
                       "border-b border-[rgba(230,235,241,0.96)]",
                   )}
                 >
                   <div className="min-w-0">
-                    <p className="text-[20px] font-semibold leading-7 text-[hsl(220,36%,18%)]">
+                    <p className="text-[16px] font-semibold leading-6 text-[hsl(220,36%,18%)]">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-[17px] leading-7 text-[hsl(214,16%,50%)]">
+                    <p className="mt-1 text-[13px] leading-5 text-[hsl(214,16%,50%)]">
                       {item.description}
                     </p>
                   </div>
 
-                  <span className="inline-flex shrink-0 items-center rounded-[8px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-[12px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,18%,62%)]">
+                  <span className="inline-flex shrink-0 items-center rounded-[8px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,18%,62%)]">
                     {item.badge}
                   </span>
                 </button>
               ))}
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
+
+      {isAllPatientsOpen && (
+        <CenteredOverlay
+          onClose={() => setIsAllPatientsOpen(false)}
+          overlayClassName="bg-[rgba(16,24,40,0.18)] backdrop-blur-[6px]"
+          contentClassName="max-w-[1040px]"
+        >
+          <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+            <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-8 py-7">
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                  Pacienti
+                </p>
+                <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                  Visi pacienti
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsAllPatientsOpen(false)}
+                className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
+                aria-label="AizvÄ“rt pacientu sarakstu"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            <div className="max-h-[70vh] overflow-y-auto px-4 py-4">
+              <div className="space-y-2">
+                {orderedPatients.map((patient) => {
+                  const isActivePatient =
+                    shouldHighlightActivePatient &&
+                    patient.id === activePatient.id;
+
+                  return (
+                    <Link
+                      key={patient.id}
+                      to="/components"
+                      state={{ patient }}
+                      onClick={() => setIsAllPatientsOpen(false)}
+                      aria-current={isActivePatient ? "page" : undefined}
+                      className={cn(
+                        "flex items-center justify-between gap-4 rounded-[14px] px-4 py-3 transition",
+                        isActivePatient
+                          ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.16)]"
+                          : "text-[hsl(220,36%,18%)] hover:bg-[hsl(214,22%,98%)]",
+                      )}
+                    >
+                      <div className="min-w-0">
+                        <p className="truncate text-[15px] font-semibold leading-5">
+                          {patient.name}
+                        </p>
+                        <p
+                          className={cn(
+                            "mt-0.5 text-[12px]",
+                            isActivePatient
+                              ? "text-white/72"
+                              : "text-[hsl(214,16%,62%)]",
+                          )}
+                        >
+                          {patient.personalCode}
+                        </p>
+                      </div>
+
+                      <span
+                        className={cn(
+                          "shrink-0 text-[12px] font-medium",
+                          isActivePatient
+                            ? "text-white/80"
+                            : "text-[hsl(214,16%,56%)]",
+                        )}
+                      >
+                        {patient.age} gadi
+                      </span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
+
+      {isSettingsOpen && (
+        <CenteredOverlay
+          onClose={() => setIsSettingsOpen(false)}
+          overlayClassName="bg-[rgba(16,24,40,0.14)] backdrop-blur-[6px]"
+          contentClassName="max-w-[1040px]"
+        >
+          <div className="mx-auto flex h-[min(82vh,760px)] w-[min(1040px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+            <div className="flex shrink-0 items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-5 py-4">
+              <div>
+                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                  Iestatijumi
+                </p>
+                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.03em] text-[hsl(220,36%,18%)]">
+                  Panela izkartojums
+                </h2>
+              </div>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={handleResetSettings}
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-[13px] font-medium text-[hsl(220,24%,28%)] transition hover:bg-[hsl(214,22%,98%)]"
+                >
+                  <RotateCcw className="h-3.5 w-3.5" />
+                  Atiestatit
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
+                  aria-label="Aizvert iestatijumus"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="grid min-h-0 flex-1 grid-cols-[320px_minmax(0,1fr)] overflow-hidden">
+              <div
+                ref={settingsListRef}
+                className="min-h-0 overflow-y-auto border-r border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,98%)] px-4 py-4"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <div>
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,62%)]">
+                      Komponenti
+                    </p>
+                    <p className="mt-1 text-[12px] text-[hsl(214,16%,50%)]">
+                      Velciet, lai parkartotu
+                    </p>
+                  </div>
+
+                  <span className="text-[11px] font-medium text-[hsl(214,18%,56%)]">
+                    {orderedSettingsModules.length} redzami
+                  </span>
+                </div>
+
+                <div className="space-y-2">
+                  {orderedSettingsModules.map((module, index) => (
+                    <button
+                      key={module.key}
+                      type="button"
+                      draggable
+                      onDragStart={() => setDraggedSettingsKey(module.key)}
+                      onDragEnd={() => setDraggedSettingsKey(null)}
+                      onDragOver={(event) => {
+                        event.preventDefault();
+                        handleSettingsDragOver(module.key);
+                      }}
+                      className={cn(
+                        "flex w-full items-start gap-3 rounded-[14px] border border-[rgba(223,230,237,0.96)] bg-white px-3 py-2.5 text-left transition",
+                        draggedSettingsKey === module.key &&
+                          "opacity-70 shadow-[0_10px_24px_rgba(29,53,87,0.08)]",
+                      )}
+                    >
+                      <div className="mt-0.5 flex items-center gap-3 text-[hsl(214,14%,56%)]">
+                        <GripVertical className="h-4 w-4" />
+                        <span className="text-[11px] font-semibold">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[13px] font-semibold text-[hsl(220,36%,18%)]">
+                          {module.title}
+                        </p>
+                        <p className="mt-1 text-[10px] leading-4 text-[hsl(214,16%,52%)]">
+                          {module.description}
+                        </p>
+                      </div>
+
+                      <span className="inline-flex shrink-0 rounded-full border border-[rgba(220,228,236,0.96)] bg-[hsl(214,22%,98%)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-[hsl(214,18%,58%)]">
+                        {module.sizeLabel}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div
+                ref={settingsPreviewRef}
+                className="min-h-0 overflow-y-auto bg-white px-4 py-4"
+              >
+                <div className="mb-4">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,62%)]">
+                    Priekskatijums
+                  </p>
+                  <p className="mt-1 text-[12px] text-[hsl(214,16%,50%)]">
+                    Pacienta panelis
+                  </p>
+                </div>
+
+                <div className="grid gap-3 rounded-[18px] border border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,99%)] p-3 md:grid-cols-2">
+                  {orderedSettingsModules.map((module, index) => (
+                    <div
+                      key={module.key}
+                      className={cn(
+                        "rounded-[14px] border border-[rgba(223,230,237,0.96)] bg-white px-4 py-4 shadow-[0_3px_12px_rgba(29,53,87,0.03)]",
+                        module.previewColumns === 2 && "md:col-span-2",
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,18%,60%)]">
+                            {String(index + 1).padStart(2, "0")}
+                          </p>
+                          <p className="mt-1 text-[14px] font-semibold text-[hsl(220,36%,18%)]">
+                            {module.title}
+                          </p>
+                        </div>
+
+                        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,18%,60%)]">
+                          {module.previewColumns === 2 ? "2 kolonnas" : "1 kolonna"}
+                        </span>
+                      </div>
+
+                      <div className="mt-4 space-y-2">
+                        <div className="h-2 rounded-full bg-[hsl(214,18%,92%)]" />
+                        <div className="h-2 w-4/5 rounded-full bg-[hsl(214,18%,94%)]" />
+                        <div className="h-2 w-3/5 rounded-full bg-[hsl(214,18%,95%)]" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex shrink-0 items-center justify-between border-t border-[rgba(230,235,241,0.96)] px-5 py-4">
+              <p className="text-[12px] text-[hsl(214,16%,52%)]">
+                {orderedSettingsModules.length} / {settingsModules.length} komponenti redzami
+              </p>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-[13px] font-medium text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
+                >
+                  Atcelt
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                >
+                  Saglabat izkartojumu
+                </button>
+              </div>
             </div>
           </div>
         </CenteredOverlay>

@@ -238,6 +238,7 @@ export default function DayListPage() {
       <DashboardSidebar
         activePatient={activePatient}
         recentPatients={recentPatients}
+        allPatients={patients}
         currentView="day-list"
         dayListCount={entries.length}
       />

@@ -72,6 +72,7 @@ export default function SearchPage() {
       <DashboardSidebar
         activePatient={activePatient}
         recentPatients={recentPatients}
+        allPatients={patients}
         currentView="search"
         dayListCount={patients.length}
       />

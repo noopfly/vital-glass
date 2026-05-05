@@ -7,64 +7,79 @@ import {
   ShieldAlert,
   X,
 } from "lucide-react";
+
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+
+type AlertType = "critical" | "warning" | "info" | "medication";
 
 interface AlertItem {
   id: string;
   title: string;
   description: string;
-  date: string;
-  type: "critical" | "warning" | "info" | "medication";
+  occurredAt: string;
+  type: AlertType;
 }
 
 const alerts: AlertItem[] = [
   {
     id: "1",
-    title: "Varfarīns + ibuprofēns — asiņošanas risks",
-    description: "Nepieciešama terapijas pārskatīšana.",
-    date: "Šodien",
+    title: "Bīstama kombinācija: varfarīns + ibuprofēns",
+    description: "Paaugstināts asiņošanas risks. Nepieciešama terapijas pārskatīšana.",
+    occurredAt: "2026-05-05T08:45:00",
     type: "critical",
   },
   {
     id: "2",
-    title: "Dublēti antikoagulanti",
-    description: "Apiksabāns un rivaroksabāns vienlaikus.",
-    date: "Šodien",
+    title: "Dublēta recepte: divi antikoagulanti",
+    description: "Apiksabāns un rivaroksabāns izrakstīti vienlaikus.",
+    occurredAt: "2026-05-05T08:10:00",
     type: "medication",
   },
   {
     id: "3",
     title: "Kreatinīns virs normas",
-    description: "Kreatinīns: 2.4 mg/dL.",
-    date: "14. apr.",
+    description: "Kreatinīns 2.4 mg/dL pēdējās analīzēs.",
+    occurredAt: "2026-05-04T10:30:00",
     type: "warning",
   },
   {
     id: "4",
     title: "HbA1c virs normas",
-    description: "HbA1c: 9.2%.",
-    date: "14. apr.",
+    description: "HbA1c 9.2%. Nepieciešama glikēmijas kontroles izvērtēšana.",
+    occurredAt: "2026-05-03T09:20:00",
     type: "warning",
   },
   {
     id: "5",
     title: "Nokavēta kardiologa vizīte",
-    description: "Konsultācija pie Dr. Bērziņa.",
-    date: "10. apr.",
+    description: "Vizīte pie Dr. Bērziņa nav pārplānota.",
+    occurredAt: "2026-05-02T14:00:00",
     type: "critical",
   },
   {
     id: "6",
     title: "Plānotas asins analīzes",
-    description: "Centrālajā laboratorijā.",
-    date: "22. apr.",
+    description: "Paraugu nodošana ieplānota centrālajā laboratorijā.",
+    occurredAt: "2026-05-01T08:00:00",
     type: "info",
   },
 ];
 
-const visibleAlerts = alerts.slice(0, 3);
+const sortedAlerts = [...alerts].sort(
+  (left, right) =>
+    new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime(),
+);
 
-const iconStyles = {
+const visibleAlerts = sortedAlerts.slice(0, 3);
+
+function formatAlertDate(value: string) {
+  return new Intl.DateTimeFormat("lv-LV", {
+    day: "2-digit",
+    month: "short",
+  }).format(new Date(value));
+}
+
+const iconStyles: Record<AlertType, string> = {
   critical:
     "border-[rgba(239,208,208,0.96)] text-[hsl(0,54%,52%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,243,243,0.96))]",
   medication:
@@ -75,14 +90,14 @@ const iconStyles = {
     "border-[rgba(210,219,228,0.96)] text-[hsl(220,24%,34%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))]",
 };
 
-const dateStyles = {
+const dateStyles: Record<AlertType, string> = {
   critical: "bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
   medication: "bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
   warning: "bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
   info: "bg-[hsl(214,22%,95%)] text-[hsl(220,24%,34%)]",
 };
 
-const iconMap = {
+const iconMap: Record<AlertType, typeof ShieldAlert> = {
   critical: ShieldAlert,
   medication: Pill,
   warning: FlaskConical,
@@ -94,7 +109,7 @@ const AlertsCard = () => {
 
   return (
     <>
-      <section className="flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-6 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="flex items-center justify-between border-b border-[hsl(214,22%,88%)] pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-[rgba(239,208,208,0.96)] bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
@@ -106,47 +121,46 @@ const AlertsCard = () => {
                 Brīdinājumi
               </p>
               <p className="text-xs text-[hsl(214,14%,50%)]">
-                Tuvākās 2 nedēļas
+                Sakārtoti pēc jaunākajiem notikumiem
               </p>
             </div>
           </div>
 
-          <div className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-[hsl(0,56%,96%)] text-sm font-semibold text-[hsl(0,54%,52%)]">
-            {alerts.length}
+          <div className="flex h-8 min-w-8 items-center justify-center rounded-[12px] bg-[hsl(0,56%,96%)] px-2 text-sm font-semibold text-[hsl(0,54%,52%)]">
+            {sortedAlerts.length}
           </div>
         </div>
 
-        <div className="mt-4 space-y-2.5">
+        <div className="mt-4 space-y-2">
           {visibleAlerts.map((alert) => {
             const Icon = iconMap[alert.type];
 
             return (
               <div
                 key={alert.id}
-                className="flex items-center justify-between rounded-[13px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-4 py-3 transition hover:bg-white"
+                className="flex items-start gap-3 rounded-[13px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2.5 transition hover:bg-white"
               >
-                <div className="flex min-w-0 items-start gap-3">
-                  <div
-                    className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${iconStyles[alert.type]}`}
-                  >
-                    <Icon size={16} />
-                  </div>
-
-                  <div className="min-w-0">
-                    <p className="text-[13px] font-semibold text-[hsl(222,28%,20%)]">
-                      {alert.title}
-                    </p>
-                    <p className="text-[11px] leading-4 text-[hsl(214,14%,50%)]">
-                      {alert.description}
-                    </p>
-                  </div>
+                <div
+                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${iconStyles[alert.type]}`}
+                >
+                  <Icon size={16} />
                 </div>
 
-                <span
-                  className={`ml-4 shrink-0 rounded-full px-3 py-1 text-[11px] font-medium ${dateStyles[alert.type]}`}
-                >
-                  {alert.date}
-                </span>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-start justify-between gap-2">
+                    <p className="min-w-0 pr-1 text-[12px] font-semibold leading-4 text-[hsl(222,28%,20%)] line-clamp-2">
+                      {alert.title}
+                    </p>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${dateStyles[alert.type]}`}
+                    >
+                      {formatAlertDate(alert.occurredAt)}
+                    </span>
+                  </div>
+                  <p className="mt-1 text-[11px] leading-4 text-[hsl(214,14%,50%)] line-clamp-2">
+                    {alert.description}
+                  </p>
+                </div>
               </div>
             );
           })}
@@ -190,14 +204,14 @@ const AlertsCard = () => {
                     Visi brīdinājumi
                   </h3>
                   <p className="text-sm text-[hsl(214,14%,42%)]">
-                    Aktīvie pacienta brīdinājumi.
+                    Jaunākie brīdinājumi un notikumi dilstošā secībā.
                   </p>
                 </div>
               </div>
             </div>
 
             <div className="max-h-[78vh] space-y-3 overflow-y-auto px-6 py-5">
-              {alerts.map((alert) => {
+              {sortedAlerts.map((alert) => {
                 const Icon = iconMap[alert.type];
 
                 return (
@@ -226,7 +240,7 @@ const AlertsCard = () => {
                       <span
                         className={`shrink-0 rounded-full px-3 py-1 text-[11px] font-medium ${dateStyles[alert.type]}`}
                       >
-                        {alert.date}
+                        {formatAlertDate(alert.occurredAt)}
                       </span>
                     </div>
                   </div>
