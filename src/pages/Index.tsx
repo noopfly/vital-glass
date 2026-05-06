@@ -13,42 +13,30 @@ import PatientCard from "@/components/PatientCard";
 import PatientSummaryCard from "@/components/PatientSummaryCard";
 import ReferralHistory from "@/components/ReferralHistory";
 import { patients } from "@/data/patients";
+import {
+  defaultDashboardLayoutOrder,
+  normalizeDashboardLayoutOrder,
+  readStoredDashboardLayoutOrder,
+  type DashboardComponentKey,
+} from "@/lib/dashboard-layout";
 import { Patient } from "@/types/patient";
 
-type ComponentKey =
-  | "patientCard"
-  | "healthTrends"
-  | "medicalImagingViewer"
-  | "medicationTable"
-  | "alertsCard"
-  | "eventTimeline"
-  | "humanBodyModel"
-  | "referralHistory"
-  | "patientSummaryCard";
+type DashboardLocationState = {
+  patient?: Patient;
+  layoutOrder?: DashboardComponentKey[];
+};
 
-const layoutClasses: Record<ComponentKey, string> = {
+const layoutClasses: Record<DashboardComponentKey, string> = {
   patientCard: "lg:col-span-3",
   healthTrends: "lg:col-span-2 lg:aspect-[2/1]",
   medicalImagingViewer: "",
   medicationTable: "",
   alertsCard: "lg:aspect-square",
-  patientSummaryCard: "lg:col-span-3",
+  patientSummaryCard: "lg:col-span-2 lg:aspect-[2/1]",
   eventTimeline: "lg:col-span-3",
-  humanBodyModel: "lg:row-span-2",
+  humanBodyModel: "",
   referralHistory: "",
 };
-
-const defaultOrder: ComponentKey[] = [
-  "patientCard",
-  "healthTrends",
-  "alertsCard",
-  "medicalImagingViewer",
-  "humanBodyModel",
-  "medicationTable",
-  "referralHistory",
-  "eventTimeline",
-  "patientSummaryCard",
-];
 
 function formatRefreshTime(date: Date) {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -64,10 +52,20 @@ const InfoDivider = () => (
 const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const patient = location.state?.patient as Patient | undefined;
+  const routeState = location.state as DashboardLocationState | undefined;
+  const patient = routeState?.patient;
+  const routeLayoutOrder = React.useMemo(
+    () =>
+      normalizeDashboardLayoutOrder(
+        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      ),
+    [routeState?.layoutOrder],
+  );
 
-  const [order, setOrder] = React.useState<ComponentKey[]>(defaultOrder);
-  const [draggedKey, setDraggedKey] = React.useState<ComponentKey | null>(null);
+  const [order, setOrder] =
+    React.useState<DashboardComponentKey[]>(routeLayoutOrder);
+  const [draggedKey, setDraggedKey] =
+    React.useState<DashboardComponentKey | null>(null);
   const [lastRefreshedAt, setLastRefreshedAt] = React.useState(new Date());
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
@@ -91,6 +89,10 @@ const Index = () => {
       navigate("/", { replace: true });
     }
   }, [navigate, patient]);
+
+  React.useEffect(() => {
+    setOrder(routeLayoutOrder);
+  }, [routeLayoutOrder]);
 
   React.useEffect(() => {
     if (!isRefreshing) return;
@@ -119,15 +121,6 @@ const Index = () => {
     { key: "eventTimeline" as const, element: <EventTimelineHorizontal /> },
     { key: "humanBodyModel" as const, element: <HumanBodyModel /> },
     { key: "referralHistory" as const, element: <ReferralHistory /> },
-    {
-      key: "patientSummaryCard" as const,
-      element: (
-        <PatientSummaryCard
-          summary={patient.summary}
-          updatedAt={patient.updatedAt}
-        />
-      ),
-    },
   ];
 
   const visibleItems = order
@@ -142,6 +135,8 @@ const Index = () => {
         allPatients={patients}
         currentView="dashboard"
         dayListCount={patients.length}
+        layoutOrder={order}
+        onSaveLayoutOrder={setOrder}
       />
 
       <div className="lg:pl-[280px]">

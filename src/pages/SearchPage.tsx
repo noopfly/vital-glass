@@ -5,7 +5,17 @@ import { useLocation, useNavigate } from "react-router-dom";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import PatientLoadingPanel from "@/components/PatientLoadingPanel";
 import { patients } from "@/data/patients";
+import {
+  normalizeDashboardLayoutOrder,
+  readStoredDashboardLayoutOrder,
+  type DashboardComponentKey,
+} from "@/lib/dashboard-layout";
 import { Patient } from "@/types/patient";
+
+type SearchLocationState = {
+  patient?: Patient;
+  layoutOrder?: DashboardComponentKey[];
+};
 
 function normalizeText(value: string) {
   return value
@@ -25,9 +35,15 @@ function formatPersonalCode(raw: string) {
 export default function SearchPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const routeState = location.state as SearchLocationState | undefined;
 
-  const activePatient =
-    (location.state?.patient as Patient | undefined) ?? patients[0];
+  const activePatient = routeState?.patient ?? patients[0];
+  const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
+    () =>
+      normalizeDashboardLayoutOrder(
+        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      ),
+  );
 
   const [query, setQuery] = React.useState("");
   const [error, setError] = React.useState("");
@@ -43,6 +59,14 @@ export default function SearchPage() {
       ].slice(0, 5),
     [activePatient],
   );
+
+  React.useEffect(() => {
+    setLayoutOrder(
+      normalizeDashboardLayoutOrder(
+        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      ),
+    );
+  }, [routeState?.layoutOrder]);
 
   const handleSearch = () => {
     const trimmedQuery = query.trim();
@@ -75,6 +99,8 @@ export default function SearchPage() {
         allPatients={patients}
         currentView="search"
         dayListCount={patients.length}
+        layoutOrder={layoutOrder}
+        onSaveLayoutOrder={setLayoutOrder}
       />
 
       {/* MAIN */}
@@ -90,16 +116,10 @@ export default function SearchPage() {
           E-veselība pieslēgta
         </div>
 
-        {/* CENTER CONTENT */}
         <div className="flex w-full max-w-xl flex-col items-center px-6 text-center">
           <h1 className="mb-6 text-7xl font-light tracking-tight text-[hsl(218,46%,12%)]">
             OMNUS
           </h1>
-
-          <p className="mb-8 max-w-lg text-[17px] text-[hsl(214,18%,44%)]">
-            Ievadiet pacienta personas kodu, lai piekļūtu strukturētam
-            pārskatam ar galvenajiem veselības datiem un klīnisko informāciju.
-          </p>
 
           <form
             className="w-full"
@@ -171,7 +191,7 @@ export default function SearchPage() {
             onCancel={() => setLoadingPatient(null)}
             onContinue={() =>
               navigate("/components", {
-                state: { patient: loadingPatient },
+                state: { patient: loadingPatient, layoutOrder },
               })
             }
           />

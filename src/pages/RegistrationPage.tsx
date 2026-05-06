@@ -1,26 +1,35 @@
 import * as React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Activity,
   AlertTriangle,
   ArrowLeft,
   ArrowRight,
+  Baby,
+  Bone,
   Brain,
   CalendarClock,
   Check,
   ChevronDown,
   ChevronUp,
+  Dna,
   FileText,
   GripVertical,
+  Heart,
   HeartPulse,
   ImageIcon,
   Info,
   Pill,
+  Radiation,
+  ScanLine,
   Search,
   Stethoscope,
   UserRound,
+  Wind,
   type LucideIcon,
 } from "lucide-react";
 import { toast } from "sonner";
+
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -40,7 +49,16 @@ type ModuleId =
   | "timeline"
   | "body-model"
   | "referrals"
-  | "patient-summary";
+
+type DashboardComponentKey =
+  | "patientCard"
+  | "healthTrends"
+  | "medicalImagingViewer"
+  | "medicationTable"
+  | "alertsCard"
+  | "eventTimeline"
+  | "humanBodyModel"
+  | "referralHistory"
 
 type SpecialtyId =
   | "family-medicine"
@@ -65,8 +83,7 @@ type ModuleOption = {
 
 type SpecialtyOption = {
   id: SpecialtyId;
-  title: string;
-  description: string;
+  title: string; 
   icon: LucideIcon;
   modules: ModuleId[];
 };
@@ -77,6 +94,26 @@ type RegistrationForm = {
   layoutOrder: ModuleId[];
 };
 
+type PreviewPattern =
+  | "profile"
+  | "trend"
+  | "imaging"
+  | "table"
+  | "alerts"
+  | "body"
+  | "timeline"
+  | "summary";
+
+type ModulePreviewDefinition = {
+  note: string;
+  summary: string;
+  pattern: PreviewPattern;
+  colSpan: 1 | 2 | 3;
+  rowSpan: 1 | 2;
+  previewClassName: string;
+  surfaceClassName: string;
+};
+
 const steps: StepDefinition[] = [
   { title: "01", subtitle: "Specialitāte" },
   { title: "02", subtitle: "Darba panelis" },
@@ -85,7 +122,7 @@ const steps: StepDefinition[] = [
 const moduleOptions: ModuleOption[] = [
   {
     id: "patient-card",
-    title: "Pacienta kopsavilkums",
+    title: "Pacienta klīniskais profils",
     description: "Pamatinformācija, diagnozes un primārie riski",
     icon: UserRound,
   },
@@ -121,7 +158,7 @@ const moduleOptions: ModuleOption[] = [
   },
   {
     id: "body-model",
-    title: "Ķermeņa modelis",
+    title: "Ķermeņa pārskats",
     description: "Anatomiskais skats ar atradnēm un reģioniem",
     icon: UserRound,
   },
@@ -131,183 +168,92 @@ const moduleOptions: ModuleOption[] = [
     description: "Aktīvie un vēsturiskie nosūtījumi",
     icon: FileText,
   },
-  {
-    id: "patient-summary",
-    title: "Pacienta kopsavilkums+",
-    description: "Ātrs klīniskais kopsavilkums ar rekomendācijām",
-    icon: FileText,
-  },
+
+];
+
+const sharedRegistrationModules: ModuleId[] = [
+  "patient-card",
+  "health-trends",
+  "alerts",
+  "imaging",
+  "body-model",
+  "medications",
+  "referrals",
+  "timeline",
 ];
 
 const specialtyOptions: SpecialtyOption[] = [
   {
     id: "family-medicine",
     title: "Ģimenes ārsts",
-    description: "Plašs vispārējās aprūpes pārskats",
     icon: Stethoscope,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "medications",
-      "alerts",
-      "timeline",
-      "patient-summary",
-    ],
+    modules: sharedRegistrationModules,
   },
   {
     id: "cardiology",
     title: "Kardiologs",
-    description: "Sirds un asinsvadu sistēma",
-    icon: HeartPulse,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "imaging",
-      "medications",
-      "alerts",
-      "timeline",
-      "patient-summary",
-    ],
+    icon: Heart,
+    modules: sharedRegistrationModules,
   },
   {
     id: "endocrinology",
     title: "Endokrinologs",
-    description: "Hormonu un metabolo slimību pārskats",
-    icon: Activity,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "medications",
-      "alerts",
-      "timeline",
-      "patient-summary",
-    ],
+    icon: Dna,
+    modules: sharedRegistrationModules,
   },
   {
     id: "vascular-surgery",
     title: "Asinsvadu ķirurgs",
-    description: "Vēnu un artēriju ķirurģija",
     icon: HeartPulse,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "imaging",
-      "alerts",
-      "timeline",
-      "referrals",
-    ],
+    modules: sharedRegistrationModules,
   },
   {
     id: "neurology",
     title: "Neirologs",
-    description: "Nervu sistēmas slimības",
     icon: Brain,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "imaging",
-      "medications",
-      "timeline",
-      "patient-summary",
-    ],
+    modules: sharedRegistrationModules,
   },
   {
     id: "oncology",
     title: "Onkologs",
-    description: "Audzēju diagnostika un terapija",
-    icon: AlertTriangle,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "imaging",
-      "medications",
-      "alerts",
-      "timeline",
-      "referrals",
-      "patient-summary",
-    ],
+    icon: Radiation,
+    modules: sharedRegistrationModules,
   },
   {
     id: "pulmonology",
     title: "Pulmonologs",
-    description: "Plaušu un elpceļu slimības",
-    icon: Stethoscope,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "imaging",
-      "medications",
-      "alerts",
-      "timeline",
-    ],
+    icon: Wind,
+    modules: sharedRegistrationModules,
   },
   {
     id: "gastroenterology",
     title: "Gastroenterologs",
-    description: "Gremošanas sistēmas pārskats",
-    icon: Pill,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "medications",
-      "alerts",
-      "timeline",
-      "patient-summary",
-    ],
+    icon: ScanLine,
+    modules: sharedRegistrationModules,
   },
   {
     id: "dermatology",
     title: "Dermatologs",
-    description: "Ādas slimības un izmaiņas",
     icon: UserRound,
-    modules: [
-      "patient-card",
-      "imaging",
-      "medications",
-      "timeline",
-      "patient-summary",
-    ],
+    modules: sharedRegistrationModules,
   },
   {
     id: "orthopedics",
     title: "Ortopēds",
-    description: "Skelets un balsta aparāts",
-    icon: Activity,
-    modules: [
-      "patient-card",
-      "imaging",
-      "medications",
-      "timeline",
-      "referrals",
-      "patient-summary",
-    ],
+    icon: Bone,
+    modules: sharedRegistrationModules,
   },
   {
     id: "psychiatry",
     title: "Psihiatrs",
-    description: "Garīgās veselības aprūpe",
     icon: Brain,
-    modules: [
-      "patient-card",
-      "medications",
-      "alerts",
-      "timeline",
-      "patient-summary",
-    ],
+    modules: sharedRegistrationModules,
   },
   {
     id: "pediatrics",
     title: "Pediatrs",
-    description: "Bērnu vispārējā aprūpe",
-    icon: Stethoscope,
-    modules: [
-      "patient-card",
-      "health-trends",
-      "medications",
-      "alerts",
-      "timeline",
-      "patient-summary",
-    ],
+    icon: Baby,
+    modules: sharedRegistrationModules,
   },
 ];
 
@@ -320,8 +266,18 @@ const defaultLayoutOrder: ModuleId[] = [
   "medications",
   "referrals",
   "timeline",
-  "patient-summary",
 ];
+
+const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> = {
+  "patient-card": "patientCard",
+  "health-trends": "healthTrends",
+  alerts: "alertsCard",
+  imaging: "medicalImagingViewer",
+  "body-model": "humanBodyModel",
+  medications: "medicationTable",
+  referrals: "referralHistory",
+  timeline: "eventTimeline",
+};
 
 const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
   "patient-card": {
@@ -356,9 +312,88 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
     note: "Vēsture",
     summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
   },
-  "patient-summary": {
-    note: "Kopsavilkums",
-    summary: "Īss kopsavilkums ar būtiskākajām izmaiņām un rekomendācijām.",
+};
+
+const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
+  "patient-card": {
+    note: "Pacienta profils",
+    summary: "Personas dati, diagnozes un primÄrie riski.",
+    pattern: "profile",
+    colSpan: 3,
+    rowSpan: 1,
+    previewClassName: "col-span-3",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  "health-trends": {
+    note: "KlÄ«niskie trendi",
+    summary: "Pulss, glikoze un asinsspiediens 30 dienu griezumÄ.",
+    pattern: "trend",
+    colSpan: 2,
+    rowSpan: 1,
+    previewClassName: "col-span-2",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  imaging: {
+    note: "AttÄ“li",
+    summary: "RTG un CT atradnes ar jaunÄko aprakstu.",
+    pattern: "imaging",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  medications: {
+    note: "Terapija",
+    summary: "AktuÄlie medikamenti, devas un mijiedarbÄ«bu signÄli.",
+    pattern: "table",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  alerts: {
+    note: "Brīdinājumi",
+    summary: "Nokavētas vizītes un izmainīti laboratorijas rezultāti.",
+    pattern: "alerts",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  timeline: {
+    note: "Pacienta gaita",
+    summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
+    pattern: "timeline",
+    colSpan: 3,
+    rowSpan: 1,
+    previewClassName: "col-span-3",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  "body-model": {
+    note: "Vizualizācija",
+    summary: "Anatomiskais skats ar atradnēm un saistītajiem reģioniem.",
+    pattern: "body",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  referrals: {
+    note: "Vēsture",
+    summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
+    pattern: "table",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
 };
 
@@ -368,7 +403,236 @@ const initialForm: RegistrationForm = {
   layoutOrder: defaultLayoutOrder,
 };
 
-const aboveTheFoldCount = 3;
+type ModulePlacement = {
+  id: ModuleId;
+  row: number;
+};
+
+function computeModulePlacements(moduleIds: ModuleId[]): ModulePlacement[] {
+  const occupied = new Set<string>();
+  const columns = 3;
+
+  const canPlace = (
+    row: number,
+    column: number,
+    colSpan: number,
+    rowSpan: number,
+  ) => {
+    if (column + colSpan - 1 > columns) {
+      return false;
+    }
+
+    for (let currentRow = row; currentRow < row + rowSpan; currentRow += 1) {
+      for (
+        let currentColumn = column;
+        currentColumn < column + colSpan;
+        currentColumn += 1
+      ) {
+        if (occupied.has(`${currentRow}:${currentColumn}`)) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  };
+
+  const markOccupied = (
+    row: number,
+    column: number,
+    colSpan: number,
+    rowSpan: number,
+  ) => {
+    for (let currentRow = row; currentRow < row + rowSpan; currentRow += 1) {
+      for (
+        let currentColumn = column;
+        currentColumn < column + colSpan;
+        currentColumn += 1
+      ) {
+        occupied.add(`${currentRow}:${currentColumn}`);
+      }
+    }
+  };
+
+  return moduleIds.map((id) => {
+    const definition = modulePreviewDefinitions[id];
+
+    for (let row = 1; row < 100; row += 1) {
+      for (let column = 1; column <= columns; column += 1) {
+        if (canPlace(row, column, definition.colSpan, definition.rowSpan)) {
+          markOccupied(row, column, definition.colSpan, definition.rowSpan);
+          return { id, row };
+        }
+      }
+    }
+
+    return { id, row: 100 };
+  });
+}
+
+function PreviewCard({
+  item,
+  index,
+}: {
+  item: ModuleOption;
+  index: number;
+}) {
+  const preview = modulePreviewDefinitions[item.id];
+
+  return (
+      <div
+      className={cn(
+        "overflow-hidden rounded-[14px] border p-2",
+        preview.previewClassName,
+        preview.surfaceClassName,
+      )}
+    >
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="min-w-0 pr-1">
+          <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,16%,58%)]">
+            {preview.note}
+          </p>
+        </div>
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[9px] bg-[hsl(214,20%,96%)] text-[9px] font-semibold text-[hsl(214,16%,48%)]">
+          {index + 1}
+        </span>
+      </div>
+
+      <div className="mt-2">
+        {preview.pattern === "profile" && (
+          <div className="space-y-2">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-[10px] bg-[hsl(214,20%,90%)]" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-2.5 w-[34%] bg-[hsl(214,18%,88%)]" />
+                <div className="h-2.5 w-[48%] bg-[hsl(214,20%,93%)]" />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "trend" && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-1.5">
+              <div className="rounded-[10px] bg-[hsl(214,20%,97%)] p-1.5">
+                <div className="h-2 w-[62%] bg-[hsl(214,18%,88%)]" />
+                <div className="mt-1.5 h-3 w-[44%] bg-[hsl(214,20%,82%)]" />
+              </div>
+              <div className="rounded-[10px] bg-[hsl(214,20%,97%)] p-1.5">
+                <div className="h-2 w-[58%] bg-[hsl(214,18%,88%)]" />
+                <div className="mt-1.5 h-3 w-[36%] bg-[hsl(214,20%,82%)]" />
+              </div>
+              <div className="rounded-[10px] bg-[hsl(214,20%,97%)] p-1.5">
+                <div className="h-2 w-[54%] bg-[hsl(214,18%,88%)]" />
+                <div className="mt-1.5 h-3 w-[40%] bg-[hsl(214,20%,82%)]" />
+              </div>
+            </div>
+            <div className="flex h-[42px] items-end gap-1.5 rounded-[10px] bg-[hsl(214,20%,97%)] px-2 pb-2 pt-1.5">
+              <div className="h-4 w-4 rounded-[3px] bg-[hsl(220,34%,74%)]" />
+              <div className="h-6 w-4 rounded-[3px] bg-[hsl(220,34%,74%)]" />
+              <div className="h-5 w-4 rounded-[3px] bg-[hsl(220,34%,74%)]" />
+              <div className="h-8 w-4 rounded-[3px] bg-[hsl(220,34%,74%)]" />
+              <div className="h-6 w-4 rounded-[3px] bg-[hsl(220,34%,74%)]" />
+              <div className="h-9 w-4 rounded-[3px] bg-[hsl(220,34%,74%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "alerts" && (
+          <div className="space-y-1.5">
+            {[0, 1, 2].map((alertIndex) => (
+              <div
+                key={alertIndex}
+                className="rounded-[10px] border border-[rgba(239,203,203,0.96)] bg-white/70 px-2 py-1.5"
+              >
+                <div className="flex items-start gap-1.5">
+                  <div className="mt-0.5 h-5 w-5 rounded-[8px] bg-[hsl(0,56%,90%)]" />
+                  <div className="flex-1 space-y-1">
+                    <div className="h-2 w-[88%] bg-[hsl(0,30%,88%)]" />
+                    <div className="h-2 w-[64%] bg-[hsl(0,24%,92%)]" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {preview.pattern === "body" && (
+          <div className="flex h-[58px] items-center justify-center rounded-[12px] bg-[hsl(214,20%,97%)]">
+            <div className="relative h-[46px] w-[24px] rounded-[999px] bg-[linear-gradient(180deg,hsl(214,18%,90%),hsl(214,18%,84%))]">
+              <span className="absolute left-[46%] top-[18%] h-1.5 w-1.5 rounded-full bg-[hsl(0,56%,82%)]" />
+              <span className="absolute left-[28%] top-[44%] h-1.5 w-1.5 rounded-full bg-[hsl(40,56%,78%)]" />
+              <span className="absolute right-[28%] top-[61%] h-1.5 w-1.5 rounded-full bg-[hsl(214,28%,74%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "imaging" && (
+          <div className="space-y-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="h-[56px] rounded-[10px] bg-[linear-gradient(135deg,hsl(214,18%,90%),hsl(214,18%,84%))]" />
+              <div className="h-[56px] rounded-[10px] bg-[linear-gradient(135deg,hsl(214,18%,92%),hsl(214,18%,86%))]" />
+            </div>
+            <div className="h-2 w-[58%] bg-[hsl(214,18%,88%)]" />
+          </div>
+        )}
+
+        {preview.pattern === "table" && (
+          <div className="overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,97%)]">
+            <div className="grid grid-cols-[1.2fr_0.9fr] gap-1.5 border-b border-[hsl(214,22%,88%)] px-2 py-1.5">
+              <div className="h-2 w-[72%] bg-[hsl(214,18%,88%)]" />
+              <div className="ml-auto h-2 w-[52%] bg-[hsl(214,18%,90%)]" />
+            </div>
+            {[0, 1, 2].map((rowIndex) => (
+              <div
+                key={rowIndex}
+                className="grid grid-cols-[1.2fr_0.9fr] gap-1.5 px-2 py-1.5"
+              >
+                <div className="h-2 w-[84%] bg-[hsl(214,18%,90%)]" />
+                <div className="ml-auto h-2 w-[56%] bg-[hsl(214,18%,92%)]" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {preview.pattern === "timeline" && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
+              <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
+              <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
+              <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "summary" && (
+          <div className="space-y-1.5 rounded-[10px] bg-[hsl(214,20%,97%)] p-2">
+            <div className="h-2 w-[22%] bg-[hsl(214,18%,86%)]" />
+            <div className="h-2 w-[82%] bg-[hsl(214,18%,90%)]" />
+            <div className="h-2 w-[76%] bg-[hsl(214,18%,90%)]" />
+            <div className="h-2 w-[68%] bg-[hsl(214,18%,90%)]" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 function normalizeText(value: string) {
   return value
@@ -378,6 +642,7 @@ function normalizeText(value: string) {
 }
 
 export default function RegistrationPage() {
+  const navigate = useNavigate();
   const [step, setStep] = React.useState(0);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [form, setForm] = React.useState<RegistrationForm>(initialForm);
@@ -411,7 +676,7 @@ export default function RegistrationPage() {
           return true;
         }
 
-        return [option.title, option.description].some((value) =>
+        return [option.title].some((value) =>
           normalizeText(value).includes(normalizedSearchQuery),
         );
       }),
@@ -426,8 +691,26 @@ export default function RegistrationPage() {
     [form.layoutOrder, form.modules, moduleMap],
   );
 
-  const aboveTheFoldItems = visibleLayoutItems.slice(0, aboveTheFoldCount);
-  const belowTheFoldItems = visibleLayoutItems.slice(aboveTheFoldCount);
+  const modulePlacements = React.useMemo(
+    () =>
+      computeModulePlacements(
+        form.layoutOrder.filter((item) => form.modules.includes(item)),
+      ),
+    [form.layoutOrder, form.modules],
+  );
+
+  const aboveTheFoldModuleIds = React.useMemo(
+    () =>
+      new Set(
+        modulePlacements
+          .filter((placement) => placement.row <= 2)
+          .map((placement) => placement.id),
+      ),
+    [modulePlacements],
+  );
+
+  const aboveTheFoldItems = visibleLayoutItems.slice(0, 3);
+  const belowTheFoldItems = visibleLayoutItems.slice(3);
 
   const applySpecialtyPreset = (specialtyId: SpecialtyId) => {
     const specialty = specialtyMap[specialtyId];
@@ -455,6 +738,7 @@ export default function RegistrationPage() {
       delete nextErrors.specialty;
       return nextErrors;
     });
+
   };
 
   const moveDraggedModule = React.useCallback(
@@ -552,71 +836,75 @@ export default function RegistrationPage() {
     toast.success("Profils sagatavots", {
       description: `Sākuma panelis ir pielāgots specialitātei “${selectedSpecialty.title}”.`,
     });
+    navigate("/search", {
+      state: {
+        layoutOrder: form.layoutOrder
+          .filter((item) => form.modules.includes(item))
+          .map((item) => moduleIdToDashboardComponentKey[item]),
+      },
+    });
   };
 
   return (
     <div className="min-h-screen bg-[#f5f7fa] text-[hsl(219,36%,18%)]">
-      <main className="mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-5 py-6 md:px-8 lg:px-10">
-        <div className="border-b border-[rgba(220,228,236,0.96)] pb-4">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-            <div className="flex items-center gap-4">
+      <main className="mx-auto flex min-h-screen w-full max-w-[1360px] flex-col px-3 py-3 md:px-5 lg:px-6">
+        <div className="border-b border-[rgba(220,228,236,0.96)] pb-3">
+          <div className="flex flex-col gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center">
+            <div className="flex items-center gap-4 md:justify-self-start">
               <div className="flex items-center gap-3">
                 <p className="text-[15px] font-semibold uppercase tracking-[0.22em] text-[hsl(219,36%,18%)]">
                   OMNUS
                 </p>
                 <span className="hidden h-4 w-px bg-[rgba(214,222,230,0.96)] md:block" />
-                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[hsl(214,18%,60%)]">
-                  Sākotnējā iestatīšana
-                </p>
-              </div>
-
-              <div className="hidden md:flex md:items-center md:gap-6">
-                {steps.map((item, index) => {
-                  const isActive = index === step;
-                  const isComplete = index < step;
-
-                  return (
-                    <button
-                      key={item.subtitle}
-                      type="button"
-                      onClick={() => {
-                        if (index <= step || Boolean(form.specialty)) {
-                          setErrors({});
-                          setStep(index);
-                        }
-                      }}
-                      className="flex items-center gap-2 text-left"
-                    >
-                      <span
-                        className={cn(
-                          "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold transition",
-                          isActive
-                            ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
-                            : isComplete
-                              ? "border-[hsl(220,36%,18%)] bg-white text-[hsl(220,36%,18%)]"
-                              : "border-[rgba(210,219,228,0.96)] bg-white text-[hsl(214,14%,56%)]",
-                        )}
-                      >
-                        {isComplete ? <Check className="h-3 w-3" /> : item.title}
-                      </span>
-
-                      <span
-                        className={cn(
-                          "text-[10px] font-semibold uppercase tracking-[0.18em]",
-                          isActive || isComplete
-                            ? "text-[hsl(219,30%,22%)]"
-                            : "text-[hsl(214,14%,56%)]",
-                        )}
-                      >
-                        {item.subtitle}
-                      </span>
-                    </button>
-                  );
-                })}
               </div>
             </div>
 
-            <div className="flex items-center gap-2 self-start rounded-full border border-[rgba(220,228,236,0.96)] bg-white px-3 py-2 shadow-[0_4px_16px_rgba(29,53,87,0.04)] md:self-auto">
+            <div className="hidden md:flex md:items-center md:justify-center md:gap-6">
+              {steps.map((item, index) => {
+                const isActive = index === step;
+                const isComplete = index < step;
+
+                return (
+                  <button
+                    key={item.subtitle}
+                    type="button"
+                    onClick={() => {
+                      if (index <= step || Boolean(form.specialty)) {
+                        setErrors({});
+                        setStep(index);
+                      }
+                    }}
+                    className="flex items-center gap-2 text-left"
+                  >
+                    <span
+                      className={cn(
+                        "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold transition",
+                        isActive
+                          ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
+                          : isComplete
+                            ? "border-[hsl(220,36%,18%)] bg-white text-[hsl(220,36%,18%)]"
+                            : "border-[rgba(210,219,228,0.96)] bg-white text-[hsl(214,14%,56%)]",
+                      )}
+                    >
+                      {isComplete ? <Check className="h-3 w-3" /> : item.title}
+                    </span>
+
+                    <span
+                      className={cn(
+                        "text-[10px] font-semibold uppercase tracking-[0.18em]",
+                        isActive || isComplete
+                          ? "text-[hsl(219,30%,22%)]"
+                          : "text-[hsl(214,14%,56%)]",
+                      )}
+                    >
+                      {item.subtitle}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="flex items-center gap-2 self-start rounded-full border border-[rgba(220,228,236,0.96)] bg-white px-3 py-2 shadow-[0_4px_16px_rgba(29,53,87,0.04)] md:justify-self-end md:self-auto">
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white">
                 <UserRound className="h-3.5 w-3.5" />
               </div>
@@ -627,37 +915,37 @@ export default function RegistrationPage() {
           </div>
         </div>
 
-        <div className="flex flex-1 flex-col pt-3 pb-8">
+        <div className="flex flex-1 flex-col pt-1.5 pb-3">
           {step === 0 && (
             <section className="flex flex-1 flex-col">
               <div className="w-full">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[hsl(214,18%,60%)]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,60%)]">
                   Solis 01
                 </p>
 
-                <h1 className="mt-2 text-[38px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[52px]">
+                <h1 className="mt-1 text-[26px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[34px]">
                   Izvēlieties savu specialitāti
                 </h1>
 
-                <p className="mt-2 w-full text-[17px] leading-8 text-[hsl(214,16%,46%)]">
+                <p className="mt-1 max-w-[760px] text-[13px] leading-5 text-[hsl(214,16%,46%)]">
                   Mēs pielāgosim pacienta pārskatu jūsu darba prioritātēm. Šos
                   iestatījumus varēsiet mainīt jebkurā brīdī.
                 </p>
               </div>
 
-              <div className="mt-7 max-w-[520px]">
+              <div className="mt-3 max-w-[420px]">
                 <div className="relative">
                   <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(214,14%,58%)]" />
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Meklēt specialitāti..."
-                    className="h-12 border-[rgba(214,222,230,0.96)] bg-white pl-11 pr-4 text-[15px] shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
+                    className="h-9 border-[rgba(214,222,230,0.96)] bg-white pl-10 pr-3 text-[13px] shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
                   />
                 </div>
               </div>
 
-              <div className="mt-8 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
                 {filteredSpecialties.map((option) => {
                   const isSelected = form.specialty === option.id;
                   const SpecialtyIcon = option.icon;
@@ -668,17 +956,17 @@ export default function RegistrationPage() {
                       type="button"
                       onClick={() => applySpecialtyPreset(option.id)}
                       className={cn(
-                        "border bg-white px-4 py-4 text-left transition",
+                        "border bg-white px-3 py-2.5 text-left transition",
                         isSelected
                           ? "border-[hsl(220,36%,18%)] bg-[hsl(220,34%,97%)] shadow-[0_10px_24px_rgba(29,53,87,0.08)]"
                           : "border-[rgba(216,224,232,0.96)] hover:border-[rgba(184,197,210,0.96)]",
                       )}
                     >
-                      <span className="flex h-8 w-8 items-center justify-center rounded-[10px] border border-[rgba(214,222,230,0.96)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,52%)]">
+                      <span className="flex h-6 w-6 items-center justify-center rounded-[9px] border border-[rgba(214,222,230,0.96)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,52%)]">
                         <SpecialtyIcon className="h-4 w-4" />
                       </span>
 
-                      <p className="mt-4 text-[17px] font-semibold text-[hsl(219,30%,22%)]">
+                      <p className="mt-2 text-[21px] font-semibold text-[hsl(219,30%,22%)]">
                         {option.title}
                       </p>
                     </button>
@@ -701,24 +989,24 @@ export default function RegistrationPage() {
           )}
 
           {step === 1 && (
-            <section className="flex flex-1 flex-col">
+            <section className="flex min-h-0 flex-1 flex-col">
               <div className="max-w-[880px]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[hsl(214,18%,60%)]">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,60%)]">
                   Solis 02
                 </p>
 
-                <h1 className="mt-4 text-[40px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[52px]">
+                <h1 className="mt-1.5 text-[26px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[34px]">
                   Izkārtojiet savu darba paneli
                 </h1>
 
-                <p className="mt-4 text-[18px] leading-8 text-[hsl(214,16%,46%)]">
+                <p className="mt-1.5 text-[13px] leading-5 text-[hsl(214,16%,46%)]">
                   {selectedSpecialty ? (
                     <>
-                      Sākuma saturs ir pielāgots{" "}
+                      Sākuma saturs ir pielāgots specialitātei {" "}
                       <strong className="font-semibold text-[hsl(219,30%,22%)]">
                         {selectedSpecialty.title}
                       </strong>
-                      . Sakārtojiet moduļus sev ērtākajā secībā.
+                      . Sakārtojiet komponentes sev ērtākajā secībā un izkārtojumā.
                     </>
                   ) : (
                     "Sakārtojiet moduļus sev ērtākajā secībā."
@@ -726,24 +1014,19 @@ export default function RegistrationPage() {
                 </p>
               </div>
 
-              <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1fr)_minmax(380px,0.74fr)]">
-                <div className="border border-[rgba(216,224,232,0.96)] bg-white p-5">
+              <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.68fr)]">
+                <div className="flex flex-col border border-[rgba(216,224,232,0.96)] bg-white p-3">
                   <div>
-                    <p className="text-[18px] font-semibold text-[hsl(219,30%,22%)]">
+                    <p className="text-[14px] font-semibold text-[hsl(219,30%,22%)]">
                       Sakārtojiet pārskatu pēc nozīmīguma
                     </p>
 
-                    <p className="mt-2 text-[15px] leading-7 text-[hsl(214,16%,48%)]">
-                      Velciet komponentus uz atbilstošo pozīciju. Izvēle tiks
-                      saglabāta{" "}
-                      {selectedSpecialty
-                        ? selectedSpecialty.title.toLowerCase()
-                        : "profilam"}
-                      .
+                    <p className="mt-1 text-[11px] leading-4 text-[hsl(214,16%,48%)]">
+                      Velciet komponentus uz sev atbilstošo izkārtojumu.
                     </p>
                   </div>
 
-                  <div className="mt-6 space-y-3">
+                  <div className="mt-3 space-y-1 pr-1">
                     {aboveTheFoldItems.map((item, index) => (
                       <div
                         key={item.id}
@@ -762,26 +1045,29 @@ export default function RegistrationPage() {
                           }
                         }}
                         className={cn(
-                          "flex items-center gap-4 border px-4 py-4 transition",
+                          "flex items-center gap-2.5 border px-2.5 py-2 transition",
                           draggedModuleId === item.id
                             ? "border-[hsl(220,36%,18%)] bg-[hsl(220,34%,97%)]"
                             : "border-[rgba(216,224,232,0.96)] bg-white",
                         )}
                       >
-                        <GripVertical className="h-4 w-4 shrink-0 text-[hsl(214,12%,58%)]" />
-                        <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[13px] font-semibold text-[hsl(214,18%,48%)]">
+                        <GripVertical className="h-3.5 w-3.5 shrink-0 text-[hsl(214,12%,58%)]" />
+                        <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[11px] font-semibold text-[hsl(214,18%,48%)]">
                           {index + 1}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[15px] font-semibold text-[hsl(219,30%,22%)]">
+                          <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
                             {item.title}
+                          </p>
+                          <p className="mt-0.5 line-clamp-1 text-[10px] leading-3.5 text-[hsl(214,16%,48%)]">
+                            {item.description}
                           </p>
                         </div>
                         <div className="flex items-center gap-1">
                           <button
                             type="button"
                             onClick={() => moveModuleByOffset(item.id, -1)}
-                            className="flex h-8 w-8 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
+                            className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
                             aria-label={`${item.title} uz augšu`}
                           >
                             <ChevronUp className="h-4 w-4" />
@@ -789,7 +1075,7 @@ export default function RegistrationPage() {
                           <button
                             type="button"
                             onClick={() => moveModuleByOffset(item.id, 1)}
-                            className="flex h-8 w-8 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
+                            className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
                             aria-label={`${item.title} uz leju`}
                           >
                             <ChevronDown className="h-4 w-4" />
@@ -801,15 +1087,7 @@ export default function RegistrationPage() {
 
                   {belowTheFoldItems.length > 0 && (
                     <>
-                      <div className="my-6 flex items-center gap-4">
-                        <div className="h-px flex-1 bg-[rgba(220,228,236,0.96)]" />
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,60%)]">
-                          Lapa beidzas šeit
-                        </p>
-                        <div className="h-px flex-1 bg-[rgba(220,228,236,0.96)]" />
-                      </div>
-
-                      <div className="space-y-3">
+                      <div className="space-y-1">
                         {belowTheFoldItems.map((item, index) => (
                           <div
                             key={item.id}
@@ -828,26 +1106,29 @@ export default function RegistrationPage() {
                               }
                             }}
                             className={cn(
-                              "flex items-center gap-4 border px-4 py-4 transition",
+                              "flex items-center gap-2.5 border px-2.5 py-2 transition",
                               draggedModuleId === item.id
                                 ? "border-[hsl(220,36%,18%)] bg-[hsl(220,34%,97%)]"
                                 : "border-[rgba(216,224,232,0.96)] bg-white",
                             )}
                           >
-                            <GripVertical className="h-4 w-4 shrink-0 text-[hsl(214,12%,58%)]" />
-                            <span className="flex h-8 w-8 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[13px] font-semibold text-[hsl(214,18%,48%)]">
-                              {aboveTheFoldCount + index + 1}
+                            <GripVertical className="h-3.5 w-3.5 shrink-0 text-[hsl(214,12%,58%)]" />
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[11px] font-semibold text-[hsl(214,18%,48%)]">
+                              {aboveTheFoldItems.length + index + 1}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="text-[15px] font-semibold text-[hsl(219,30%,22%)]">
+                              <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
                                 {item.title}
+                              </p>
+                              <p className="mt-0.5 line-clamp-1 text-[10px] leading-3.5 text-[hsl(214,16%,48%)]">
+                                {item.description}
                               </p>
                             </div>
                             <div className="flex items-center gap-1">
                               <button
                                 type="button"
                                 onClick={() => moveModuleByOffset(item.id, -1)}
-                                className="flex h-8 w-8 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
+                                className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
                                 aria-label={`${item.title} uz augšu`}
                               >
                                 <ChevronUp className="h-4 w-4" />
@@ -855,7 +1136,7 @@ export default function RegistrationPage() {
                               <button
                                 type="button"
                                 onClick={() => moveModuleByOffset(item.id, 1)}
-                                className="flex h-8 w-8 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
+                                className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
                                 aria-label={`${item.title} uz leju`}
                               >
                                 <ChevronDown className="h-4 w-4" />
@@ -867,97 +1148,47 @@ export default function RegistrationPage() {
                     </>
                   )}
 
-                  <div className="mt-6 flex items-start gap-3 border border-[rgba(216,224,232,0.96)] bg-[hsl(214,22%,98%)] px-4 py-3 text-[14px] text-[hsl(214,16%,48%)]">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(214,24%,50%)]" />
+                  <div className="mt-3 flex items-start gap-2.5 border border-[rgba(216,224,232,0.96)] bg-[hsl(214,22%,98%)] px-2.5 py-2 text-[11px] text-[hsl(214,16%,48%)]">
+                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[hsl(214,24%,50%)]" />
                     <p>
-                      Prioritātes un izkārtojumu varēsiet mainīt arī vēlāk
-                      pacienta dashboardā.
+                      Prioritātes un izkārtojumu varēsiet mainīt arī vēlāk savos iestatījumos.
                     </p>
                   </div>
                 </div>
 
-                <div className="border border-[rgba(216,224,232,0.96)] bg-white p-5">
-                  <div className="border border-[rgba(216,224,232,0.96)] bg-[hsl(214,20%,98%)] px-4 py-3">
+                <div className="flex flex-col border border-[rgba(216,224,232,0.96)] bg-white p-3">
+                  <div className="border border-[rgba(216,224,232,0.96)] bg-[hsl(214,20%,98%)] px-3 py-2">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5">
                         <span className="h-2 w-2 rounded-full bg-[hsl(214,14%,76%)]" />
                         <span className="h-2 w-2 rounded-full bg-[hsl(214,14%,76%)]" />
                         <span className="h-2 w-2 rounded-full bg-[hsl(214,14%,76%)]" />
                       </div>
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[hsl(214,16%,58%)]">
-                        Preview
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,16%,58%)]">
+                        Priekšskatījums
                       </span>
                     </div>
                   </div>
 
-                  <div className="border-x border-b border-[rgba(216,224,232,0.96)] bg-white p-4">
-                    <div className="border border-[rgba(220,228,236,0.96)] bg-white p-4">
-                      <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 bg-[hsl(220,28%,84%)]" />
-                        <div className="flex-1 space-y-2">
-                          <div className="h-3 w-[58%] bg-[hsl(214,16%,88%)]" />
-                          <div className="h-3 w-[42%] bg-[hsl(214,16%,92%)]" />
+                  <div className="border-x border-b border-[rgba(216,224,232,0.96)] bg-[hsl(214,20%,98%)] p-2.5">
+                    <div className="rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-[hsl(214,20%,99%)] p-2">
+                      <div className="flex items-center justify-between border-b border-[rgba(220,228,236,0.96)] pb-2">
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-semibold text-[hsl(219,30%,22%)]">
+                            Vārds Uzvards
+                          </p>
+                          <p className="text-[8px] text-[hsl(214,14%,52%)]">
+                            Kontakfinformācija
+                          </p>
                         </div>
+                        <div className="h-7 w-7 rounded-[10px] bg-[hsl(214,20%,94%)]" />
                       </div>
-                      <div className="mt-5 grid grid-cols-3 gap-3">
-                        <div className="h-6 bg-[hsl(214,18%,92%)]" />
-                        <div className="h-6 bg-[hsl(214,18%,92%)]" />
-                        <div className="h-6 bg-[hsl(214,18%,92%)]" />
+
+                      <div className="mt-2 grid auto-rows-[76px] grid-cols-3 gap-1.5">
+                        {visibleLayoutItems.map((item, index) => (
+                          <PreviewCard key={item.id} item={item} index={index} />
+                        ))}
                       </div>
-                    </div>
-
-                    <div className="mt-3 grid gap-3">
-                      {visibleLayoutItems.slice(0, 4).map((item, index) => {
-                        const previewInfo = previewCardInfo[item.id];
-                        const isAlertCard = item.id === "alerts";
-                        const isTrendCard = item.id === "health-trends";
-
-                        return (
-                          <div
-                            key={item.id}
-                            className={cn(
-                              "border p-4",
-                              isAlertCard
-                                ? "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)]"
-                                : "border-[rgba(220,228,236,0.96)] bg-white",
-                            )}
-                          >
-                            <div className="flex items-center justify-between gap-3">
-                              <div className="min-w-0">
-                                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[hsl(214,16%,58%)]">
-                                  {previewInfo.note}
-                                </p>
-                                <p className="mt-1 text-[13px] leading-5 text-[hsl(214,18%,42%)]">
-                                  {previewInfo.summary}
-                                </p>
-                              </div>
-                              <span className="flex h-7 w-7 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[hsl(214,16%,48%)]">
-                                {index + 1}
-                              </span>
-                            </div>
-
-                            <div className="mt-4">
-                              {isTrendCard ? (
-                                <div className="flex h-[62px] items-end gap-2">
-                                  <div className="h-4 w-8 bg-[hsl(220,34%,74%)]" />
-                                  <div className="h-8 w-8 bg-[hsl(220,34%,74%)]" />
-                                  <div className="h-5 w-8 bg-[hsl(220,34%,74%)]" />
-                                  <div className="h-12 w-8 bg-[hsl(220,34%,74%)]" />
-                                </div>
-                              ) : (
-                                <div
-                                  className={cn(
-                                    "h-[54px]",
-                                    isAlertCard
-                                      ? "bg-[rgba(255,255,255,0.72)]"
-                                      : "bg-[hsl(214,20%,95%)]",
-                                  )}
-                                />
-                              )}
-                            </div>
-                          </div>
-                        );
-                      })}
                     </div>
                   </div>
                 </div>
@@ -965,7 +1196,7 @@ export default function RegistrationPage() {
             </section>
           )}
 
-          <div className="mt-8 flex flex-col items-end gap-4 border-t border-[rgba(220,228,236,0.96)] pt-5 md:flex-row md:items-center md:justify-end">
+          <div className="mt-3 flex flex-col items-end gap-2.5 border-t border-[rgba(220,228,236,0.96)] pt-3 md:flex-row md:items-center md:justify-end">
   <div className="flex items-center gap-3">
               {step === 0 ? (
                 <>
@@ -973,7 +1204,7 @@ export default function RegistrationPage() {
                     type="button"
                     variant="ghost"
                     onClick={handleSkipSpecialty}
-                    className="h-10 border border-transparent px-4 text-[14px] font-semibold text-[hsl(214,18%,44%)] hover:bg-[hsl(214,20%,98%)] hover:text-[hsl(219,36%,18%)]"
+                    className="h-9 border border-transparent px-3.5 text-[13px] font-semibold text-[hsl(214,18%,44%)] hover:bg-[hsl(214,20%,98%)] hover:text-[hsl(219,36%,18%)]"
                   >
                     Izlaist
                   </Button>
@@ -981,7 +1212,7 @@ export default function RegistrationPage() {
                     type="button"
                     onClick={handleNext}
                     disabled={!form.specialty}
-                    className="h-10 bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-5 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)] transition hover:opacity-95 disabled:opacity-45"
+                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)] transition hover:opacity-95 disabled:opacity-45"
                   >
                     Turpināt
                     <ArrowRight className="h-4 w-4" />
@@ -993,7 +1224,7 @@ export default function RegistrationPage() {
                     type="button"
                     variant="ghost"
                     onClick={handleBack}
-                    className="h-10 border border-transparent px-4 text-[14px] font-semibold text-[hsl(214,18%,44%)] hover:bg-[hsl(214,20%,98%)] hover:text-[hsl(219,36%,18%)]"
+                    className="h-9 border border-transparent px-3.5 text-[13px] font-semibold text-[hsl(214,18%,44%)] hover:bg-[hsl(214,20%,98%)] hover:text-[hsl(219,36%,18%)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Atpakaļ
@@ -1001,7 +1232,7 @@ export default function RegistrationPage() {
                   <Button
                     type="button"
                     onClick={handleSubmit}
-                    className="h-10 bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-5 text-[14px] font-semibold text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)] transition hover:opacity-95"
+                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)] transition hover:opacity-95"
                   >
                     Sākt darbu
                     <ArrowRight className="h-4 w-4" />

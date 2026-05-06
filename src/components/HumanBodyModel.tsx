@@ -688,23 +688,22 @@ export default function HumanBodyModel() {
 
     return (
         <>
-            <div className="flex flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+            <div className="flex h-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
                 <div className="flex items-center justify-between gap-3">
                     <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
                         Ķermeņa pārskats
                     </h2>
                 </div>
 
-                <p className="mt-3 text-left text-[11px] text-[hsl(214,14%,58%)]">
+                <p className="mt-2 text-left text-[10px] leading-4 text-[hsl(214,14%,58%)]">
                     Virziet kursoru virs orgāna, lai redzētu kopsavilkumu, vai nospiediet,
                     lai atvērtu detalizētu informāciju
                 </p>
 
-                <div className="relative mx-auto mt-4 flex w-full max-w-[760px] items-center justify-center overflow-visible rounded-[1.8rem] px-3 py-3 shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]">
-                    <img
+<div className="relative mx-auto mt-3 flex h-[420px] w-full max-w-[360px] items-center justify-center overflow-visible rounded-[1.4rem] px-2 py-2 shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]">                    <img
                         src={humanBody}
                         alt="Cilvēka ķermeņa modelis"
-                        className="h-auto max-h-[980px] w-full select-none object-contain object-center opacity-95 xl:max-h-[1080px]"
+                        className="h-full w-auto max-w-full select-none object-contain object-center opacity-95"
                         style={{
                             filter:
                                 "drop-shadow(0 8px 24px rgba(148,163,184,0.14)) saturate(0.92)",

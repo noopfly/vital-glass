@@ -49,6 +49,8 @@ interface LabResult {
 
 type RawLabResult = Omit<LabResult, "status">;
 
+const visibleLabCount = 3;
+
 const statusColors: Record<Status, string> = {
   normal: "hsl(152, 60%, 45%)",
   warning: "hsl(40, 90%, 50%)",
@@ -74,7 +76,7 @@ const statusIconBg: Record<Status, string> = {
 };
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,97%)] text-[hsl(220,36%,18%)]";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,97%)] text-[hsl(220,36%,18%)]";
 
 const rawLabResults: RawLabResult[] = [
   {
@@ -279,7 +281,10 @@ function formatResultValue(result: LabResult, value: number) {
   return formatNumber(value, result.decimals);
 }
 
-function isValueInRange(result: Pick<LabResult, "referenceType" | "normalMin" | "normalMax">, value: number) {
+function isValueInRange(
+  result: Pick<LabResult, "referenceType" | "normalMin" | "normalMax">,
+  value: number,
+) {
   if (result.referenceType === "between") {
     return value >= (result.normalMin ?? value) && value <= (result.normalMax ?? value);
   }
@@ -295,9 +300,7 @@ function getPointStatus(
   value: number,
   result: Pick<LabResult, "referenceType" | "normalMin" | "normalMax">,
 ): Status {
-  if (isValueInRange(result, value)) {
-    return "normal";
-  }
+  if (isValueInRange(result, value)) return "normal";
 
   if (result.referenceType === "between") {
     const min = result.normalMin ?? value;
@@ -313,19 +316,15 @@ function getPointStatus(
 
   if (result.referenceType === "max") {
     const max = result.normalMax ?? value;
-    const overshoot = value - max;
-    return overshoot > max * 0.3 ? "critical" : "warning";
+    return value - max > max * 0.3 ? "critical" : "warning";
   }
 
   const min = result.normalMin ?? value;
-  const deficit = min - value;
-  return deficit > min * 0.3 ? "critical" : "warning";
+  return min - value > min * 0.3 ? "critical" : "warning";
 }
 
 function getDeviationScore(result: LabResult) {
-  if (isValueInRange(result, result.value)) {
-    return 0;
-  }
+  if (isValueInRange(result, result.value)) return 0;
 
   if (result.referenceType === "between") {
     if (result.value < (result.normalMin ?? result.value)) {
@@ -419,7 +418,10 @@ function getChartBounds(result: LabResult) {
   return { yMin, yMax, tickCount };
 }
 
-function getReferenceAreaBounds(result: LabResult, chartBounds: { yMin: number; yMax: number }) {
+function getReferenceAreaBounds(
+  result: LabResult,
+  chartBounds: { yMin: number; yMax: number },
+) {
   if (result.referenceType === "between") {
     return {
       y1: result.normalMin ?? chartBounds.yMin,
@@ -443,14 +445,16 @@ function getReferenceAreaBounds(result: LabResult, chartBounds: { yMin: number; 
 const MiniSparkline = ({
   data,
   status,
+  compact,
 }: {
   data: LabHistoryPoint[];
   status: Status;
+  compact?: boolean;
 }) => {
   const color = statusColors[status];
 
   return (
-    <div className="mx-auto h-11 w-[118px]">
+    <div className={compact ? "mx-auto h-9 w-[96px]" : "mx-auto h-11 w-[118px]"}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
           <defs>
@@ -482,9 +486,7 @@ interface CustomTooltipProps {
 }
 
 const CustomTooltip = ({ active, payload, label, result }: CustomTooltipProps) => {
-  if (!active || !payload?.length) {
-    return null;
-  }
+  if (!active || !payload?.length) return null;
 
   return (
     <div className="glass-card-solid rounded-lg px-3 py-2 text-sm shadow-lg">
@@ -545,7 +547,7 @@ const DetailPanel = ({
       onClose={onClose}
       overlayClassName="bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm"
     >
-      <div className="mx-auto w-full max-w-xl animate-in zoom-in-95 rounded-[16px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl fade-in duration-200">
+      <div className="mx-auto w-full max-w-xl animate-in rounded-[16px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl zoom-in-95 fade-in duration-200">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
@@ -612,10 +614,7 @@ const DetailPanel = ({
 
         <div className="h-56">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart
-              data={detailChartData}
-              margin={{ top: 10, right: 10, bottom: 0, left: 0 }}
-            >
+            <LineChart data={detailChartData} margin={{ top: 10, right: 10, bottom: 0, left: 0 }}>
               <defs>
                 <linearGradient id="normalRangeGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stopColor="hsl(152, 60%, 45%)" stopOpacity={0.15} />
@@ -652,9 +651,7 @@ const DetailPanel = ({
               <Tooltip content={<CustomTooltip result={result} />} />
 
               {result.history.map((_, segmentIndex) => {
-                if (segmentIndex === 0) {
-                  return null;
-                }
+                if (segmentIndex === 0) return null;
 
                 const segmentColor = getSegmentColor(
                   result.history[segmentIndex - 1].value,
@@ -724,10 +721,12 @@ function TrendsList({
   results,
   expandedId,
   onToggleExpanded,
+  compact,
 }: {
   results: LabResult[];
   expandedId: string | null;
   onToggleExpanded: (id: string) => void;
+  compact?: boolean;
 }) {
   return (
     <div className="space-y-2">
@@ -735,31 +734,41 @@ function TrendsList({
         <button
           key={result.id}
           onClick={() => onToggleExpanded(result.id)}
-          className={`grid w-full cursor-pointer items-center gap-3 rounded-[14px] px-3 py-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_132px_88px_auto] ${
+          className={`grid w-full cursor-pointer items-center gap-3 rounded-[14px] px-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_110px_82px_auto] ${
+            compact ? "py-2" : "py-3"
+          } ${
             expandedId === result.id
               ? "glass-card-solid ring-2 ring-primary/30"
               : "glass-card-solid hover:shadow-md"
           }`}
         >
           <div
-            className={`flex h-9 w-9 items-center justify-center rounded-[12px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+            className={`flex shrink-0 items-center justify-center rounded-[12px] ${statusIconBg[result.status]} ${statusTextClass[result.status]} ${
+              compact ? "h-8 w-8" : "h-9 w-9"
+            }`}
           >
             {result.icon}
           </div>
 
           <div className="min-w-0">
-            <p className="text-[12px] font-semibold text-text-dark">{result.name}</p>
-            <p className="text-[10px] text-heading">
+            <p className="truncate text-[12px] font-semibold text-text-dark">
+              {result.name}
+            </p>
+            <p className="truncate text-[10px] text-heading">
               Norma: {result.normalRange} {result.unit}
             </p>
           </div>
 
-          <div className="flex justify-center md:justify-center">
-            <MiniSparkline data={result.history} status={result.status} />
+          <div className={compact ? "hidden justify-center md:flex" : "flex justify-center"}>
+            <MiniSparkline data={result.history} status={result.status} compact={compact} />
           </div>
 
           <div className="min-w-[72px] text-left md:text-right">
-            <p className="text-[1.35rem] font-bold leading-none text-text-dark">
+            <p
+              className={`font-bold leading-none text-text-dark ${
+                compact ? "text-[1.12rem]" : "text-[1.35rem]"
+              }`}
+            >
               {result.displayValue ?? formatResultValue(result, result.value)}{" "}
               <span className="text-[10px] font-normal text-heading">{result.unit}</span>
             </p>
@@ -774,7 +783,13 @@ function TrendsList({
             </p>
           </div>
 
-          <svg width="8" height="14" viewBox="0 0 8 14" fill="none" className="ml-1 text-heading">
+          <svg
+            width="8"
+            height="14"
+            viewBox="0 0 8 14"
+            fill="none"
+            className="ml-1 text-heading"
+          >
             <path
               d="M1 1L7 7L1 13"
               stroke="currentColor"
@@ -808,27 +823,33 @@ function HealthTrendsContent({
     <div
       className={
         compact
-          ? "flex h-full flex-col overflow-hidden rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-white p-6 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+          ? "flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
           : "flex flex-col"
       }
     >
-      <div className="mb-6 flex items-center gap-3">
+      <div className={compact ? "mb-4 flex shrink-0 items-center gap-3" : "mb-6 flex items-center gap-3"}>
         <div className={sectionIconClass}>
           <TrendingUp size={18} className="text-current" />
         </div>
 
-        <div>
-          <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
+        <div className="min-w-0">
+          <p className="truncate text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
             Klīniskie rādītāji
           </p>
-          <p className="text-xs text-heading">
+          <p className="truncate text-xs text-heading">
             Laboratorijas rezultātu pārskats un izmaiņas laikā
           </p>
         </div>
       </div>
 
-      <div className="mb-2 flex items-center justify-between">
-        <div className="ml-2 flex gap-2.5 text-[9px] font-medium uppercase tracking-wider text-heading">
+      <div
+        className={
+          compact
+            ? "mb-2 flex shrink-0 items-center justify-between gap-3"
+            : "mb-2 flex items-center justify-between gap-3"
+        }
+      >
+        <div className="ml-2 flex min-w-0 gap-2.5 text-[9px] font-medium uppercase tracking-wider text-heading">
           <span className="flex items-center gap-1">
             <span className={`h-2 w-2 rounded-full ${statusDotClass.normal}`} />
             <span>Norma</span>
@@ -845,21 +866,24 @@ function HealthTrendsContent({
           </span>
         </div>
 
-        <p className="mr-2 text-[9px] italic text-heading">
+        <p className="mr-2 hidden shrink-0 text-[9px] italic text-heading md:block">
           Noklikšķiniet, lai skatītu sīkāk
         </p>
       </div>
 
-      <TrendsList
-        results={results}
-        expandedId={expandedId}
-        onToggleExpanded={onToggleExpanded}
-      />
+      <div className="min-h-0 flex-1 overflow-hidden">
+        <TrendsList
+          results={results}
+          expandedId={expandedId}
+          onToggleExpanded={onToggleExpanded}
+          compact={compact}
+        />
+      </div>
 
-      <div className="mt-auto flex items-center justify-between gap-4 pt-3">
+      <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3">
         <p className="text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 04.08.2025.</p>
 
-        {showOpenAll && onOpenAll && labResults.length > 3 && (
+        {showOpenAll && onOpenAll && labResults.length > visibleLabCount && (
           <button
             type="button"
             onClick={onOpenAll}
@@ -882,18 +906,14 @@ const HealthTrends = () => {
     return [...labResults].sort((left, right) => {
       const statusDiff = statusPriority[left.status] - statusPriority[right.status];
 
-      if (statusDiff !== 0) {
-        return statusDiff;
-      }
+      if (statusDiff !== 0) return statusDiff;
 
       return getDeviationScore(right) - getDeviationScore(left);
     });
   }, []);
 
   const expandedResult = sortedResults.find((result) => result.id === expandedId);
-  const expandedFullResult = sortedResults.find(
-    (result) => result.id === expandedFullId,
-  );
+  const expandedFullResult = sortedResults.find((result) => result.id === expandedFullId);
 
   return (
     <>
@@ -902,14 +922,11 @@ const HealthTrends = () => {
       )}
 
       {expandedFullResult && (
-        <DetailPanel
-          result={expandedFullResult}
-          onClose={() => setExpandedFullId(null)}
-        />
+        <DetailPanel result={expandedFullResult} onClose={() => setExpandedFullId(null)} />
       )}
 
       <HealthTrendsContent
-        results={sortedResults.slice(0, 3)}
+        results={sortedResults.slice(0, visibleLabCount)}
         expandedId={expandedId}
         onToggleExpanded={(id) => setExpandedId(expandedId === id ? null : id)}
         onOpenAll={() => setIsAllLabsOpen(true)}

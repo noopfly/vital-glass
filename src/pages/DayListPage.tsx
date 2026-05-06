@@ -6,8 +6,18 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { patients } from "@/data/patients";
+import {
+  normalizeDashboardLayoutOrder,
+  readStoredDashboardLayoutOrder,
+  type DashboardComponentKey,
+} from "@/lib/dashboard-layout";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
+
+type DayListLocationState = {
+  patient?: Patient;
+  layoutOrder?: DashboardComponentKey[];
+};
 
 type QueueStatus = "ready" | "loading" | "waiting" | "error";
 
@@ -59,9 +69,15 @@ function createInitialEntries(): DayListEntry[] {
 export default function DayListPage() {
   const location = useLocation();
   const navigate = useNavigate();
+  const routeState = location.state as DayListLocationState | undefined;
 
-  const activePatient =
-    (location.state?.patient as Patient | undefined) ?? patients[0];
+  const activePatient = routeState?.patient ?? patients[0];
+  const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
+    () =>
+      normalizeDashboardLayoutOrder(
+        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      ),
+  );
 
   const [query, setQuery] = React.useState("");
   const [error, setError] = React.useState("");
@@ -85,6 +101,14 @@ export default function DayListPage() {
       ].slice(0, 5),
     [activePatient],
   );
+
+  React.useEffect(() => {
+    setLayoutOrder(
+      normalizeDashboardLayoutOrder(
+        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      ),
+    );
+  }, [routeState?.layoutOrder]);
 
   React.useEffect(() => {
     setEntries((current) => {
@@ -241,6 +265,8 @@ export default function DayListPage() {
         allPatients={patients}
         currentView="day-list"
         dayListCount={entries.length}
+        layoutOrder={layoutOrder}
+        onSaveLayoutOrder={setLayoutOrder}
       />
 
       <main className="min-h-screen px-8 py-8 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+32px)] lg:pr-8">
@@ -336,10 +362,14 @@ export default function DayListPage() {
 
               return (
                 <div
-                  key={entry.patientId}
-                  onClick={() => navigate("/components", { state: { patient } })}
-                  className="grid min-h-[72px] cursor-pointer grid-cols-[1.35fr_1.05fr_0.85fr_1.2fr_1fr_0.85fr] items-center border-b border-[rgba(225,232,240,0.95)] px-0 text-[15px] transition hover:bg-[hsl(214,28%,98%)]"
-                >
+                    key={entry.patientId}
+                  onClick={() =>
+                    navigate("/components", {
+                      state: { patient, layoutOrder },
+                    })
+                  }
+                    className="grid min-h-[72px] cursor-pointer grid-cols-[1.35fr_1.05fr_0.85fr_1.2fr_1fr_0.85fr] items-center border-b border-[rgba(225,232,240,0.95)] px-0 text-[15px] transition hover:bg-[hsl(214,28%,98%)]"
+                  >
                   <div className="truncate text-left font-semibold text-[hsl(216,36%,24%)]">
                     {patient.name}
                   </div>

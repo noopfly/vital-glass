@@ -24,7 +24,8 @@ const alerts: AlertItem[] = [
   {
     id: "1",
     title: "Bīstama kombinācija: varfarīns + ibuprofēns",
-    description: "Paaugstināts asiņošanas risks. Nepieciešama terapijas pārskatīšana.",
+    description:
+      "Paaugstināts asiņošanas risks. Nepieciešama terapijas pārskatīšana.",
     occurredAt: "2026-05-05T08:45:00",
     type: "critical",
   },
@@ -45,7 +46,8 @@ const alerts: AlertItem[] = [
   {
     id: "4",
     title: "HbA1c virs normas",
-    description: "HbA1c 9.2%. Nepieciešama glikēmijas kontroles izvērtēšana.",
+    description:
+      "HbA1c 9.2%. Nepieciešama glikēmijas kontroles izvērtēšana.",
     occurredAt: "2026-05-03T09:20:00",
     type: "warning",
   },
@@ -67,9 +69,11 @@ const alerts: AlertItem[] = [
 
 const sortedAlerts = [...alerts].sort(
   (left, right) =>
-    new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime(),
+    new Date(right.occurredAt).getTime() -
+    new Date(left.occurredAt).getTime(),
 );
 
+// ONLY SHOW 3
 const visibleAlerts = sortedAlerts.slice(0, 3);
 
 function formatAlertDate(value: string) {
@@ -109,7 +113,7 @@ const AlertsCard = () => {
 
   return (
     <>
-      <section className="flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex w-full flex-col overflow-hidden rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="flex items-center justify-between border-b border-[hsl(214,22%,88%)] pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-11 w-11 items-center justify-center rounded-[14px] border border-[rgba(239,208,208,0.96)] bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
@@ -120,6 +124,7 @@ const AlertsCard = () => {
               <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(0,54%,52%)]">
                 Brīdinājumi
               </p>
+
               <p className="text-xs text-[hsl(214,14%,50%)]">
                 Sakārtoti pēc jaunākajiem notikumiem
               </p>
@@ -131,6 +136,7 @@ const AlertsCard = () => {
           </div>
         </div>
 
+        {/* ONLY 3 ITEMS */}
         <div className="mt-4 space-y-2">
           {visibleAlerts.map((alert) => {
             const Icon = iconMap[alert.type];
@@ -138,7 +144,7 @@ const AlertsCard = () => {
             return (
               <div
                 key={alert.id}
-                className="flex items-start gap-3 rounded-[13px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2.5 transition hover:bg-white"
+                className="flex items-start gap-3 rounded-[13px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2.5"
               >
                 <div
                   className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${iconStyles[alert.type]}`}
@@ -151,12 +157,14 @@ const AlertsCard = () => {
                     <p className="min-w-0 pr-1 text-[12px] font-semibold leading-4 text-[hsl(222,28%,20%)] line-clamp-2">
                       {alert.title}
                     </p>
+
                     <span
                       className={`shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium ${dateStyles[alert.type]}`}
                     >
                       {formatAlertDate(alert.occurredAt)}
                     </span>
                   </div>
+
                   <p className="mt-1 text-[11px] leading-4 text-[hsl(214,14%,50%)] line-clamp-2">
                     {alert.description}
                   </p>
@@ -166,7 +174,7 @@ const AlertsCard = () => {
           })}
         </div>
 
-        <div className="mt-auto border-t border-[hsl(214,22%,88%)] pt-4 text-center">
+        <div className="border-t border-[hsl(214,22%,88%)] pt-4 text-center">
           <button
             type="button"
             onClick={() => setIsOpen(true)}
@@ -203,6 +211,7 @@ const AlertsCard = () => {
                   <h3 className="text-lg font-semibold text-[hsl(222,28%,20%)]">
                     Visi brīdinājumi
                   </h3>
+
                   <p className="text-sm text-[hsl(214,14%,42%)]">
                     Jaunākie brīdinājumi un notikumi dilstošā secībā.
                   </p>
@@ -210,7 +219,7 @@ const AlertsCard = () => {
               </div>
             </div>
 
-            <div className="max-h-[78vh] space-y-3 overflow-y-auto px-6 py-5">
+            <div className="space-y-3 px-6 py-5">
               {sortedAlerts.map((alert) => {
                 const Icon = iconMap[alert.type];
 
@@ -231,6 +240,7 @@ const AlertsCard = () => {
                           <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
                             {alert.title}
                           </p>
+
                           <p className="mt-1 text-sm text-[hsl(214,14%,42%)]">
                             {alert.description}
                           </p>

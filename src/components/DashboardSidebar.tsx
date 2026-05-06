@@ -15,6 +15,12 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+import {
+  defaultDashboardLayoutOrder,
+  normalizeDashboardLayoutOrder,
+  writeStoredDashboardLayoutOrder,
+  type DashboardComponentKey,
+} from "@/lib/dashboard-layout";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
 
@@ -24,6 +30,27 @@ type DashboardSidebarProps = {
   allPatients: Patient[];
   currentView: "dashboard" | "day-list" | "search";
   dayListCount?: number;
+  layoutOrder?: DashboardComponentKey[];
+  onSaveLayoutOrder?: (layoutOrder: DashboardComponentKey[]) => void;
+};
+
+type SettingsModuleKey = DashboardComponentKey;
+
+type SettingsPreviewPattern =
+  | "profile"
+  | "trend"
+  | "alerts"
+  | "imaging"
+  | "body"
+  | "table"
+  | "timeline"
+  | "summary";
+
+type SettingsPreviewDefinition = {
+  note: string;
+  previewClassName: string;
+  surfaceClassName: string;
+  pattern: SettingsPreviewPattern;
 };
 
 const storageKey = "omnis-sidebar-collapsed";
@@ -57,68 +84,296 @@ const profileMenuItems = [
 const settingsModules = [
   {
     key: "patientCard",
-    title: "Pacienta kopsavilkums",
+    title: "Pacienta profils",
     description: "Galvenie pacienta dati un kontaktinformacija",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
   {
     key: "healthTrends",
-    title: "Kliniskie raditaji",
-    description: "Laboratoriju parskats un izmainas laika",
+    title: "Klīniskie rādītāji",
+    description: "Laboratoriju pārskats un izmaiņas laika",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
   {
     key: "alertsCard",
-    title: "Bridinajumi",
-    description: "Kritiskie raditaji un svarigi notikumi",
-    sizeLabel: "Saurs",
+    title: "Brīdinājumi",
+    description: "Kritiskie rādītāji un svarīgi notikumi",
+    sizeLabel: "šaurs",
     previewColumns: 1,
   },
   {
     key: "medicalImagingViewer",
-    title: "Atteldiagnostika",
-    description: "RTG, CT un citu izmeklejumu skati",
-    sizeLabel: "Saurs",
+    title: "Attēldiagnostika",
+    description: "RTG, CT un citu izmeklējumu skati",
+    sizeLabel: "šaurs",
     previewColumns: 1,
   },
   {
     key: "humanBodyModel",
-    title: "Kermena parskats",
+    title: "Ķermeņa pārskats",
     description: "Interaktiva problemu zonu karte",
-    sizeLabel: "Saurs",
+    sizeLabel: "šaurs",
     previewColumns: 1,
   },
   {
     key: "medicationTable",
     title: "Medikamenti",
     description: "Aktuala terapija un mijiedarbibas",
-    sizeLabel: "Saurs",
+    sizeLabel: "šaurs",
     previewColumns: 1,
   },
   {
     key: "referralHistory",
-    title: "E-nosutijumi",
+    title: "E-nosutījumi",
     description: "Aktivie un vesturiskie nosutijumi",
-    sizeLabel: "Saurs",
+    sizeLabel: "šaurs",
     previewColumns: 1,
   },
   {
     key: "eventTimeline",
-    title: "Notikumu laika linija",
+    title: "Notikumu laika līnija",
     description: "Laika skala ar kliniskajiem notikumiem",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
-  {
-    key: "patientSummaryCard",
-    title: "Pacienta panelis",
-    description: "Paplasinats kopsavilkums ar jaunakajiem datiem",
-    sizeLabel: "Plats",
-    previewColumns: 2,
-  },
+
 ] as const;
+
+const defaultSettingsOrder = defaultDashboardLayoutOrder;
+
+const settingsPreviewDefinitions: Record<
+  SettingsModuleKey,
+  SettingsPreviewDefinition
+> = {
+  patientCard: {
+    note: "Pacienta profils",
+    pattern: "profile",
+    previewClassName: "col-span-3",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  healthTrends: {
+    note: "Klīniskie rādītāji",
+    pattern: "trend",
+    previewClassName: "col-span-2",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  alertsCard: {
+    note: "Brīdinājumi",
+    pattern: "alerts",
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  medicalImagingViewer: {
+    note: "Attēldiagnostika",
+    pattern: "imaging",
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  humanBodyModel: {
+    note: "Ķermeņa pārskats",
+    pattern: "body",
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  medicationTable: {
+    note: "Medikamenti",
+    pattern: "table",
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  referralHistory: {
+    note: "E-nosūtījumi",
+    pattern: "table",
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  eventTimeline: {
+    note: "Notikumu laika līnija",
+    pattern: "timeline",
+    previewClassName: "col-span-3",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+  patientSummaryCard: {
+    note: "Pacienta kopsavilkums",
+    pattern: "summary",
+    previewClassName: "col-span-2",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
+};
+
+function SettingsPreviewCard({
+  module,
+  index,
+}: {
+  module: (typeof settingsModules)[number];
+  index: number;
+}) {
+  const preview = settingsPreviewDefinitions[module.key];
+
+  return (
+    <div
+      className={cn(
+        "overflow-hidden rounded-[14px] border p-2",
+        preview.previewClassName,
+        preview.surfaceClassName,
+      )}
+    >
+      <div className="flex items-center justify-between gap-1.5">
+        <div className="min-w-0 pr-1">
+          <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,16%,58%)]">
+            {preview.note}
+          </p>
+        </div>
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[9px] bg-[hsl(214,20%,96%)] text-[9px] font-semibold text-[hsl(214,16%,48%)]">
+          {index + 1}
+        </span>
+      </div>
+
+      <div className="mt-2">
+        {preview.pattern === "profile" && (
+          <div className="space-y-2">
+            <div className="flex items-start gap-3">
+              <div className="h-8 w-8 rounded-[10px] bg-[hsl(214,20%,90%)]" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-2.5 w-[34%] bg-[hsl(214,18%,88%)]" />
+                <div className="h-2.5 w-[48%] bg-[hsl(214,20%,93%)]" />
+              </div>
+            </div>
+            <div className="grid grid-cols-4 gap-2">
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "trend" && (
+          <div className="space-y-2">
+            <div className="grid grid-cols-3 gap-1.5">
+              {[62, 58, 54].map((width, cardIndex) => (
+                <div
+                  key={cardIndex}
+                  className="rounded-[10px] bg-[hsl(214,20%,97%)] p-1.5"
+                >
+                  <div className="h-2 bg-[hsl(214,18%,88%)]" style={{ width: `${width}%` }} />
+                  <div className="mt-1.5 h-3 w-[44%] bg-[hsl(214,20%,82%)]" />
+                </div>
+              ))}
+            </div>
+            <div className="flex h-[42px] items-end gap-1.5 rounded-[10px] bg-[hsl(214,20%,97%)] px-2 pb-2 pt-1.5">
+              {[4, 6, 5, 8, 6, 9].map((height, barIndex) => (
+                <div
+                  key={barIndex}
+                  className="w-4 rounded-[3px] bg-[hsl(220,34%,74%)]"
+                  style={{ height: `${height * 4}px` }}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "alerts" && (
+          <div className="space-y-1.5">
+            {[0, 1, 2].map((alertIndex) => (
+              <div
+                key={alertIndex}
+                className="rounded-[10px] border border-[rgba(239,203,203,0.96)] bg-white/70 px-2 py-1.5"
+              >
+                <div className="flex items-start gap-1.5">
+                  <div className="mt-0.5 h-5 w-5 rounded-[8px] bg-[hsl(0,56%,90%)]" />
+                  <div className="flex-1 space-y-1">
+                    <div className="h-2 w-[88%] bg-[hsl(0,30%,88%)]" />
+                    <div className="h-2 w-[64%] bg-[hsl(0,24%,92%)]" />
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {preview.pattern === "body" && (
+          <div className="flex h-[58px] items-center justify-center rounded-[12px] bg-[hsl(214,20%,97%)]">
+            <div className="relative h-[46px] w-[24px] rounded-[999px] bg-[linear-gradient(180deg,hsl(214,18%,90%),hsl(214,18%,84%))]">
+              <span className="absolute left-[46%] top-[18%] h-1.5 w-1.5 rounded-full bg-[hsl(0,56%,82%)]" />
+              <span className="absolute left-[28%] top-[44%] h-1.5 w-1.5 rounded-full bg-[hsl(40,56%,78%)]" />
+              <span className="absolute right-[28%] top-[61%] h-1.5 w-1.5 rounded-full bg-[hsl(214,28%,74%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "imaging" && (
+          <div className="space-y-1.5">
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="h-[56px] rounded-[10px] bg-[linear-gradient(135deg,hsl(214,18%,90%),hsl(214,18%,84%))]" />
+              <div className="h-[56px] rounded-[10px] bg-[linear-gradient(135deg,hsl(214,18%,92%),hsl(214,18%,86%))]" />
+            </div>
+            <div className="h-2 w-[58%] bg-[hsl(214,18%,88%)]" />
+          </div>
+        )}
+
+        {preview.pattern === "table" && (
+          <div className="overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,97%)]">
+            <div className="grid grid-cols-[1.2fr_0.9fr] gap-1.5 border-b border-[hsl(214,22%,88%)] px-2 py-1.5">
+              <div className="h-2 w-[72%] bg-[hsl(214,18%,88%)]" />
+              <div className="ml-auto h-2 w-[52%] bg-[hsl(214,18%,90%)]" />
+            </div>
+            {[0, 1, 2].map((rowIndex) => (
+              <div
+                key={rowIndex}
+                className="grid grid-cols-[1.2fr_0.9fr] gap-1.5 px-2 py-1.5"
+              >
+                <div className="h-2 w-[84%] bg-[hsl(214,18%,90%)]" />
+                <div className="ml-auto h-2 w-[56%] bg-[hsl(214,18%,92%)]" />
+              </div>
+            ))}
+          </div>
+        )}
+
+        {preview.pattern === "timeline" && (
+          <div className="space-y-2">
+            <div className="flex items-center gap-1.5">
+              {[0, 1, 2, 3].map((timelineIndex) => (
+                <React.Fragment key={timelineIndex}>
+                  <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
+                  {timelineIndex < 3 && (
+                    <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
+                  )}
+                </React.Fragment>
+              ))}
+            </div>
+            <div className="grid grid-cols-4 gap-1.5">
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+              <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "summary" && (
+          <div className="space-y-1.5 rounded-[10px] bg-[hsl(214,20%,97%)] p-2">
+            <div className="h-2 w-[22%] bg-[hsl(214,18%,86%)]" />
+            <div className="h-2 w-[82%] bg-[hsl(214,18%,90%)]" />
+            <div className="h-2 w-[76%] bg-[hsl(214,18%,90%)]" />
+            <div className="h-2 w-[68%] bg-[hsl(214,18%,90%)]" />
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
 
 export default function DashboardSidebar({
   activePatient,
@@ -126,6 +381,8 @@ export default function DashboardSidebar({
   allPatients,
   currentView,
   dayListCount = 0,
+  layoutOrder,
+  onSaveLayoutOrder,
 }: DashboardSidebarProps) {
   const navigate = useNavigate();
   const footerRef = React.useRef<HTMLDivElement | null>(null);
@@ -145,10 +402,10 @@ export default function DashboardSidebar({
   const [isAllPatientsOpen, setIsAllPatientsOpen] = React.useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [draggedSettingsKey, setDraggedSettingsKey] = React.useState<
-    string | null
+    DashboardComponentKey | null
   >(null);
-  const [settingsOrder, setSettingsOrder] = React.useState<string[]>(
-    settingsModules.map((module) => module.key),
+  const [settingsOrder, setSettingsOrder] = React.useState<DashboardComponentKey[]>(
+    () => normalizeDashboardLayoutOrder(layoutOrder ?? defaultSettingsOrder),
   );
   const [supportMessage, setSupportMessage] = React.useState("");
 
@@ -164,13 +421,21 @@ export default function DashboardSidebar({
     () =>
       Object.fromEntries(
         settingsModules.map((module) => [module.key, module]),
-      ) as Record<string, (typeof settingsModules)[number]>,
+      ) as Record<DashboardComponentKey, (typeof settingsModules)[number]>,
     [],
   );
 
   const orderedSettingsModules = settingsOrder
     .map((key) => settingsModuleMap[key])
     .filter(Boolean);
+
+  React.useEffect(() => {
+    if (!layoutOrder?.length) {
+      return;
+    }
+
+    setSettingsOrder(normalizeDashboardLayoutOrder(layoutOrder));
+  }, [layoutOrder]);
 
   React.useEffect(() => {
     window.localStorage.setItem(storageKey, String(isCollapsed));
@@ -246,7 +511,7 @@ export default function DashboardSidebar({
     }
   };
 
-  const handleSettingsDragOver = (targetKey: string) => {
+  const handleSettingsDragOver = (targetKey: DashboardComponentKey) => {
     if (!draggedSettingsKey || draggedSettingsKey === targetKey) {
       return;
     }
@@ -267,7 +532,13 @@ export default function DashboardSidebar({
   };
 
   const handleResetSettings = () => {
-    setSettingsOrder(settingsModules.map((module) => module.key));
+    setSettingsOrder(defaultSettingsOrder);
+  };
+
+  const handleSaveSettings = () => {
+    writeStoredDashboardLayoutOrder(settingsOrder);
+    onSaveLayoutOrder?.(settingsOrder);
+    setIsSettingsOpen(false);
   };
 
   return (
@@ -289,7 +560,9 @@ export default function DashboardSidebar({
               <button
                 type="button"
                 onClick={() =>
-                  navigate("/components", { state: { patient: activePatient } })
+                  navigate("/components", {
+                    state: { patient: activePatient, layoutOrder },
+                  })
                 }
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[linear-gradient(180deg,hsl(219,36%,18%),hsl(218,34%,24%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.18)]"
                 aria-label="Atvērt sākuma paneli"
@@ -312,7 +585,7 @@ export default function DashboardSidebar({
         <div className="px-3 py-4">
           <Link
             to="/search"
-            state={{ patient: activePatient }}
+            state={{ patient: activePatient, layoutOrder }}
             className={cn(
               "flex w-full items-center rounded-[12px] px-3 py-3 text-left transition",
               currentView === "search"
@@ -333,7 +606,7 @@ export default function DashboardSidebar({
 
           <Link
             to="/day-list"
-            state={{ patient: activePatient }}
+            state={{ patient: activePatient, layoutOrder }}
             className={cn(
               "mt-3 flex w-full items-center rounded-[12px] px-3 py-3 text-left transition",
               currentView === "day-list"
@@ -375,7 +648,7 @@ export default function DashboardSidebar({
                   <Link
                     key={patient.id}
                     to="/components"
-                    state={{ patient }}
+                    state={{ patient, layoutOrder }}
                     aria-current={isActivePatient ? "page" : undefined}
                     className={cn(
                       "block rounded-[12px] px-3 py-1.5 text-left transition",
@@ -430,7 +703,7 @@ export default function DashboardSidebar({
                   className={cn(
                     "flex w-full items-start justify-between gap-4 px-4 py-4 text-left transition hover:bg-[hsl(214,22%,98%)]",
                     index !== profileMenuItems.length - 1 &&
-                      "border-b border-[rgba(230,235,241,0.96)]",
+                    "border-b border-[rgba(230,235,241,0.96)]",
                   )}
                 >
                   <div className="min-w-0">
@@ -601,7 +874,7 @@ export default function DashboardSidebar({
                   className={cn(
                     "flex w-full items-center justify-between gap-4 px-6 py-5 text-left transition hover:bg-[hsl(214,22%,98%)]",
                     index !== 2 &&
-                      "border-b border-[rgba(230,235,241,0.96)]",
+                    "border-b border-[rgba(230,235,241,0.96)]",
                   )}
                 >
                   <div className="min-w-0">
@@ -661,7 +934,7 @@ export default function DashboardSidebar({
                     <Link
                       key={patient.id}
                       to="/components"
-                      state={{ patient }}
+                      state={{ patient, layoutOrder }}
                       onClick={() => setIsAllPatientsOpen(false)}
                       aria-current={isActivePatient ? "page" : undefined}
                       className={cn(
@@ -716,10 +989,10 @@ export default function DashboardSidebar({
             <div className="flex shrink-0 items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
-                  Iestatijumi
+                  Iestatījumi
                 </p>
                 <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.03em] text-[hsl(220,36%,18%)]">
-                  Panela izkartojums
+                  Paneļa izkārtojums
                 </h2>
               </div>
 
@@ -730,7 +1003,7 @@ export default function DashboardSidebar({
                   className="inline-flex items-center gap-2 rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-[13px] font-medium text-[hsl(220,24%,28%)] transition hover:bg-[hsl(214,22%,98%)]"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
-                  Atiestatit
+                  Atiestatīt
                 </button>
 
                 <button
@@ -755,13 +1028,9 @@ export default function DashboardSidebar({
                       Komponenti
                     </p>
                     <p className="mt-1 text-[12px] text-[hsl(214,16%,50%)]">
-                      Velciet, lai parkartotu
+                      Velciet, lai pārkārtotu komponenšu izkārtojumu
                     </p>
                   </div>
-
-                  <span className="text-[11px] font-medium text-[hsl(214,18%,56%)]">
-                    {orderedSettingsModules.length} redzami
-                  </span>
                 </div>
 
                 <div className="space-y-2">
@@ -779,7 +1048,7 @@ export default function DashboardSidebar({
                       className={cn(
                         "flex w-full items-start gap-3 rounded-[14px] border border-[rgba(223,230,237,0.96)] bg-white px-3 py-2.5 text-left transition",
                         draggedSettingsKey === module.key &&
-                          "opacity-70 shadow-[0_10px_24px_rgba(29,53,87,0.08)]",
+                        "opacity-70 shadow-[0_10px_24px_rgba(29,53,87,0.08)]",
                       )}
                     >
                       <div className="mt-0.5 flex items-center gap-3 text-[hsl(214,14%,56%)]">
@@ -812,44 +1081,34 @@ export default function DashboardSidebar({
               >
                 <div className="mb-4">
                   <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,62%)]">
-                    Priekskatijums
-                  </p>
-                  <p className="mt-1 text-[12px] text-[hsl(214,16%,50%)]">
-                    Pacienta panelis
+                    Priekšskatījums
                   </p>
                 </div>
 
-                <div className="grid gap-3 rounded-[18px] border border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,99%)] p-3 md:grid-cols-2">
-                  {orderedSettingsModules.map((module, index) => (
-                    <div
-                      key={module.key}
-                      className={cn(
-                        "rounded-[14px] border border-[rgba(223,230,237,0.96)] bg-white px-4 py-4 shadow-[0_3px_12px_rgba(29,53,87,0.03)]",
-                        module.previewColumns === 2 && "md:col-span-2",
-                      )}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0">
-                          <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,18%,60%)]">
-                            {String(index + 1).padStart(2, "0")}
-                          </p>
-                          <p className="mt-1 text-[14px] font-semibold text-[hsl(220,36%,18%)]">
-                            {module.title}
-                          </p>
-                        </div>
-
-                        <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,18%,60%)]">
-                          {module.previewColumns === 2 ? "2 kolonnas" : "1 kolonna"}
-                        </span>
+                <div className="rounded-[18px] border border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,99%)] p-3">
+                  <div className="mb-3 rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-3 shadow-[0_8px_18px_rgba(29,53,87,0.04)]">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="text-[8px] font-semibold text-[hsl(214,24%,28%)]">
+                          Vārds Uzvārds
+                        </p>
+                        <p className="mt-1 text-[7px] text-[hsl(214,16%,58%)]">
+                          Kontaktinformācija
+                        </p>
                       </div>
-
-                      <div className="mt-4 space-y-2">
-                        <div className="h-2 rounded-full bg-[hsl(214,18%,92%)]" />
-                        <div className="h-2 w-4/5 rounded-full bg-[hsl(214,18%,94%)]" />
-                        <div className="h-2 w-3/5 rounded-full bg-[hsl(214,18%,95%)]" />
-                      </div>
+                      <div className="h-7 w-7 rounded-[10px] bg-[hsl(214,20%,94%)]" />
                     </div>
-                  ))}
+                  </div>
+
+                  <div className="grid auto-rows-[76px] grid-cols-3 gap-1.5">
+                    {orderedSettingsModules.map((module, index) => (
+                      <SettingsPreviewCard
+                        key={module.key}
+                        module={module}
+                        index={index}
+                      />
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -869,10 +1128,10 @@ export default function DashboardSidebar({
                 </button>
                 <button
                   type="button"
-                  onClick={() => setIsSettingsOpen(false)}
+                  onClick={handleSaveSettings}
                   className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >
-                  Saglabat izkartojumu
+                  Saglabāt izkārtojumu
                 </button>
               </div>
             </div>
