@@ -76,7 +76,7 @@ const statusIconBg: Record<Status, string> = {
 };
 
 const sectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,97%)] text-[hsl(220,36%,18%)]";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const rawLabResults: RawLabResult[] = [
   {
@@ -547,11 +547,11 @@ const DetailPanel = ({
       onClose={onClose}
       overlayClassName="bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm"
     >
-      <div className="mx-auto w-full max-w-xl animate-in rounded-[16px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl zoom-in-95 fade-in duration-200">
+      <div className="mx-auto w-full max-w-xl animate-in rounded-[14px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl zoom-in-95 fade-in duration-200">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-11 w-11 items-center justify-center rounded-[14px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-[10px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
             >
               {result.icon}
             </div>
@@ -566,7 +566,7 @@ const DetailPanel = ({
 
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[12px] bg-muted text-heading transition-colors hover:text-text-dark"
+            className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-muted text-heading transition-colors hover:text-text-dark"
             aria-label="Aizvērt"
           >
             <X size={16} />
@@ -703,7 +703,7 @@ const DetailPanel = ({
           {result.history.map((point) => (
             <div
               key={point.month}
-              className="glass-card-solid flex-1 rounded-[12px] px-1 py-2 text-center"
+              className="glass-card-solid flex-1 rounded-[10px] px-1 py-2 text-center"
             >
               <p className="text-xs font-medium text-heading">{point.month}</p>
               <p className="text-sm font-bold text-text-dark">
@@ -734,7 +734,7 @@ function TrendsList({
         <button
           key={result.id}
           onClick={() => onToggleExpanded(result.id)}
-          className={`grid w-full cursor-pointer items-center gap-3 rounded-[14px] px-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_110px_82px_auto] ${
+          className={`grid w-full cursor-pointer items-center gap-3 rounded-[10px] px-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_110px_82px_auto] ${
             compact ? "py-2" : "py-3"
           } ${
             expandedId === result.id
@@ -743,7 +743,7 @@ function TrendsList({
           }`}
         >
           <div
-            className={`flex shrink-0 items-center justify-center rounded-[12px] ${statusIconBg[result.status]} ${statusTextClass[result.status]} ${
+            className={`flex shrink-0 items-center justify-center rounded-[10px] ${statusIconBg[result.status]} ${statusTextClass[result.status]} ${
               compact ? "h-8 w-8" : "h-9 w-9"
             }`}
           >
@@ -823,7 +823,7 @@ function HealthTrendsContent({
     <div
       className={
         compact
-          ? "flex h-full w-full flex-col overflow-hidden rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+          ? "flex h-full w-full flex-col overflow-hidden rounded-[12px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
           : "flex flex-col"
       }
     >
@@ -940,11 +940,11 @@ const HealthTrends = () => {
           overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
           contentClassName="max-w-3xl"
         >
-          <div className="relative mx-auto w-full overflow-hidden rounded-[16px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+          <div className="relative mx-auto w-full overflow-hidden rounded-[14px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
             <button
               type="button"
               onClick={() => setIsAllLabsOpen(false)}
-              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
               aria-label="Aizvērt"
             >
               <X className="h-4 w-4" />

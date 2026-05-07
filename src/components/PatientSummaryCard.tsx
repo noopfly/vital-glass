@@ -6,14 +6,14 @@ interface PatientSummaryCardProps {
 }
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const PatientSummaryCard = ({
   summary,
   updatedAt,
 }: PatientSummaryCardProps) => {
   return (
-    <section className="flex h-full w-full rounded-[16px] border border-[hsl(214,22%,88%)] bg-white px-6 py-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+    <section className="flex h-full w-full rounded-[12px] border border-[hsl(214,22%,88%)] bg-white px-6 py-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
       <div className="flex items-start gap-4">
         <div className={sectionIconClass}>
           <Activity size={18} className="text-current" />

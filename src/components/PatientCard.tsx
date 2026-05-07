@@ -15,7 +15,7 @@ interface PatientCardProps {
 
 const PatientCard = ({ patient }: PatientCardProps) => {
   return (
-    <div className="overflow-hidden rounded-[16px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+    <div className="overflow-hidden rounded-[12px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
 
       {/* 🔹 TOP HEADER */}
       <div className="border-b border-[hsl(208,22%,92%)] px-7 py-5">
@@ -60,7 +60,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
           </div>
         </div>
 
-        <div className="hidden h-24 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+        <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
 
         {/* Diagnozes */}
         <div>
@@ -89,7 +89,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
           </ul>
         </div>
 
-        <div className="hidden h-24 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+        <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
 
         {/* Hroniskās */}
         <div>
@@ -118,7 +118,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
           </ul>
         </div>
 
-        <div className="hidden h-24 w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+        <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
 
         {/* Riska faktori */}
         <div>

@@ -139,10 +139,10 @@ const Index = () => {
         onSaveLayoutOrder={setOrder}
       />
 
-      <div className="lg:pl-[280px]">
+      <div className="transition-[padding-left] duration-300 lg:pl-[var(--dashboard-sidebar-width,280px)]">
         {/* HEADER */}
         <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
-          <div className="mx-auto max-w-[1280px] px-4 py-4 md:px-6 flex items-center justify-between">
+          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 py-4 md:px-6">
             
             {/* LEFT */}
             <div className="min-w-0">
@@ -203,12 +203,12 @@ const Index = () => {
               className={`flex items-center gap-3 transition-all ${
                 isScrolled
                   ? ""
-                  : "rounded-[16px] border bg-[hsl(214,20%,98%)] px-4 py-3"
+                  : "rounded-[12px] border bg-[hsl(214,20%,98%)] px-4 py-3"
               }`}
             >
               <button
                 onClick={() => !isRefreshing && setIsRefreshing(true)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-[14px] border bg-[hsl(214,22%,97%)]"
+                className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border bg-[hsl(214,22%,97%)]"
               >
                 <RefreshCw
                   className={isRefreshing ? "animate-spin" : ""}
@@ -232,14 +232,14 @@ const Index = () => {
 
         {/* GRID */}
         <main className="px-4 py-5 md:px-6">
-          <div className="mx-auto max-w-[1280px] grid gap-4 lg:grid-cols-3">
+          <div className="mx-auto grid w-full max-w-[1280px] gap-4 lg:grid-cols-3">
             {visibleItems.map((item) => (
               <div
                 key={item.key}
                 draggable
                 onDragStart={() => setDraggedKey(item.key)}
                 onDragEnd={() => setDraggedKey(null)}
-                className={`group relative rounded-[16px] border bg-white shadow ${
+                className={`group relative rounded-[12px] border bg-white shadow ${
                   layoutClasses[item.key]
                 }`}
               >

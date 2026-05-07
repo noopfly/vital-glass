@@ -285,7 +285,7 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
     summary: "Personas dati, diagnozes un primārie riski.",
   },
   "health-trends": {
-    note: "Klīniskie trendi",
+    note: "Klīniskie rādītāji",
     summary: "Pulss, glikoze un asinsspiediens 30 dienu griezumā.",
   },
   imaging: {
@@ -293,7 +293,7 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
     summary: "RTG un CT atradnes ar jaunāko aprakstu.",
   },
   medications: {
-    note: "Terapija",
+    note: "Medikamenti",
     summary: "Aktuālie medikamenti, devas un mijiedarbību signāli.",
   },
   alerts: {
@@ -301,15 +301,15 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
     summary: "Nokavētas vizītes un izmainīti laboratorijas rezultāti.",
   },
   timeline: {
-    note: "Pacienta gaita",
+    note: "Notikuma laika līnija",
     summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
   },
   "body-model": {
-    note: "Vizualizācija",
+    note: "Ķermeņa pārskats",
     summary: "Anatomiskais skats ar atradnēm un saistītajiem reģioniem.",
   },
   referrals: {
-    note: "Vēsture",
+    note: "E-nosūtījumi",
     summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
   },
 };
@@ -317,7 +317,7 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
 const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   "patient-card": {
     note: "Pacienta profils",
-    summary: "Personas dati, diagnozes un primÄrie riski.",
+    summary: "Personas dati, diagnozes un primārie riski.",
     pattern: "profile",
     colSpan: 3,
     rowSpan: 1,
@@ -326,8 +326,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "health-trends": {
-    note: "KlÄ«niskie trendi",
-    summary: "Pulss, glikoze un asinsspiediens 30 dienu griezumÄ.",
+    note: "Klīniskie rādītāji",
+    summary: "Pulss, glikoze un asinsspiediens un citi rādītāji dinamikā.",
     pattern: "trend",
     colSpan: 2,
     rowSpan: 1,
@@ -336,8 +336,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   imaging: {
-    note: "AttÄ“li",
-    summary: "RTG un CT atradnes ar jaunÄko aprakstu.",
+    note: "Attēldiagnostika",
+    summary: "RTG un CT atradnes ar jaunāko aprakstu.",
     pattern: "imaging",
     colSpan: 1,
     rowSpan: 1,
@@ -346,8 +346,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   medications: {
-    note: "Terapija",
-    summary: "AktuÄlie medikamenti, devas un mijiedarbÄ«bu signÄli.",
+    note: "Medikamenti",
+    summary: "Aktuālie medikamenti, devas un mijiedarbību signāli.",
     pattern: "table",
     colSpan: 1,
     rowSpan: 1,
@@ -366,7 +366,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   timeline: {
-    note: "Pacienta gaita",
+    note: "Notikuma laika līnija",
     summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
     pattern: "timeline",
     colSpan: 3,
@@ -376,7 +376,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "body-model": {
-    note: "Vizualizācija",
+    note: "Ķermeņa pārskats",
     summary: "Anatomiskais skats ar atradnēm un saistītajiem reģioniem.",
     pattern: "body",
     colSpan: 1,
@@ -386,7 +386,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   referrals: {
-    note: "Vēsture",
+    note: "E-nosūtījumi",
     summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
     pattern: "table",
     colSpan: 1,
@@ -1087,7 +1087,7 @@ export default function RegistrationPage() {
 
                   {belowTheFoldItems.length > 0 && (
                     <>
-                      <div className="space-y-1">
+                      <div className="space-y-1 pr-1">
                         {belowTheFoldItems.map((item, index) => (
                           <div
                             key={item.id}

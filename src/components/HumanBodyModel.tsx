@@ -426,7 +426,7 @@ function OrganHotspot({
                     />
 
                     <div
-                        className="w-[280px] rounded-[14px] border px-4 py-3 shadow-[0_18px_36px_rgba(15,23,42,0.12)]"
+                        className="w-[280px] rounded-[10px] border px-4 py-3 shadow-[0_18px_36px_rgba(15,23,42,0.12)]"
                         style={{
                             borderColor: `${primaryColor}1a`,
                             backgroundColor: "rgba(255,255,255,0.98)",
@@ -500,7 +500,7 @@ function ProblemAccordion({
     const Icon = categoryCfg.Icon;
 
     return (
-        <div className="overflow-hidden rounded-[14px] border border-[hsl(210,22%,86%)] bg-[hsl(214,20%,98%)] shadow-[0_6px_18px_rgba(29,53,87,0.05)]">
+        <div className="overflow-hidden rounded-[10px] border border-[hsl(210,22%,86%)] bg-[hsl(214,20%,98%)] shadow-[0_6px_18px_rgba(29,53,87,0.05)]">
             <button
                 type="button"
                 onClick={onToggle}
@@ -617,12 +617,12 @@ function OrganModal({
             onClose={onClose}
             overlayClassName="bg-[rgba(241,245,249,0.72)] backdrop-blur-[6px]"
         >
-            <div className="relative mx-auto max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[18px] border border-[hsl(210,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
+            <div className="relative mx-auto max-h-[90vh] w-full max-w-3xl overflow-hidden rounded-[14px] border border-[hsl(210,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
                 <div className="max-h-[90vh] overflow-y-auto p-6">
                     <button
                         type="button"
                         onClick={onClose}
-                        className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+                        className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-[10px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
                         aria-label="Aizvērt"
                     >
                         <X className="h-5 w-5" />
@@ -688,11 +688,16 @@ export default function HumanBodyModel() {
 
     return (
         <>
-            <div className="flex h-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+            <div className="flex h-full flex-col rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
                 <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+                            <ScanSearch className="h-[18px] w-[18px]" />
+                        </div>
                     <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
                         Ķermeņa pārskats
                     </h2>
+                    </div>
                 </div>
 
                 <p className="mt-2 text-left text-[10px] leading-4 text-[hsl(214,14%,58%)]">

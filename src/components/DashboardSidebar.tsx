@@ -55,7 +55,7 @@ type SettingsPreviewDefinition = {
 
 const storageKey = "omnis-sidebar-collapsed";
 const expandedSidebarWidth = "280px";
-const collapsedSidebarWidth = "56px";
+const collapsedSidebarWidth = "92px";
 
 function getInitials(name: string) {
   return name
@@ -900,9 +900,9 @@ export default function DashboardSidebar({
         <CenteredOverlay
           onClose={() => setIsAllPatientsOpen(false)}
           overlayClassName="bg-[rgba(16,24,40,0.18)] backdrop-blur-[6px]"
-          contentClassName="max-w-[1040px]"
+          contentClassName="max-w-[760px]"
         >
-          <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+          <div className="mx-auto w-full max-w-[760px] overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-8 py-7">
               <div>
                 <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">

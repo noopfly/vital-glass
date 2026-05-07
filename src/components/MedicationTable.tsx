@@ -139,7 +139,7 @@ const fullTableGridClass =
   "md:grid-cols-[minmax(0,1.25fr)_0.7fr_0.8fr_0.8fr_0.9fr_0.9fr_1.15fr]";
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 function InteractionOverlay({
   medication,
@@ -160,13 +160,13 @@ function InteractionOverlay({
         top: `${cursorPosition.y}px`,
       }}
     >
-      <div className="relative rounded-[14px] border border-[hsl(214,22%,88%)] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
+      <div className="relative rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
         <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,52%)]">
           Mijiedarbība
         </p>
 
         <div className="mb-0.5 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[11px] border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]">
             <AlertTriangle size={15} />
           </div>
 
@@ -354,7 +354,7 @@ function MedicationTableContent({
     <>
       <div
         ref={containerRef}
-        className="relative overflow-visible rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
+        className="relative overflow-visible rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
       >
         <div
           className={`hidden gap-x-2.5 border-b border-[hsl(214,22%,88%)] bg-[hsl(214,20%,96%)] px-4 py-2.5 md:grid ${tableGridClass}`}
@@ -433,7 +433,7 @@ const MedicationTable = () => {
 
   return (
     <>
-      <section className="flex h-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex h-full flex-col rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="mb-3.5 flex items-center gap-3">
           <div className={sectionIconClass}>
             <Pill size={18} className="text-current" />
@@ -449,9 +449,11 @@ const MedicationTable = () => {
           </div>
         </div>
 
-        <MedicationTableContent mode="compact" />
+        <div className="flex-1">
+          <MedicationTableContent mode="compact" />
+        </div>
 
-        <div className="mt-3 border-t border-[hsl(214,22%,88%)] pt-3 text-center">
+        <div className="mt-auto border-t border-[hsl(214,22%,88%)] pt-3 text-center">
           <button
             type="button"
             onClick={() => setIsOpen(true)}
@@ -468,12 +470,12 @@ const MedicationTable = () => {
           overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
           contentClassName="max-w-6xl"
         >
-          <div className="relative mx-auto w-full overflow-hidden rounded-[18px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
+          <div className="relative mx-auto w-full overflow-hidden rounded-[14px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
             <div className="border-b border-[hsl(214,22%,88%)] px-6 py-5">
               <button
                 type="button"
                 onClick={() => setIsOpen(false)}
-                className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-[12px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+                className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
                 aria-label="Aizvērt"
               >
                 <X className="h-4 w-4" />

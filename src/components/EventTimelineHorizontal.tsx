@@ -127,7 +127,7 @@ const events: TimelineEvent[] = [
 ];
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-[14px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const typeConfig: Record<
   EventType,
@@ -151,91 +151,91 @@ const typeConfig: Record<
     label: "Laboratorija",
     icon: <Beaker size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(214,18%,82%)] bg-[hsl(214,20%,97%)] shadow-[0_0_0_4px_hsl(214_20%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(214,18%,46%)]",
+      "border-[hsl(214,24%,78%)] bg-[hsl(214,38%,95%)] shadow-[0_0_0_4px_hsl(214_38%_95%/0.95)]",
+    dotInnerClass: "bg-[hsl(214,30%,38%)]",
     activeDotOuterClass:
-      "border-[hsl(214,18%,82%)] bg-[hsl(214,20%,97%)] shadow-[0_0_0_4px_hsl(214_20%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(214,18%,46%)]",
-    textClass: "text-[hsl(214,18%,40%)]",
+      "border-[hsl(214,24%,78%)] bg-[hsl(214,38%,95%)] shadow-[0_0_0_4px_hsl(214_38%_95%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(214,30%,38%)]",
+    textClass: "text-[hsl(214,28%,34%)]",
     badgeClass:
-      "border-[hsl(214,18%,84%)] bg-[hsl(214,20%,96%)] text-[hsl(214,18%,40%)]",
-    activeBorderClass: "border-[hsl(214,18%,84%)]",
-    activeTextClass: "text-[hsl(214,18%,40%)]",
-    activeBackgroundClass: "bg-[hsl(214,20%,96%)]",
-    detailDotClass: "bg-[hsl(214,18%,40%)]",
-    activeConnectorClass: "bg-[hsl(214,18%,78%)]",
+      "border-[hsl(214,24%,80%)] bg-[hsl(214,38%,94%)] text-[hsl(214,28%,34%)]",
+    activeBorderClass: "border-[hsl(214,24%,80%)]",
+    activeTextClass: "text-[hsl(214,28%,34%)]",
+    activeBackgroundClass: "bg-[hsl(214,38%,94%)]",
+    detailDotClass: "bg-[hsl(214,30%,38%)]",
+    activeConnectorClass: "bg-[hsl(214,22%,70%)]",
   },
   ambulatora_vizite: {
     label: "Ambulatorā vizīte",
     icon: <Stethoscope size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(152,22%,80%)] bg-[hsl(150,20%,97%)] shadow-[0_0_0_4px_hsl(150_20%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(152,24%,42%)]",
+      "border-[hsl(152,24%,78%)] bg-[hsl(150,32%,95%)] shadow-[0_0_0_4px_hsl(150_32%_95%/0.95)]",
+    dotInnerClass: "bg-[hsl(152,36%,38%)]",
     activeDotOuterClass:
-      "border-[hsl(152,22%,80%)] bg-[hsl(150,20%,97%)] shadow-[0_0_0_4px_hsl(150_20%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(152,24%,42%)]",
-    textClass: "text-[hsl(152,24%,38%)]",
+      "border-[hsl(152,24%,78%)] bg-[hsl(150,32%,95%)] shadow-[0_0_0_4px_hsl(150_32%_95%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(152,36%,38%)]",
+    textClass: "text-[hsl(152,38%,31%)]",
     badgeClass:
-      "border-[hsl(152,22%,84%)] bg-[hsl(150,20%,96%)] text-[hsl(152,24%,38%)]",
-    activeBorderClass: "border-[hsl(152,22%,84%)]",
-    activeTextClass: "text-[hsl(152,24%,38%)]",
-    activeBackgroundClass: "bg-[hsl(150,20%,96%)]",
-    detailDotClass: "bg-[hsl(152,24%,38%)]",
-    activeConnectorClass: "bg-[hsl(152,20%,78%)]",
+      "border-[hsl(152,24%,80%)] bg-[hsl(150,32%,94%)] text-[hsl(152,38%,31%)]",
+    activeBorderClass: "border-[hsl(152,24%,80%)]",
+    activeTextClass: "text-[hsl(152,38%,31%)]",
+    activeBackgroundClass: "bg-[hsl(150,32%,94%)]",
+    detailDotClass: "bg-[hsl(152,36%,38%)]",
+    activeConnectorClass: "bg-[hsl(152,24%,68%)]",
   },
   stacionars: {
     label: "Stacionārs",
     icon: <Hospital size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(0,24%,82%)] bg-[hsl(0,20%,97%)] shadow-[0_0_0_4px_hsl(0_20%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(0,28%,52%)]",
+      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,95%)] shadow-[0_0_0_4px_hsl(0_42%_95%/0.95)]",
+    dotInnerClass: "bg-[hsl(0,38%,46%)]",
     activeDotOuterClass:
-      "border-[hsl(0,24%,82%)] bg-[hsl(0,20%,97%)] shadow-[0_0_0_4px_hsl(0_20%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(0,28%,52%)]",
-    textClass: "text-[hsl(0,28%,46%)]",
+      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,95%)] shadow-[0_0_0_4px_hsl(0_42%_95%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(0,38%,46%)]",
+    textClass: "text-[hsl(0,42%,40%)]",
     badgeClass:
-      "border-[hsl(0,24%,84%)] bg-[hsl(0,20%,96%)] text-[hsl(0,28%,46%)]",
-    activeBorderClass: "border-[hsl(0,24%,84%)]",
-    activeTextClass: "text-[hsl(0,28%,46%)]",
-    activeBackgroundClass: "bg-[hsl(0,20%,96%)]",
-    detailDotClass: "bg-[hsl(0,28%,46%)]",
-    activeConnectorClass: "bg-[hsl(0,22%,78%)]",
+      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,94%)] text-[hsl(0,42%,40%)]",
+    activeBorderClass: "border-[hsl(0,28%,80%)]",
+    activeTextClass: "text-[hsl(0,42%,40%)]",
+    activeBackgroundClass: "bg-[hsl(0,42%,94%)]",
+    detailDotClass: "bg-[hsl(0,38%,46%)]",
+    activeConnectorClass: "bg-[hsl(0,26%,68%)]",
   },
   procedura: {
     label: "Procedūra",
     icon: <Scissors size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(38,28%,82%)] bg-[hsl(40,20%,97%)] shadow-[0_0_0_4px_hsl(40_20%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(38,34%,48%)]",
+      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,95%)] shadow-[0_0_0_4px_hsl(40_52%_95%/0.95)]",
+    dotInnerClass: "bg-[hsl(36,50%,42%)]",
     activeDotOuterClass:
-      "border-[hsl(38,28%,82%)] bg-[hsl(40,20%,97%)] shadow-[0_0_0_4px_hsl(40_20%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(38,34%,48%)]",
-    textClass: "text-[hsl(38,34%,42%)]",
+      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,95%)] shadow-[0_0_0_4px_hsl(40_52%_95%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(36,50%,42%)]",
+    textClass: "text-[hsl(34,50%,36%)]",
     badgeClass:
-      "border-[hsl(38,28%,84%)] bg-[hsl(40,20%,96%)] text-[hsl(38,34%,42%)]",
-    activeBorderClass: "border-[hsl(38,28%,84%)]",
-    activeTextClass: "text-[hsl(38,34%,42%)]",
-    activeBackgroundClass: "bg-[hsl(40,20%,96%)]",
-    detailDotClass: "bg-[hsl(38,34%,42%)]",
-    activeConnectorClass: "bg-[hsl(38,26%,78%)]",
+      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,94%)] text-[hsl(34,50%,36%)]",
+    activeBorderClass: "border-[hsl(38,30%,80%)]",
+    activeTextClass: "text-[hsl(34,50%,36%)]",
+    activeBackgroundClass: "bg-[hsl(40,52%,94%)]",
+    detailDotClass: "bg-[hsl(36,50%,42%)]",
+    activeConnectorClass: "bg-[hsl(38,28%,68%)]",
   },
   atteldiagnostika: {
     label: "Attēldiagnostika",
     icon: <Activity size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(220,18%,82%)] bg-[hsl(220,20%,97%)] shadow-[0_0_0_4px_hsl(220_20%_97%/0.95)]",
-    dotInnerClass: "bg-[hsl(220,18%,46%)]",
+      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,95%)] shadow-[0_0_0_4px_hsl(220_36%_95%/0.95)]",
+    dotInnerClass: "bg-[hsl(220,28%,40%)]",
     activeDotOuterClass:
-      "border-[hsl(220,18%,82%)] bg-[hsl(220,20%,97%)] shadow-[0_0_0_4px_hsl(220_20%_97%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(220,18%,46%)]",
-    textClass: "text-[hsl(220,18%,40%)]",
+      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,95%)] shadow-[0_0_0_4px_hsl(220_36%_95%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(220,28%,40%)]",
+    textClass: "text-[hsl(220,28%,34%)]",
     badgeClass:
-      "border-[hsl(220,18%,84%)] bg-[hsl(220,20%,96%)] text-[hsl(220,18%,40%)]",
-    activeBorderClass: "border-[hsl(220,18%,84%)]",
-    activeTextClass: "text-[hsl(220,18%,40%)]",
-    activeBackgroundClass: "bg-[hsl(220,20%,96%)]",
-    detailDotClass: "bg-[hsl(220,18%,40%)]",
-    activeConnectorClass: "bg-[hsl(220,18%,78%)]",
+      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,94%)] text-[hsl(220,28%,34%)]",
+    activeBorderClass: "border-[hsl(220,24%,80%)]",
+    activeTextClass: "text-[hsl(220,28%,34%)]",
+    activeBackgroundClass: "bg-[hsl(220,36%,94%)]",
+    detailDotClass: "bg-[hsl(220,28%,40%)]",
+    activeConnectorClass: "bg-[hsl(220,22%,68%)]",
   },
 };
 
@@ -317,7 +317,7 @@ const EventTimelineHorizontal = () => {
   return (
     <div
       ref={containerRef}
-      className="rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+      className="rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
     >
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className={sectionIconClass}>
@@ -340,7 +340,7 @@ const EventTimelineHorizontal = () => {
                 onClick={() => toggleType(type)}
                 className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[10px] font-medium transition-all ${isSelected
                     ? `${config.badgeClass} shadow-sm`
-                    : "border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] text-heading opacity-80"
+                    : "border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,38%)]"
                   }`}
               >
                 <span className={config.textClass}>{config.icon}</span>
@@ -352,7 +352,7 @@ const EventTimelineHorizontal = () => {
       </div>
 
       {filteredEvents.length === 0 ? (
-        <div className="flex min-h-[110px] items-center justify-center rounded-[14px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
+        <div className="flex min-h-[110px] items-center justify-center rounded-[10px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
           Nav atlasītu notikumu tipu.
         </div>
       ) : (
@@ -409,8 +409,8 @@ const EventTimelineHorizontal = () => {
                       <div className="relative flex flex-col items-center">
                         <p
                           className={`mb-3 text-[11px] font-semibold tracking-[0.03em] ${active
-                              ? "text-[hsl(263,34%,58%)]"
-                              : "text-[hsl(215,14%,48%)]"
+                              ? "text-[hsl(220,24%,36%)]"
+                              : "text-[hsl(215,18%,40%)]"
                             }`}
                         >
                           {formatDate(event.date)}
@@ -454,8 +454,8 @@ const EventTimelineHorizontal = () => {
                         }}
                         aria-expanded={active}
                         className={`relative w-full text-left transition-all duration-300 ease-out ${active
-                            ? `rounded-[16px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-[0_10px_24px_rgba(29,53,87,0.08)]`
-                            : "rounded-[12px] border border-[hsl(210,22%,88%)] bg-[hsl(214,20%,98%)] px-2.5 py-3 shadow-[0_6px_18px_rgba(29,53,87,0.05)] hover:bg-white"
+                            ? `rounded-[10px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-[0_10px_24px_rgba(29,53,87,0.08)]`
+                            : "rounded-[10px] border border-[hsl(210,22%,88%)] bg-[hsl(214,20%,98%)] px-2.5 py-3 shadow-[0_6px_18px_rgba(29,53,87,0.05)] hover:bg-white"
                           }`}
                       >
                         {active ? (
@@ -503,7 +503,7 @@ const EventTimelineHorizontal = () => {
                             <p
                               className={`${active
                                   ? "mt-1.5 text-[12px] leading-[20px] text-[hsl(214,18%,54%)]"
-                                  : "mt-0.5 line-clamp-2 text-[10px] leading-[14px] text-heading"
+                                  : "mt-0.5 line-clamp-2 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
                                 }`}
                             >
                               {event.summary}
@@ -512,12 +512,12 @@ const EventTimelineHorizontal = () => {
                             <div
                               className={`flex items-start gap-2 ${active
                                   ? "mt-2 text-[12px] leading-[20px] text-[hsl(214,18%,50%)]"
-                                  : "mt-1 text-[10px] leading-[14px] text-heading"
+                                  : "mt-1 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
                                 }`}
                             >
                               <Building2
                                 size={active ? 14 : 12}
-                                className="mt-[2px] shrink-0 text-[hsl(214,18%,60%)]"
+                                className="mt-[2px] shrink-0 text-[hsl(214,18%,52%)]"
                               />
                               <span>{event.facility}</span>
                             </div>

@@ -86,10 +86,10 @@ const statusStyles: Record<ImagingStatus, string> = {
 };
 
 const sectionIconClass =
-  "flex h-12 w-12 items-center justify-center rounded-[16px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const navButtonClass =
-  "inline-flex h-[40px] w-[40px] items-center justify-center rounded-[14px] border border-[hsl(214,22%,88%)] bg-white text-[hsl(214,18%,40%)] shadow-[0_8px_18px_rgba(29,53,87,0.08)] transition hover:bg-[hsl(214,20%,98%)] disabled:cursor-not-allowed disabled:opacity-35";
+  "inline-flex h-[40px] w-[40px] items-center justify-center rounded-[10px] border border-[hsl(214,22%,88%)] bg-white text-[hsl(214,18%,40%)] shadow-[0_8px_18px_rgba(29,53,87,0.08)] transition hover:bg-[hsl(214,20%,98%)] disabled:cursor-not-allowed disabled:opacity-35";
 
 function formatLatvianDate(isoDate: string) {
   const date = new Date(isoDate);
@@ -194,7 +194,7 @@ const MedicalImagingViewer = () => {
 
   return (
     <>
-      <section className="flex w-full flex-col rounded-[16px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex h-full w-full flex-col rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="mb-3 flex items-start gap-4">
           <div className="flex items-start gap-4">
             <div className={sectionIconClass}>
@@ -213,7 +213,7 @@ const MedicalImagingViewer = () => {
 
         </div>
 
-        <div className="rounded-[18px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,99%)] p-2.5">
+        <div className="flex flex-1 flex-col rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,99%)] p-2.5">
           <div className="mb-3 flex items-start justify-between gap-2">
             <div className="min-w-0 flex-1">
               <h3 className="text-[13px] font-semibold tracking-[-0.02em] text-[hsl(222,28%,20%)]">
@@ -227,7 +227,7 @@ const MedicalImagingViewer = () => {
             <button
               type="button"
               onClick={() => setIsFullscreen(true)}
-              className="inline-flex items-center gap-2 rounded-[12px] border border-[hsl(214,22%,88%)] bg-white px-2.5 py-2 text-[9px] font-medium text-[hsl(214,18%,44%)] shadow-[0_6px_14px_rgba(29,53,87,0.05)] transition hover:bg-[hsl(214,20%,98%)]"
+              className="inline-flex items-center gap-2 rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-2.5 py-2 text-[9px] font-medium text-[hsl(214,18%,44%)] shadow-[0_6px_14px_rgba(29,53,87,0.05)] transition hover:bg-[hsl(214,20%,98%)]"
               aria-label="Skatīt pilnekrānā"
             >
               <Search size={13} />
@@ -235,7 +235,7 @@ const MedicalImagingViewer = () => {
             </button>
           </div>
 
-          <div className="relative overflow-hidden rounded-[20px] border border-[hsl(214,22%,90%)] bg-[hsl(214,20%,98%)]">
+          <div className="relative overflow-hidden rounded-[10px] border border-[hsl(214,22%,90%)] bg-[hsl(214,20%,98%)]">
             <button
               type="button"
               onClick={goPrev}
@@ -251,7 +251,7 @@ const MedicalImagingViewer = () => {
                 <img
                   src={activeStudy.imageSrc}
                   alt={activeStudy.title}
-                  className="block max-h-[145px] w-full rounded-[10px] object-contain"
+                  className="block max-h-[145px] w-full rounded-[8px] object-contain"
                 />
               ) : (
                 <div className="h-[120px] w-full max-w-[420px]">
@@ -318,7 +318,7 @@ const MedicalImagingViewer = () => {
                 {activeStudy.status}
               </span>
 
-              <p className="text-[10px] leading-4 text-[hsl(214,14%,42%)]">
+              <p className="text-[11px] leading-5 text-[hsl(214,14%,42%)]">
                 {activeStudy.conclusion}
               </p>
             </div>
@@ -331,7 +331,7 @@ const MedicalImagingViewer = () => {
           onClose={() => setIsFullscreen(false)}
           overlayClassName="bg-[hsla(218,30%,12%,0.72)] backdrop-blur-md"
         >
-          <div className="relative mx-auto w-full max-w-5xl rounded-[18px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
+          <div className="relative mx-auto w-full max-w-5xl rounded-[14px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
             <div className="mb-4 flex items-center justify-between gap-4">
               <div className="min-w-0">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
@@ -348,13 +348,13 @@ const MedicalImagingViewer = () => {
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                className="rounded-[12px] border border-[hsl(214,22%,88%)] bg-white px-3 py-1.5 text-sm font-medium text-[hsl(222,28%,20%)] transition hover:bg-[hsl(214,20%,98%)]"
+                className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-3 py-1.5 text-sm font-medium text-[hsl(222,28%,20%)] transition hover:bg-[hsl(214,20%,98%)]"
               >
                 Aizvērt
               </button>
             </div>
 
-            <div className="relative isolate flex h-[78vh] items-center justify-center overflow-visible rounded-[18px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]">
+            <div className="relative isolate flex h-[78vh] items-center justify-center overflow-visible rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]">
               <button
                 type="button"
                 onClick={goPrev}
