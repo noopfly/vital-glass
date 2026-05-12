@@ -15,7 +15,7 @@ interface PatientCardProps {
 
 const PatientCard = ({ patient }: PatientCardProps) => {
   return (
-    <div className="overflow-hidden rounded-[12px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+    <div className="overflow-hidden rounded-[6px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
 
       {/* 🔹 TOP HEADER */}
       <div className="border-b border-[hsl(208,22%,92%)] px-7 py-5">

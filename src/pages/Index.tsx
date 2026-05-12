@@ -14,7 +14,6 @@ import PatientSummaryCard from "@/components/PatientSummaryCard";
 import ReferralHistory from "@/components/ReferralHistory";
 import { patients } from "@/data/patients";
 import {
-  defaultDashboardLayoutOrder,
   normalizeDashboardLayoutOrder,
   readStoredDashboardLayoutOrder,
   type DashboardComponentKey,
@@ -26,16 +25,18 @@ type DashboardLocationState = {
   layoutOrder?: DashboardComponentKey[];
 };
 
+const dashboardCardHeight = "min-h-[420px]";
+
 const layoutClasses: Record<DashboardComponentKey, string> = {
   patientCard: "lg:col-span-3",
-  healthTrends: "lg:col-span-2 lg:aspect-[2/1]",
-  medicalImagingViewer: "",
-  medicationTable: "",
-  alertsCard: "lg:aspect-square",
+  healthTrends: `lg:col-span-2 ${dashboardCardHeight}`,
+  medicalImagingViewer: dashboardCardHeight,
+  medicationTable: dashboardCardHeight,
+  alertsCard: dashboardCardHeight,
   patientSummaryCard: "lg:col-span-2 lg:aspect-[2/1]",
   eventTimeline: "lg:col-span-3",
-  humanBodyModel: "",
-  referralHistory: "",
+  humanBodyModel: dashboardCardHeight,
+  referralHistory: dashboardCardHeight,
 };
 
 function formatRefreshTime(date: Date) {
@@ -46,14 +47,16 @@ function formatRefreshTime(date: Date) {
 }
 
 const InfoDivider = () => (
-  <span className="text-[hsl(210,18%,70%)] mx-1">|</span>
+  <span className="mx-1 text-[hsl(210,18%,70%)]">|</span>
 );
 
 const Index = () => {
   const location = useLocation();
   const navigate = useNavigate();
+
   const routeState = location.state as DashboardLocationState | undefined;
   const patient = routeState?.patient;
+
   const routeLayoutOrder = React.useMemo(
     () =>
       normalizeDashboardLayoutOrder(
@@ -64,23 +67,25 @@ const Index = () => {
 
   const [order, setOrder] =
     React.useState<DashboardComponentKey[]>(routeLayoutOrder);
+
   const [draggedKey, setDraggedKey] =
     React.useState<DashboardComponentKey | null>(null);
+
   const [lastRefreshedAt, setLastRefreshedAt] = React.useState(new Date());
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
 
   const recentPatients = React.useMemo(() => {
-    if (!patient) {
-      return patients;
-    }
+    if (!patient) return patients;
 
     return [patient, ...patients.filter((item) => item.id !== patient.id)];
   }, [patient]);
 
   React.useEffect(() => {
     const onScroll = () => setIsScrolled(window.scrollY > 32);
+
     window.addEventListener("scroll", onScroll, { passive: true });
+
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
@@ -96,35 +101,57 @@ const Index = () => {
 
   React.useEffect(() => {
     if (!isRefreshing) return;
-    const t = setTimeout(() => {
+
+    const timeout = setTimeout(() => {
       setLastRefreshedAt(new Date());
       setIsRefreshing(false);
     }, 1200);
-    return () => clearTimeout(t);
+
+    return () => clearTimeout(timeout);
   }, [isRefreshing]);
 
   if (!patient) return null;
 
-  const phone =
-    "phone" in patient
-      ? patient.phone
-      : "";
-
+  const phone = "phone" in patient ? patient.phone : "";
   const email = "email" in patient ? patient.email : "";
 
   const componentItems = [
-    { key: "patientCard" as const, element: <PatientCard patient={patient} /> },
-    { key: "healthTrends" as const, element: <HealthTrends /> },
-    { key: "medicalImagingViewer" as const, element: <MedicalImagingViewer /> },
-    { key: "medicationTable" as const, element: <MedicationTable /> },
-    { key: "alertsCard" as const, element: <AlertsCard /> },
-    { key: "eventTimeline" as const, element: <EventTimelineHorizontal /> },
-    { key: "humanBodyModel" as const, element: <HumanBodyModel /> },
-    { key: "referralHistory" as const, element: <ReferralHistory /> },
+    {
+      key: "patientCard" as const,
+      element: <PatientCard patient={patient} />,
+    },
+    {
+      key: "healthTrends" as const,
+      element: <HealthTrends />,
+    },
+    {
+      key: "medicalImagingViewer" as const,
+      element: <MedicalImagingViewer />,
+    },
+    {
+      key: "medicationTable" as const,
+      element: <MedicationTable />,
+    },
+    {
+      key: "alertsCard" as const,
+      element: <AlertsCard />,
+    },
+    {
+      key: "eventTimeline" as const,
+      element: <EventTimelineHorizontal />,
+    },
+    {
+      key: "humanBodyModel" as const,
+      element: <HumanBodyModel />,
+    },
+    {
+      key: "referralHistory" as const,
+      element: <ReferralHistory />,
+    },
   ];
 
   const visibleItems = order
-    .map((key) => componentItems.find((i) => i.key === key))
+    .map((key) => componentItems.find((item) => item.key === key))
     .filter(Boolean) as typeof componentItems;
 
   return (
@@ -140,11 +167,8 @@ const Index = () => {
       />
 
       <div className="transition-[padding-left] duration-300 lg:pl-[var(--dashboard-sidebar-width,280px)]">
-        {/* HEADER */}
-        <header className="sticky top-0 z-40 border-b bg-white/95 backdrop-blur">
+        <header className="sticky top-0 z-40 border-b border-[hsl(214,22%,88%)] bg-white/95 backdrop-blur">
           <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 py-4 md:px-6">
-            
-            {/* LEFT */}
             <div className="min-w-0">
               <h1
                 className={`font-bold text-[hsl(214,42%,17%)] transition-all ${
@@ -156,8 +180,10 @@ const Index = () => {
 
               {!isScrolled && (
                 <div className="mt-3 flex flex-wrap items-center text-[14px]">
+                  <span className="text-[hsl(214,18%,55%)]">
+                    Personas kods
+                  </span>
 
-                  <span className="text-[hsl(214,18%,55%)]">Personas kods</span>
                   <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
                     {patient.personalCode}
                   </span>
@@ -165,6 +191,7 @@ const Index = () => {
                   <InfoDivider />
 
                   <span className="text-[hsl(214,18%,55%)]">Vecums</span>
+
                   <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
                     {patient.age} gadi
                   </span>
@@ -172,10 +199,13 @@ const Index = () => {
                   {phone && (
                     <>
                       <InfoDivider />
-                      <Phone className="h-3.5 w-3.5 text-[hsl(214,18%,55%)] ml-1" />
-                      <span className="text-[hsl(214,18%,55%)] ml-1">
+
+                      <Phone className="ml-1 h-3.5 w-3.5 text-[hsl(214,18%,55%)]" />
+
+                      <span className="ml-1 text-[hsl(214,18%,55%)]">
                         Telefona nr.
                       </span>
+
                       <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
                         {phone}
                       </span>
@@ -185,10 +215,13 @@ const Index = () => {
                   {email && (
                     <>
                       <InfoDivider />
-                      <Mail className="h-3.5 w-3.5 text-[hsl(214,18%,55%)] ml-1" />
-                      <span className="text-[hsl(214,18%,55%)] ml-1">
+
+                      <Mail className="ml-1 h-3.5 w-3.5 text-[hsl(214,18%,55%)]" />
+
+                      <span className="ml-1 text-[hsl(214,18%,55%)]">
                         E-pasts
                       </span>
+
                       <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
                         {email}
                       </span>
@@ -198,17 +231,18 @@ const Index = () => {
               )}
             </div>
 
-            {/* RIGHT */}
             <div
               className={`flex items-center gap-3 transition-all ${
                 isScrolled
                   ? ""
-                  : "rounded-[12px] border bg-[hsl(214,20%,98%)] px-4 py-3"
+                  : "rounded-[6px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-4 py-3"
               }`}
             >
               <button
+                type="button"
                 onClick={() => !isRefreshing && setIsRefreshing(true)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-[10px] border bg-[hsl(214,22%,97%)]"
+                className="relative flex h-10 w-10 items-center justify-center rounded-[5px] border border-[hsl(214,22%,86%)] bg-[hsl(214,22%,97%)] text-[hsl(214,32%,24%)] transition hover:bg-white"
+                aria-label="Atjaunot datus"
               >
                 <RefreshCw
                   className={isRefreshing ? "animate-spin" : ""}
@@ -218,9 +252,10 @@ const Index = () => {
 
               {!isScrolled && (
                 <div>
-                  <div className="text-sm font-semibold">
+                  <div className="text-sm font-semibold text-[hsl(214,36%,20%)]">
                     {isRefreshing ? "Notiek atjaunošana..." : "Atjaunot datus"}
                   </div>
+
                   <div className="text-xs text-gray-500">
                     Pēdējo reizi: {formatRefreshTime(lastRefreshedAt)}
                   </div>
@@ -230,23 +265,23 @@ const Index = () => {
           </div>
         </header>
 
-        {/* GRID */}
         <main className="px-4 py-5 md:px-6">
-          <div className="mx-auto grid w-full max-w-[1280px] gap-4 lg:grid-cols-3">
+          <div className="mx-auto grid w-full max-w-[1280px] auto-rows-auto items-stretch gap-4 lg:grid-cols-3">
             {visibleItems.map((item) => (
               <div
                 key={item.key}
                 draggable
                 onDragStart={() => setDraggedKey(item.key)}
                 onDragEnd={() => setDraggedKey(null)}
-                className={`group relative rounded-[12px] border bg-white shadow ${
-                  layoutClasses[item.key]
+                className={`group relative min-w-0 ${layoutClasses[item.key]} ${
+                  draggedKey === item.key ? "opacity-60" : ""
                 }`}
               >
-                <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100">
-                  <GripVertical className="h-3 w-3" />
+                <div className="pointer-events-none absolute right-3 top-3 z-20 opacity-0 transition group-hover:opacity-100">
+                  <GripVertical className="h-3.5 w-3.5 text-[hsl(214,18%,58%)]" />
                 </div>
-                {item.element}
+
+                <div className="h-full">{item.element}</div>
               </div>
             ))}
           </div>

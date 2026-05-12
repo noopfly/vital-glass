@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
 import {
   AlertTriangle,
   Calendar,
@@ -10,6 +10,7 @@ import {
   Stethoscope,
   X,
 } from "lucide-react";
+import { useLayoutEffect, useRef } from "react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 
@@ -199,6 +200,9 @@ const alertSectionIconClass =
 const tabButtonBaseClass =
   "inline-flex items-center justify-center rounded-[10px] px-3 py-2 text-sm font-medium transition";
 
+const compactAlertRowHeight = 72;
+const compactAlertRowGap = 8;
+
 interface AlertRowProps {
   alert: AlertItem;
   compact?: boolean;
@@ -222,32 +226,32 @@ function AlertRow({
   return (
     <div
       data-alert-menu-root
-      className={`rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] shadow-[0_6px_18px_rgba(29,53,87,0.05)] ${
-        compact ? "px-3 py-2.5" : "p-4"
-      }`}
+      className={`rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] shadow-[0_6px_18px_rgba(29,53,87,0.05)] ${compact ? "px-3 py-2.5" : "p-4"
+        }`}
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5">
         <div
-          className={`row-span-2 flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${iconStyles[alert.type]}`}
-        >
-          <Icon size={16} />
-        </div>
+  className={`${compact ? "" : "row-span-2 "}flex h-5 w-5 shrink-0 items-center justify-center self-center ${
+    iconStyles[alert.type]
+      .match(/text-\[[^\]]+\]/)?.[0] ?? "text-[hsl(214,14%,48%)]"
+  }`}
+>
+  <Icon size={16} strokeWidth={2.2} />
+</div>
 
         <p
-          className={`min-w-0 font-semibold text-[hsl(222,28%,20%)] ${
-            compact
+          className={`min-w-0 font-semibold text-[hsl(222,28%,20%)] ${compact
               ? "line-clamp-2 text-[12px] leading-4"
               : "text-sm"
-          }`}
+            }`}
         >
           {alert.title}
         </p>
 
         <div className="flex shrink-0 items-start gap-1.5">
           <span
-            className={`rounded-full font-medium ${dateStyles[alert.type]} ${
-              compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[11px]"
-            }`}
+            className={`rounded-full font-medium ${dateStyles[alert.type]} ${compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[11px]"
+              }`}
           >
             {formatAlertDate(alert.occurredAt)}
           </span>
@@ -277,15 +281,11 @@ function AlertRow({
           </div>
         </div>
 
-        <p
-          className={`col-[2/4] text-[hsl(214,14%,42%)] ${
-            compact
-              ? "line-clamp-2 text-[11px] leading-4"
-              : "text-sm"
-          }`}
-        >
-          {alert.description}
-        </p>
+        {!compact && (
+          <p className="col-[2/4] text-sm text-[hsl(214,14%,42%)]">
+            {alert.description}
+          </p>
+        )}
       </div>
     </div>
   );
@@ -296,6 +296,8 @@ const AlertsCard = () => {
   const [readAlertIds, setReadAlertIds] = useState<string[]>([]);
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<OverlayTab>("unread");
+  const [visibleAlertCount, setVisibleAlertCount] = useState(3);
+  const listContainerRef = useRef<HTMLDivElement | null>(null);
 
   const sortedAlerts = useMemo(
     () =>
@@ -317,7 +319,36 @@ const AlertsCard = () => {
     [readAlertIds, sortedAlerts],
   );
 
-  const visibleAlerts = unreadAlerts.slice(0, 3);
+  const visibleAlerts = unreadAlerts.slice(0, visibleAlertCount);
+
+  useLayoutEffect(() => {
+    const element = listContainerRef.current;
+    if (!element) return undefined;
+
+    const updateVisibleAlertCount = () => {
+      const nextCount = Math.max(
+        1,
+        Math.floor(
+          (element.clientHeight + compactAlertRowGap) /
+            (compactAlertRowHeight + compactAlertRowGap),
+        ),
+      );
+
+      setVisibleAlertCount(nextCount);
+    };
+
+    updateVisibleAlertCount();
+
+    if (typeof ResizeObserver === "undefined") return undefined;
+
+    const observer = new ResizeObserver(() => {
+      updateVisibleAlertCount();
+    });
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -352,7 +383,7 @@ const AlertsCard = () => {
 
   return (
     <>
-      <section className="flex h-full w-full flex-col overflow-hidden rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex h-full w-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="flex items-center justify-between border-b border-[hsl(214,22%,88%)] pb-4">
           <div className="flex items-center gap-3">
             <div className={alertSectionIconClass}>
@@ -370,12 +401,12 @@ const AlertsCard = () => {
             </div>
           </div>
 
-          <div className="flex h-8 min-w-8 items-center justify-center rounded-[12px] bg-[hsl(0,56%,96%)] px-2 text-sm font-semibold text-[hsl(0,54%,52%)]">
+          <div className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(0,78%,58%)] px-2 text-[13px] font-semibold leading-none text-white">
             {unreadAlerts.length}
           </div>
         </div>
 
-        <div className="mt-4 flex-1 space-y-2">
+        <div ref={listContainerRef} className="mt-4 flex-1 min-h-0 space-y-2">
           {visibleAlerts.length === 0 ? (
             <div className="rounded-[10px] border border-dashed border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] px-4 py-5 text-center">
               <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
@@ -400,11 +431,11 @@ const AlertsCard = () => {
           )}
         </div>
 
-        <div className="mt-4 border-t border-[hsl(214,22%,88%)] pt-4 text-center">
+        <div className="mt-3 border-t border-[hsl(214,22%,88%)] pt-3 text-center">
           <button
             type="button"
             onClick={openAllAlerts}
-            className="inline-flex items-center justify-center text-sm font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
+            className="inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus brīdinājumus →
           </button>
@@ -459,11 +490,10 @@ const AlertsCard = () => {
                     setActiveTab("unread");
                     setOpenMenuId(null);
                   }}
-                  className={`${tabButtonBaseClass} ${
-                    activeTab === "unread"
+                  className={`${tabButtonBaseClass} ${activeTab === "unread"
                       ? "bg-white text-[hsl(222,28%,20%)] shadow-[0_4px_12px_rgba(15,23,42,0.08)]"
                       : "text-[hsl(214,14%,48%)]"
-                  }`}
+                    }`}
                 >
                   Brīdinājumi
                   <span className="ml-2 rounded-full bg-[hsl(214,20%,96%)] px-2 py-0.5 text-xs font-semibold text-[hsl(214,18%,40%)]">
@@ -477,11 +507,10 @@ const AlertsCard = () => {
                     setActiveTab("read");
                     setOpenMenuId(null);
                   }}
-                  className={`${tabButtonBaseClass} ${
-                    activeTab === "read"
+                  className={`${tabButtonBaseClass} ${activeTab === "read"
                       ? "bg-white text-[hsl(222,28%,20%)] shadow-[0_4px_12px_rgba(15,23,42,0.08)]"
                       : "text-[hsl(214,14%,48%)]"
-                  }`}
+                    }`}
                 >
                   Lasītie
                   <span className="ml-2 rounded-full bg-[hsl(214,20%,96%)] px-2 py-0.5 text-xs font-semibold text-[hsl(214,18%,40%)]">

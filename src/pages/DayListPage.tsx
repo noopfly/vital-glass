@@ -1,10 +1,17 @@
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Plus, RefreshCcw, X } from "lucide-react";
+import {
+  CalendarDays,
+  CircleAlert,
+  ClipboardCheck,
+  Clock3,
+  RefreshCcw,
+  Trash2,
+  UserPlus,
+} from "lucide-react";
 
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { patients } from "@/data/patients";
 import {
   normalizeDashboardLayoutOrder,
@@ -31,6 +38,23 @@ type DayListEntry = {
 
 const maxParallelPreloads = 2;
 const estimatedMinutesPerPatient = 5;
+const personalCodeGroupSizes = [6, 5] as const;
+const personalCodeLength =
+  personalCodeGroupSizes[0] + personalCodeGroupSizes[1];
+
+const pageBg = "bg-[hsl(214,34%,97%)]";
+
+const panelClass =
+  "relative overflow-hidden rounded-[16px] border border-[hsl(214,28%,88%)] bg-white";
+
+const sectionLabelClass =
+  "text-[11px] font-semibold uppercase tracking-[0.15em] text-[hsl(218,22%,42%)]";
+
+const mutedLabelClass =
+  "text-[10px] font-semibold uppercase tracking-[0.16em] text-[hsl(218,18%,56%)]";
+
+const tableGridClass =
+  "grid min-w-[860px] grid-cols-[1.55fr_1.15fr_0.9fr_1.45fr_0.8fr_0.85fr] items-center gap-4";
 
 function formatClock(date: Date) {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -54,16 +78,105 @@ function normalizeText(value: string) {
     .toLowerCase();
 }
 
+function formatPersonalCode(raw: string) {
+  const digits = raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
+
+  if (digits.length <= personalCodeGroupSizes[0]) return digits;
+
+  return `${digits.slice(0, personalCodeGroupSizes[0])}-${digits.slice(
+    personalCodeGroupSizes[0],
+  )}`;
+}
+
 function createInitialEntries(): DayListEntry[] {
   return [
-    { patientId: "2", status: "ready", progress: 100, updatedAt: "07:42", attempts: 1 },
-    { patientId: "3", status: "ready", progress: 100, updatedAt: "07:48", attempts: 1 },
-    { patientId: "1", status: "ready", progress: 100, updatedAt: "10:22", attempts: 1 },
-    { patientId: "4", status: "ready", progress: 100, updatedAt: "10:22", attempts: 1 },
-    { patientId: "5", status: "ready", progress: 100, updatedAt: "10:22", attempts: 1 },
-    { patientId: "6", status: "error", progress: 0, updatedAt: "07:51", attempts: 1 },
-    { patientId: "7", status: "ready", progress: 100, updatedAt: "10:22", attempts: 1 },
+    {
+      patientId: "2",
+      status: "ready",
+      progress: 100,
+      updatedAt: "07:42",
+      attempts: 1,
+    },
+    {
+      patientId: "3",
+      status: "ready",
+      progress: 100,
+      updatedAt: "07:48",
+      attempts: 1,
+    },
+    {
+      patientId: "1",
+      status: "ready",
+      progress: 100,
+      updatedAt: "10:22",
+      attempts: 1,
+    },
+    {
+      patientId: "4",
+      status: "ready",
+      progress: 100,
+      updatedAt: "10:22",
+      attempts: 1,
+    },
+    {
+      patientId: "5",
+      status: "ready",
+      progress: 100,
+      updatedAt: "10:22",
+      attempts: 1,
+    },
+    {
+      patientId: "6",
+      status: "error",
+      progress: 0,
+      updatedAt: "07:51",
+      attempts: 1,
+    },
+    {
+      patientId: "7",
+      status: "ready",
+      progress: 100,
+      updatedAt: "10:22",
+      attempts: 1,
+    },
   ];
+}
+
+function getStatusMeta(status: QueueStatus) {
+  switch (status) {
+    case "ready":
+      return {
+        label: "Gatavs",
+        badgeClass:
+          "bg-[hsl(151,42%,94%)] text-[hsl(154,44%,31%)] border-[hsl(151,35%,88%)]",
+        dotClass: "bg-[hsl(154,48%,40%)]",
+        progressClass: "bg-[hsl(216,48%,58%)]",
+      };
+    case "loading":
+      return {
+        label: "Notiek",
+        badgeClass:
+          "bg-[hsl(216,48%,95%)] text-[hsl(217,42%,38%)] border-[hsl(216,42%,88%)]",
+        dotClass: "bg-[hsl(216,48%,50%)]",
+        progressClass: "bg-[hsl(216,48%,58%)]",
+      };
+    case "waiting":
+      return {
+        label: "Rindā",
+        badgeClass:
+          "bg-[hsl(42,62%,95%)] text-[hsl(36,48%,36%)] border-[hsl(42,44%,86%)]",
+        dotClass: "bg-[hsl(38,62%,48%)]",
+        progressClass: "bg-[hsl(38,62%,50%)]",
+      };
+    case "error":
+      return {
+        label: "Kļūda",
+        badgeClass:
+          "bg-[hsl(0,68%,97%)] text-[hsl(0,58%,48%)] border-[hsl(0,54%,89%)]",
+        dotClass: "bg-[hsl(0,58%,50%)]",
+        progressClass: "bg-[hsl(0,58%,50%)]",
+      };
+  }
 }
 
 export default function DayListPage() {
@@ -72,6 +185,7 @@ export default function DayListPage() {
   const routeState = location.state as DayListLocationState | undefined;
 
   const activePatient = routeState?.patient ?? patients[0];
+
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
       normalizeDashboardLayoutOrder(
@@ -81,9 +195,23 @@ export default function DayListPage() {
 
   const [query, setQuery] = React.useState("");
   const [error, setError] = React.useState("");
-  const [entries, setEntries] = React.useState<DayListEntry[]>(() =>
-    createInitialEntries(),
+  const [entries, setEntries] = React.useState<DayListEntry[]>(
+    () => createInitialEntries(),
   );
+
+  const inputRefs = React.useRef<Array<HTMLInputElement | null>>([]);
+
+  const personalCodeDigits = React.useMemo(() => {
+    const digits = query
+      .replace(/[^\d]/g, "")
+      .slice(0, personalCodeLength)
+      .split("");
+
+    return Array.from(
+      { length: personalCodeLength },
+      (_, index) => digits[index] ?? "",
+    );
+  }, [query]);
 
   const patientMap = React.useMemo(
     () =>
@@ -109,6 +237,14 @@ export default function DayListPage() {
       ),
     );
   }, [routeState?.layoutOrder]);
+
+  const updateQueryFromDigits = React.useCallback(
+    (nextDigits: string[]) => {
+      setQuery(formatPersonalCode(nextDigits.join("")));
+      if (error) setError("");
+    },
+    [error],
+  );
 
   React.useEffect(() => {
     setEntries((current) => {
@@ -179,7 +315,9 @@ export default function DayListPage() {
     const ready = entries.filter((entry) => entry.status === "ready").length;
     const loading = entries.filter((entry) => entry.status === "loading").length;
     const waiting = entries.filter((entry) => entry.status === "waiting").length;
-    const errorCount = entries.filter((entry) => entry.status === "error").length;
+    const errorCount = entries.filter(
+      (entry) => entry.status === "error",
+    ).length;
 
     const remaining = loading + waiting;
 
@@ -258,7 +396,7 @@ export default function DayListPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-white">
+    <div className={cn("min-h-screen overflow-y-auto", pageBg)}>
       <DashboardSidebar
         activePatient={activePatient}
         recentPatients={recentPatients}
@@ -269,181 +407,381 @@ export default function DayListPage() {
         onSaveLayoutOrder={setLayoutOrder}
       />
 
-      <main className="min-h-screen px-8 py-8 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+32px)] lg:pr-8">
-        <section className="min-h-[calc(100vh-64px)] w-full">
-          <div className="flex flex-col gap-6 xl:flex-row xl:items-start xl:justify-between">
-            <div className="min-w-0">
-              <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-[hsl(215,18%,67%)]">
-                Dienas sagatavošana · {formatDay(new Date())}
-              </p>
+      <main className="min-h-screen px-4 py-3 sm:px-5 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+24px)] lg:pr-6 lg:pt-5">
+        <section className="mx-auto flex w-full max-w-[1240px] flex-col gap-4">
+          <div className={panelClass}>
+            <div className="relative flex flex-col gap-5 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between xl:px-7">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2.5">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[10px] text-[hsl(219,44%,19%)]">
+                    <CalendarDays className="h-5 w-5" strokeWidth={2.3} />
+                  </span>
 
-              <h1 className="mt-3 text-[31px] font-semibold tracking-[-0.045em] text-[hsl(216,42%,18%)]">
-                Dr. A. Liepiņas dienas saraksts
-              </h1>
-
-              <p className="mt-2 max-w-[560px] text-[14px] font-medium leading-6 text-[hsl(215,18%,55%)]">
-                Pievienojiet šīs dienas pacientus, lai dati būtu gatavi pirms
-                vizītes.
-              </p>
-            </div>
-
-            <div className="flex items-start gap-10 pt-2">
-              {[
-                ["Gatavi", `${stats.ready} / ${entries.length}`],
-                ["Atlikušās", `~ ${stats.estimatedMinutes} min`],
-                ["Kļūdas", stats.errorCount],
-              ].map(([label, value]) => (
-                <div key={label}>
-                  <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-[hsl(215,18%,67%)]">
-                    {label}
-                  </p>
-                  <p className="mt-2 text-[24px] font-semibold leading-none tracking-[-0.03em] text-[hsl(216,42%,18%)]">
-                    {value}
+                  <p className={mutedLabelClass}>
+                    Dienas sagatavošana
+                    <span className="mx-2 text-[hsl(218,14%,64%)]">·</span>
+                    {formatDay(new Date())}
                   </p>
                 </div>
-              ))}
-            </div>
-          </div>
 
-          <p className="mb-3 mt-8 text-[11px] font-bold uppercase tracking-[0.22em] text-[hsl(215,18%,67%)]">
-            Pievienot pacientu
-          </p>
+                <h1 className="mt-3 max-w-[520px] text-[24px] font-medium leading-[1.15] tracking-[-0.04em] text-[hsl(220,44%,18%)] sm:text-[29px] lg:text-[31px]">
+                  Dr. A. Liepiņas dienas saraksts
+                </h1>
 
-          <div className="rounded-[10px] border border-[rgba(214,224,235,0.95)] bg-white px-7 py-6 shadow-[0_8px_20px_rgba(29,53,87,0.025)]">
-            <div className="flex items-center gap-5">
-              <div className="relative flex-1">
-                <Input
-  value={query}
-  onChange={(event) => {
-    setQuery(event.target.value);
-    if (error) setError("");
-  }}
-  onKeyDown={(event) => {
-    if (event.key === "Enter") handleAddPatient();
-  }}
-  placeholder="000000-00000"
-  className="h-[44px] rounded-[8px] border-0 bg-transparent px-0 text-[15px] font-semibold tracking-[0.06em] text-[hsl(216,30%,24%)] shadow-none placeholder:text-[hsl(215,18%,67%)] focus-visible:ring-0"
-/>
+                <p className="mt-2.5 max-w-[520px] text-[13px] leading-5 text-[hsl(218,17%,48%)]">
+                  Pievienojiet šīs dienas pacientus, lai dati būtu gatavi pirms
+                  vizītes.
+                </p>
               </div>
 
-              <Button
-                type="button"
-                onClick={handleAddPatient}
-                className="h-[52px] min-w-[150px] rounded-[7px] bg-[hsl(214,58%,18%)] px-6 text-[15px] font-semibold text-white hover:bg-[hsl(214,58%,18%)]"
-              >
-                Pievienot
-                <Plus className="ml-3 h-5 w-5" />
-              </Button>
-            </div>
-
-            {error && (
-              <p className="mt-3 text-[12px] text-[hsl(0,68%,52%)]">
-                {error}
-              </p>
-            )}
-          </div>
-
-          <div className="mt-8 rounded-[10px] border border-[rgba(214,224,235,0.95)] bg-white px-7 py-6 shadow-[0_8px_20px_rgba(29,53,87,0.025)]">
-            <div className="grid grid-cols-[1.35fr_1.05fr_0.85fr_1.2fr_1fr_0.85fr] border-b border-[rgba(225,232,240,0.95)] px-0 pb-5 text-[11px] font-bold uppercase tracking-[0.18em] text-[hsl(215,18%,67%)]">
-              <span>Pacients</span>
-              <span>Personas kods</span>
-              <span>Statuss</span>
-              <span>Progress</span>
-              <span>Atjaunots</span>
-              <span>Darbības</span>
-            </div>
-
-            {entries.map((entry) => {
-              const patient = patientMap[entry.patientId];
-
-              if (!patient) return null;
-
-              const isError = entry.status === "error";
-
-              return (
-                <div
-                    key={entry.patientId}
-                  onClick={() =>
-                    navigate("/components", {
-                      state: { patient, layoutOrder },
-                    })
-                  }
-                    className="grid min-h-[72px] cursor-pointer grid-cols-[1.35fr_1.05fr_0.85fr_1.2fr_1fr_0.85fr] items-center border-b border-[rgba(225,232,240,0.95)] px-0 text-[15px] transition hover:bg-[hsl(214,28%,98%)]"
-                  >
-                  <div className="truncate text-left font-semibold text-[hsl(216,36%,24%)]">
-                    {patient.name}
-                  </div>
-
-                  <span className="font-medium text-[hsl(215,20%,58%)]">
-                    {patient.personalCode}
-                  </span>
-
-                  <span
+              <div className="grid gap-0 sm:grid-cols-3 lg:min-w-[390px]">
+                {[
+                  {
+                    icon: ClipboardCheck,
+                    label: "Gatavi",
+                    value: `${stats.ready} / ${entries.length}`,
+                    valueClass: "text-[hsl(220,56%,46%)]",
+                  },
+                  {
+                    icon: Clock3,
+                    label: "Atlikušais laiks",
+                    value: `~ ${stats.estimatedMinutes} min`,
+                    valueClass: "text-[hsl(220,42%,18%)]",
+                  },
+                  {
+                    icon: CircleAlert,
+                    label: "Kļūdas",
+                    value: `${stats.errorCount}`,
+                    valueClass:
+                      stats.errorCount > 0
+                        ? "text-[hsl(0,62%,50%)]"
+                        : "text-[hsl(218,18%,42%)]",
+                  },
+                ].map(({ icon: Icon, label, value, valueClass }, index) => (
+                  <div
+                    key={label}
                     className={cn(
-                      "inline-flex w-fit items-center gap-2 font-semibold",
-                      isError
-                        ? "text-[hsl(352,74%,54%)]"
-                        : "text-[hsl(215,20%,58%)]",
+                      "px-4 py-2",
+                      index > 0 && "border-l border-[hsl(214,24%,88%)]",
                     )}
                   >
-                    <span
-                      className={cn(
-                        "h-1.5 w-1.5 rounded-full",
-                        isError
-                          ? "bg-[hsl(352,74%,54%)]"
-                          : "bg-[hsl(214,58%,20%)]",
-                      )}
-                    />
-                    {isError ? "Kļūda" : "Gatavs"}
-                  </span>
+                    <div className="flex items-center gap-1.5 text-[hsl(218,17%,48%)]">
+                      <Icon className="h-3 w-3" strokeWidth={2} />
+                      <span className="text-[9px] font-semibold uppercase tracking-[0.14em]">
+                        {label}
+                      </span>
+                    </div>
 
-                  <div className="h-[3px] w-[160px] bg-[hsl(215,24%,91%)]">
-                    <div
+                    <p
                       className={cn(
-                        "h-[3px]",
-                        isError
-                          ? "bg-transparent"
-                          : "bg-[hsl(213,37%,59%)]",
+                        "mt-1.5 text-[21px] font-medium leading-none tracking-[-0.03em]",
+                        valueClass,
                       )}
-                      style={{ width: `${entry.progress}%` }}
-                    />
+                    >
+                      {value}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className={panelClass}>
+            <form
+              className="relative flex flex-col gap-5 px-5 py-5 sm:px-6 xl:px-7"
+              onSubmit={(event) => {
+                event.preventDefault();
+                handleAddPatient();
+              }}
+            >
+              <div className="min-w-0">
+                <p className={sectionLabelClass}>Pievienot pacientu</p>
+
+                <div className="mt-4 flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-1">
+                      {personalCodeDigits.map((digit, index) => {
+                        const showDivider =
+                          index === personalCodeGroupSizes[0] - 1;
+
+                        return (
+                          <React.Fragment key={index}>
+                            <input
+                              ref={(node) => {
+                                inputRefs.current[index] = node;
+                              }}
+                              type="text"
+                              inputMode="numeric"
+                              autoFocus={index === 0}
+                              maxLength={1}
+                              value={digit}
+                              onChange={(event) => {
+                                const nextValue = event.target.value
+                                  .replace(/[^\d]/g, "")
+                                  .slice(-1);
+
+                                const nextDigits = [...personalCodeDigits];
+                                nextDigits[index] = nextValue;
+                                updateQueryFromDigits(nextDigits);
+
+                                if (
+                                  nextValue &&
+                                  index < personalCodeLength - 1
+                                ) {
+                                  inputRefs.current[index + 1]?.focus();
+                                  inputRefs.current[index + 1]?.select();
+                                }
+                              }}
+                              onKeyDown={(event) => {
+                                if (event.key === "Backspace") {
+                                  event.preventDefault();
+
+                                  const nextDigits = [...personalCodeDigits];
+
+                                  if (nextDigits[index]) {
+                                    nextDigits[index] = "";
+                                    updateQueryFromDigits(nextDigits);
+                                    return;
+                                  }
+
+                                  if (index > 0) {
+                                    nextDigits[index - 1] = "";
+                                    updateQueryFromDigits(nextDigits);
+                                    inputRefs.current[index - 1]?.focus();
+                                  }
+
+                                  return;
+                                }
+
+                                if (event.key === "ArrowLeft" && index > 0) {
+                                  event.preventDefault();
+                                  inputRefs.current[index - 1]?.focus();
+                                  return;
+                                }
+
+                                if (
+                                  event.key === "ArrowRight" &&
+                                  index < personalCodeLength - 1
+                                ) {
+                                  event.preventDefault();
+                                  inputRefs.current[index + 1]?.focus();
+                                  return;
+                                }
+
+                                const allowedKeys = ["Delete", "Tab", "Enter"];
+
+                                if (
+                                  !/\d/.test(event.key) &&
+                                  !allowedKeys.includes(event.key)
+                                ) {
+                                  event.preventDefault();
+                                }
+                              }}
+                              onPaste={(event) => {
+                                event.preventDefault();
+
+                                const pastedDigits = event.clipboardData
+                                  .getData("text")
+                                  .replace(/[^\d]/g, "")
+                                  .slice(0, personalCodeLength - index)
+                                  .split("");
+
+                                if (pastedDigits.length === 0) return;
+
+                                const nextDigits = [...personalCodeDigits];
+
+                                pastedDigits.forEach((value, offset) => {
+                                  nextDigits[index + offset] = value;
+                                });
+
+                                updateQueryFromDigits(nextDigits);
+
+                                const nextFocusIndex = Math.min(
+                                  index + pastedDigits.length,
+                                  personalCodeLength - 1,
+                                );
+
+                                inputRefs.current[nextFocusIndex]?.focus();
+                              }}
+                              className="h-[42px] w-[42px] shrink-0 rounded-[10px] border border-[hsl(214,28%,84%)] bg-white text-center text-[15px] font-medium text-[hsl(220,38%,24%)] outline-none transition focus:border-[hsl(216,46%,58%)] focus:ring-2 focus:ring-[rgba(59,130,246,0.12)]"
+                              aria-label={`Personas koda cipars ${index + 1}`}
+                            />
+
+                            {showDivider && (
+                              <span className="px-1 text-[17px] font-medium text-[hsl(218,14%,50%)]">
+                                -
+                              </span>
+                            )}
+                          </React.Fragment>
+                        );
+                      })}
+                    </div>
+
+                    <p
+                      className={cn(
+                        "mt-2.5 text-[12px]",
+                        error
+                          ? "font-medium text-[hsl(0,60%,48%)]"
+                          : "text-[hsl(218,16%,52%)]",
+                      )}
+                    >
+                      {error || "Ievadiet personas kodu"}
+                    </p>
                   </div>
 
-                  <span className="font-medium text-[hsl(215,20%,58%)]">
-                    {entry.updatedAt ?? "-"}
+                  <Button
+                    type="submit"
+                    className="h-[42px] w-full rounded-[10px] bg-[hsl(219,44%,19%)] px-5 text-[14px] font-medium text-white hover:bg-[hsl(219,44%,22%)] lg:mt-0.5 lg:w-auto lg:min-w-[200px]"
+                  >
+                    <UserPlus className="mr-2 h-4 w-4" strokeWidth={2.2} />
+                    Pievienot pacientu
+                  </Button>
+                </div>
+              </div>
+            </form>
+          </div>
+
+          <div className={panelClass}>
+            <div className="relative">
+              <div className="flex items-center border-b border-[hsl(214,26%,90%)] px-5 py-3.5 sm:px-6 xl:px-7">
+                <div className="flex items-center gap-3">
+                  <p className={sectionLabelClass}>Šodienas pacienti</p>
+
+                  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[hsl(220,46%,96%)] px-1.5 text-[12px] font-semibold text-[hsl(220,48%,46%)]">
+                    {entries.length}
                   </span>
+                </div>
+              </div>
 
-                  <div className="flex items-center gap-7 text-[hsl(213,30%,48%)]">
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleRetry(entry.patientId);
-                      }}
-                      aria-label={`Atkārtot ${patient.name}`}
-                      className="transition hover:text-[hsl(214,58%,18%)]"
-                    >
-                      <RefreshCcw
-                        className="h-[18px] w-[18px]"
-                        strokeWidth={2.2}
-                      />
-                    </button>
+              <div className="overflow-x-auto">
+                <div className="min-w-[860px]">
+                  <div
+                    className={cn(
+                      tableGridClass,
+                      "border-b border-[hsl(214,26%,90%)] bg-[hsl(214,34%,98%)] px-6 py-2.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[hsl(218,16%,46%)] xl:px-7",
+                    )}
+                  >
+                    <span>Pacients</span>
+                    <span>Personas kods</span>
+                    <span>Statuss</span>
+                    <span className="pl-1">Progress</span>
+                    <span className="text-center">Atjaunots</span>
+                    <span>Darbības</span>
+                  </div>
 
-                    <button
-                      type="button"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleRemove(entry.patientId);
-                      }}
-                      aria-label={`Noņemt ${patient.name}`}
-                      className="text-[hsl(352,74%,52%)] transition hover:text-[hsl(352,82%,44%)]"
-                    >
-                      <X className="h-[21px] w-[21px]" strokeWidth={2.6} />
-                    </button>
+                  <div className="bg-white">
+                    {entries.map((entry, index) => {
+                      const patient = patientMap[entry.patientId];
+
+                      if (!patient) return null;
+
+                      const statusMeta = getStatusMeta(entry.status);
+
+                      const progressValue =
+                        entry.status === "error" ? 0 : entry.progress;
+
+                      return (
+                        <div
+                          key={entry.patientId}
+                          onClick={() =>
+                            navigate("/components", {
+                              state: { patient, layoutOrder },
+                            })
+                          }
+                          className={cn(
+                            tableGridClass,
+                            "cursor-pointer px-6 py-2.5 text-[13px] transition hover:bg-[hsl(214,36%,98%)] xl:px-7",
+                            index > 0 &&
+                              "border-t border-[hsl(214,26%,91%)]",
+                            entry.status === "error" &&
+                              "bg-[linear-gradient(90deg,rgba(254,242,242,0.62),white_32%)]",
+                          )}
+                        >
+                          <div className="min-w-0">
+                            <p className="truncate text-[14px] font-medium tracking-[-0.015em] text-[hsl(220,38%,20%)]">
+                              {patient.name}
+                            </p>
+                          </div>
+
+                          <span className="font-medium text-[hsl(218,15%,47%)]">
+                            {patient.personalCode}
+                          </span>
+
+                          <span
+                            className={cn(
+                              "inline-flex w-fit items-center gap-1.5 rounded-[7px] border px-2 py-0.5 text-[11px] font-medium",
+                              statusMeta.badgeClass,
+                            )}
+                          >
+                            <span
+                              className={cn(
+                                "h-1.5 w-1.5 rounded-full",
+                                statusMeta.dotClass,
+                              )}
+                            />
+                            {statusMeta.label}
+                          </span>
+
+                          <div className="flex items-center gap-3 pr-2">
+                            <div className="h-1 flex-1 overflow-hidden rounded-full bg-[hsl(216,28%,92%)]">
+                              <div
+                                className={cn(
+                                  "h-full rounded-full transition-[width]",
+                                  statusMeta.progressClass,
+                                )}
+                                style={{ width: `${progressValue}%` }}
+                              />
+                            </div>
+
+                            <span className="w-10 text-right text-[12px] font-medium text-[hsl(218,15%,47%)]">
+                              {entry.status === "error"
+                                ? "-"
+                                : `${progressValue}%`}
+                            </span>
+                          </div>
+
+                          <span className="text-center font-medium text-[hsl(218,15%,47%)]">
+                            {entry.updatedAt ?? "-"}
+                          </span>
+
+                          <div className="flex items-center gap-2">
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleRetry(entry.patientId);
+                              }}
+                              aria-label={`Atkārtot ${patient.name}`}
+                              className="inline-flex h-7 w-7 items-center justify-center text-[hsl(216,44%,48%)] transition hover:opacity-75"
+                            >
+                              <RefreshCcw
+                                className="h-[13px] w-[13px]"
+                                strokeWidth={2}
+                              />
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={(event) => {
+                                event.stopPropagation();
+                                handleRemove(entry.patientId);
+                              }}
+                              aria-label={`Noņemt ${patient.name}`}
+                              className="inline-flex h-7 w-7 items-center justify-center text-[hsl(0,56%,50%)] transition hover:opacity-75"
+                            >
+                              <Trash2
+                                className="h-[13px] w-[13px]"
+                                strokeWidth={2}
+                              />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
-              );
-            })}
+              </div>
+            </div>
           </div>
         </section>
       </main>

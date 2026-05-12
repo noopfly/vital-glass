@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
   Droplets,
@@ -49,7 +49,8 @@ interface LabResult {
 
 type RawLabResult = Omit<LabResult, "status">;
 
-const visibleLabCount = 3;
+const defaultVisibleLabCount = 3;
+const compactLabRowGap = 8;
 
 const statusColors: Record<Status, string> = {
   normal: "hsl(152, 60%, 45%)",
@@ -76,7 +77,7 @@ const statusIconBg: Record<Status, string> = {
 };
 
 const sectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const rawLabResults: RawLabResult[] = [
   {
@@ -454,7 +455,7 @@ const MiniSparkline = ({
   const color = statusColors[status];
 
   return (
-    <div className={compact ? "mx-auto h-9 w-[96px]" : "mx-auto h-11 w-[118px]"}>
+    <div className={compact ? "mx-auto h-8 w-[90px]" : "mx-auto h-11 w-[118px]"}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
           <defs>
@@ -489,7 +490,7 @@ const CustomTooltip = ({ active, payload, label, result }: CustomTooltipProps) =
   if (!active || !payload?.length) return null;
 
   return (
-    <div className="glass-card-solid rounded-lg px-3 py-2 text-sm shadow-lg">
+    <div className="glass-card-solid rounded-[6px] px-3 py-2 text-sm shadow-lg">
       <p className="font-semibold text-text-dark">{label}</p>
       <p className="text-heading">
         vērtība:{" "}
@@ -547,11 +548,11 @@ const DetailPanel = ({
       onClose={onClose}
       overlayClassName="bg-[hsl(210,40%,20%/0.3)] backdrop-blur-sm"
     >
-      <div className="mx-auto w-full max-w-xl animate-in rounded-[14px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl zoom-in-95 fade-in duration-200">
+      <div className="mx-auto w-full max-w-xl animate-in rounded-[6px] border border-[hsl(210,20%,92%)] bg-white p-6 shadow-xl zoom-in-95 fade-in duration-200">
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-[10px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-[5px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
             >
               {result.icon}
             </div>
@@ -566,7 +567,7 @@ const DetailPanel = ({
 
           <button
             onClick={onClose}
-            className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-muted text-heading transition-colors hover:text-text-dark"
+            className="flex h-8 w-8 items-center justify-center rounded-[4px] bg-muted text-heading transition-colors hover:text-text-dark"
             aria-label="Aizvērt"
           >
             <X size={16} />
@@ -703,7 +704,7 @@ const DetailPanel = ({
           {result.history.map((point) => (
             <div
               key={point.month}
-              className="glass-card-solid flex-1 rounded-[10px] px-1 py-2 text-center"
+              className="glass-card-solid flex-1 rounded-[4px] px-1 py-2 text-center"
             >
               <p className="text-xs font-medium text-heading">{point.month}</p>
               <p className="text-sm font-bold text-text-dark">
@@ -729,22 +730,30 @@ function TrendsList({
   compact?: boolean;
 }) {
   return (
-    <div className="space-y-2">
+    <div className={compact ? "space-y-2" : "space-y-2"}>
       {results.map((result) => (
         <button
           key={result.id}
           onClick={() => onToggleExpanded(result.id)}
-          className={`grid w-full cursor-pointer items-center gap-3 rounded-[10px] px-3 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_110px_82px_auto] ${
-            compact ? "py-2" : "py-3"
+          className={`grid w-full cursor-pointer items-center gap-3 rounded-[5px] text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_100px_76px_auto] ${
+            compact
+              ? "border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-3.5 py-2.5 shadow-[0_5px_14px_rgba(29,53,87,0.04)]"
+              : "px-3 py-3"
           } ${
             expandedId === result.id
-              ? "glass-card-solid ring-2 ring-primary/30"
-              : "glass-card-solid hover:shadow-md"
+              ? compact
+                ? "ring-2 ring-primary/20"
+                : "glass-card-solid ring-2 ring-primary/30"
+              : compact
+                ? "hover:bg-white"
+                : "glass-card-solid hover:shadow-md"
           }`}
         >
           <div
-            className={`flex shrink-0 items-center justify-center rounded-[10px] ${statusIconBg[result.status]} ${statusTextClass[result.status]} ${
-              compact ? "h-8 w-8" : "h-9 w-9"
+            className={`flex shrink-0 items-center justify-center rounded-[5px] ${statusIconBg[result.status]} ${statusTextClass[result.status]} ${
+              compact
+                ? "h-8 w-8 border border-[hsl(214,22%,88%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]"
+                : "h-9 w-9"
             }`}
           >
             {result.icon}
@@ -763,10 +772,10 @@ function TrendsList({
             <MiniSparkline data={result.history} status={result.status} compact={compact} />
           </div>
 
-          <div className="min-w-[72px] text-left md:text-right">
+          <div className="min-w-[70px] text-left md:text-right">
             <p
               className={`font-bold leading-none text-text-dark ${
-                compact ? "text-[1.12rem]" : "text-[1.35rem]"
+                compact ? "text-[1.05rem]" : "text-[1.35rem]"
               }`}
             >
               {result.displayValue ?? formatResultValue(result, result.value)}{" "}
@@ -809,6 +818,7 @@ function HealthTrendsContent({
   expandedId,
   onToggleExpanded,
   onOpenAll,
+  onVisibleCountChange,
   showOpenAll,
   compact,
 }: {
@@ -816,14 +826,51 @@ function HealthTrendsContent({
   expandedId: string | null;
   onToggleExpanded: (id: string) => void;
   onOpenAll?: () => void;
+  onVisibleCountChange?: (count: number) => void;
   showOpenAll?: boolean;
   compact?: boolean;
 }) {
+  const compactListRef = useRef<HTMLDivElement | null>(null);
+
+  useLayoutEffect(() => {
+    if (!compact || !onVisibleCountChange) return;
+
+    const element = compactListRef.current;
+    if (!element) return;
+
+    const updateVisibleCount = () => {
+      const firstRow = element.querySelector("button");
+      if (!(firstRow instanceof HTMLElement)) return;
+
+      const nextCount = Math.max(
+        1,
+        Math.floor(
+          (element.clientHeight + compactLabRowGap) /
+            (firstRow.offsetHeight + compactLabRowGap),
+        ),
+      );
+
+      onVisibleCountChange(nextCount);
+    };
+
+    updateVisibleCount();
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      updateVisibleCount();
+    });
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, [compact, onVisibleCountChange, results.length]);
+
   return (
     <div
       className={
         compact
-          ? "flex h-full w-full flex-col overflow-hidden rounded-[12px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+          ? "flex h-full min-h-[420px] w-full flex-col overflow-hidden rounded-[6px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
           : "flex flex-col"
       }
     >
@@ -849,7 +896,7 @@ function HealthTrendsContent({
             : "mb-2 flex items-center justify-between gap-3"
         }
       >
-        <div className="ml-2 flex min-w-0 gap-2.5 text-[9px] font-medium uppercase tracking-wider text-heading">
+        <div className="ml-1 flex min-w-0 gap-2.5 text-[9px] font-medium uppercase tracking-wider text-heading">
           <span className="flex items-center gap-1">
             <span className={`h-2 w-2 rounded-full ${statusDotClass.normal}`} />
             <span>Norma</span>
@@ -866,12 +913,15 @@ function HealthTrendsContent({
           </span>
         </div>
 
-        <p className="mr-2 hidden shrink-0 text-[9px] italic text-heading md:block">
+        <p className="mr-1 hidden shrink-0 text-[9px] italic text-heading md:block">
           Noklikšķiniet, lai skatītu sīkāk
         </p>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div
+        ref={compact ? compactListRef : undefined}
+        className="min-h-0 flex-1 overflow-hidden"
+      >
         <TrendsList
           results={results}
           expandedId={expandedId}
@@ -883,7 +933,7 @@ function HealthTrendsContent({
       <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3">
         <p className="text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 04.08.2025.</p>
 
-        {showOpenAll && onOpenAll && labResults.length > visibleLabCount && (
+        {showOpenAll && onOpenAll && (
           <button
             type="button"
             onClick={onOpenAll}
@@ -898,6 +948,7 @@ function HealthTrendsContent({
 }
 
 const HealthTrends = () => {
+  const [visibleLabCount, setVisibleLabCount] = useState(defaultVisibleLabCount);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expandedFullId, setExpandedFullId] = useState<string | null>(null);
   const [isAllLabsOpen, setIsAllLabsOpen] = useState(false);
@@ -930,7 +981,8 @@ const HealthTrends = () => {
         expandedId={expandedId}
         onToggleExpanded={(id) => setExpandedId(expandedId === id ? null : id)}
         onOpenAll={() => setIsAllLabsOpen(true)}
-        showOpenAll
+        onVisibleCountChange={setVisibleLabCount}
+        showOpenAll={sortedResults.length > visibleLabCount}
         compact
       />
 
@@ -940,11 +992,11 @@ const HealthTrends = () => {
           overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
           contentClassName="max-w-3xl"
         >
-          <div className="relative mx-auto w-full overflow-hidden rounded-[14px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
+          <div className="relative mx-auto w-full overflow-hidden rounded-[6px] border border-[hsl(210,20%,90%)] bg-white shadow-[0_24px_80px_rgba(15,23,42,0.14)]">
             <button
               type="button"
               onClick={() => setIsAllLabsOpen(false)}
-              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
+              className="absolute right-5 top-5 z-10 flex h-9 w-9 items-center justify-center rounded-[4px] bg-[hsl(210,24%,95%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
               aria-label="Aizvērt"
             >
               <X className="h-4 w-4" />

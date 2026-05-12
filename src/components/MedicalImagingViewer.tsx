@@ -1,14 +1,16 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ActivitySquare,
   CalendarDays,
   ChevronLeft,
   ChevronRight,
+  ExternalLink,
   FileText,
+  ImageOff,
   MapPin,
-  Search,
   UserRound,
 } from "lucide-react";
+
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import rtKruskurvjaAugsdalaImage from "@/assets/rt-kruskurvja-augsdala.png";
 
@@ -26,23 +28,12 @@ interface ImagingStudy {
   hospitalLocation: string;
   conclusion: string;
   imageSrc?: string;
+  datamedUrl?: string;
 }
 
 const studies: ImagingStudy[] = [
   {
     id: "1",
-    type: "X-RAY",
-    title: "RT - krūškurvja augšdaļa",
-    bodyPart: "Krūškurvja augšdaļa",
-    date: "2026-04-14",
-    status: "Patoloģiskas izmaiņas",
-    doctor: "Dr. Kalniņš",
-    hospitalLocation: "Rīgas Austrumu klīniskā universitātes slimnīca",
-    conclusion: "Rentgenoloģiski redzamas patoloģiskas izmaiņas plaušu parenhīmā.",
-    imageSrc: rtKruskurvjaAugsdalaImage,
-  },
-  {
-    id: "2",
     type: "MRI",
     title: "MRI - galvas zona",
     bodyPart: "Galvas zona",
@@ -50,7 +41,23 @@ const studies: ImagingStudy[] = [
     status: "Izmaiņas",
     doctor: "Dr. Krūmiņa",
     hospitalLocation: "Paula Stradiņa klīniskā universitātes slimnīca",
-    conclusion: "Konstatētas strukturālas izmaiņas, kas jāvērtē klīniskā kontekstā.",
+    conclusion:
+      "Konstatētas strukturālas izmaiņas, kas jāvērtē klīniskā kontekstā.",
+    datamedUrl: "https://www.datamed.lv",
+  },
+  {
+    id: "2",
+    type: "X-RAY",
+    title: "RT - krūškurvja augšdaļa",
+    bodyPart: "Krūškurvja augšdaļa",
+    date: "2026-04-14",
+    status: "Patoloģiskas izmaiņas",
+    doctor: "Dr. Kalniņš",
+    hospitalLocation: "Rīgas Austrumu klīniskā universitātes slimnīca",
+    conclusion:
+      "Rentgenoloģiski redzamas patoloģiskas izmaiņas plaušu parenhīmā.",
+    imageSrc: rtKruskurvjaAugsdalaImage,
+    datamedUrl: "https://www.datamed.lv",
   },
   {
     id: "3",
@@ -62,6 +69,7 @@ const studies: ImagingStudy[] = [
     doctor: "Dr. Ozoliņš",
     hospitalLocation: "Ziemeļkurzemes reģionālā slimnīca",
     conclusion: "Attēldiagnostiskā aina bez būtiskām novirzēm no normas.",
+    datamedUrl: "https://www.datamed.lv",
   },
   {
     id: "4",
@@ -73,23 +81,30 @@ const studies: ImagingStudy[] = [
     doctor: "Dr. Lācis",
     hospitalLocation: "Daugavpils reģionālā slimnīca",
     conclusion: "Ultrasonogrāfiski patoloģiskas izmaiņas nav aprakstītas.",
+    datamedUrl: "https://www.datamed.lv",
   },
 ];
 
+const sectionIconClass =
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+
 const statusStyles: Record<ImagingStatus, string> = {
   Norma:
-    "border-[rgba(199,223,210,0.96)] bg-[hsl(152,34%,94%)] text-[hsl(152,42%,34%)]",
-  "Izmaiņas":
-    "border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
+    "border-[hsl(152,34%,78%)] bg-[hsl(152,34%,94%)] text-[hsl(152,42%,34%)]",
+  Izmaiņas:
+    "border-[hsl(38,58%,78%)] bg-[hsl(40,64%,94%)] text-[hsl(34,58%,38%)]",
   "Patoloģiskas izmaiņas":
-    "border-[rgba(239,208,208,0.96)] bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
+    "border-[hsl(0,58%,84%)] bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
 };
 
-const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
-
-const navButtonClass =
-  "inline-flex h-[40px] w-[40px] items-center justify-center rounded-[10px] border border-[hsl(214,22%,88%)] bg-white text-[hsl(214,18%,40%)] shadow-[0_8px_18px_rgba(29,53,87,0.08)] transition hover:bg-[hsl(214,20%,98%)] disabled:cursor-not-allowed disabled:opacity-35";
+const conclusionPanelStyles: Record<ImagingStatus, string> = {
+  Norma:
+    "border-[hsl(152,34%,78%)] bg-[linear-gradient(180deg,hsl(152,42%,97%),hsl(152,38%,95%))]",
+  Izmaiņas:
+    "border-[hsl(38,58%,78%)] bg-[linear-gradient(180deg,hsl(40,76%,97%),hsl(40,64%,95%))]",
+  "Patoloģiskas izmaiņas":
+    "border-[hsl(0,58%,84%)] bg-[linear-gradient(180deg,hsl(0,72%,98%),hsl(0,58%,96%))]",
+};
 
 function formatLatvianDate(isoDate: string) {
   const date = new Date(isoDate);
@@ -100,227 +115,196 @@ function formatLatvianDate(isoDate: string) {
   return `${day}.${month}.${year}.`;
 }
 
-function ImagingPlaceholder({
-  type,
-  compact = false,
+function InfoColumn({
+  icon,
+  label,
+  value,
 }: {
-  type: ImagingType;
-  compact?: boolean;
+  icon: ReactNode;
+  label: string;
+  value: string;
 }) {
-  const strokeWidth = compact ? 1.15 : 1.35;
-
-  if (type === "CT") {
-    return (
-      <svg
-        viewBox="0 0 320 180"
-        className="h-full w-full text-[hsl(212,18%,82%)]"
-        fill="none"
-      >
-        <rect x="138" y="28" width="44" height="42" rx="8" stroke="currentColor" strokeWidth={strokeWidth} />
-        <ellipse cx="160" cy="88" rx="36" ry="18" stroke="currentColor" strokeWidth={strokeWidth} />
-        <ellipse cx="160" cy="88" rx="14" ry="7" stroke="currentColor" strokeDasharray="3 4" strokeWidth={strokeWidth} />
-        <rect x="138" y="106" width="44" height="48" rx="8" stroke="currentColor" strokeWidth={strokeWidth} />
-      </svg>
-    );
-  }
-
-  if (type === "MRI") {
-    return (
-      <svg
-        viewBox="0 0 320 180"
-        className="h-full w-full text-[hsl(212,18%,82%)]"
-        fill="none"
-      >
-        <circle cx="160" cy="88" r="56" stroke="currentColor" strokeWidth={strokeWidth} />
-        <circle cx="160" cy="88" r="34" stroke="currentColor" strokeDasharray="3 4" strokeWidth={strokeWidth} />
-        <path d="M105 118c24-20 86-20 110 0" stroke="currentColor" strokeWidth={strokeWidth} />
-        <path d="M118 72c18-14 66-14 84 0" stroke="currentColor" strokeWidth={strokeWidth} />
-      </svg>
-    );
-  }
-
-  if (type === "USG") {
-    return (
-      <svg
-        viewBox="0 0 320 180"
-        className="h-full w-full text-[hsl(212,18%,82%)]"
-        fill="none"
-      >
-        <circle cx="135" cy="70" r="32" stroke="currentColor" strokeWidth={strokeWidth} />
-        <circle cx="188" cy="78" r="20" stroke="currentColor" strokeWidth={strokeWidth} />
-        <ellipse cx="168" cy="122" rx="36" ry="18" stroke="currentColor" strokeWidth={strokeWidth} />
-      </svg>
-    );
-  }
-
   return (
-    <svg
-      viewBox="0 0 320 180"
-      className="h-full w-full text-[hsl(214,24%,86%)]"
-      fill="none"
-    >
-      <ellipse cx="160" cy="88" rx="56" ry="70" stroke="currentColor" strokeWidth={strokeWidth} />
-      <ellipse cx="160" cy="88" rx="34" ry="42" stroke="currentColor" strokeDasharray="3 4" strokeWidth={strokeWidth} />
-      <ellipse cx="142" cy="92" rx="18" ry="26" stroke="currentColor" strokeWidth={strokeWidth} />
-      <ellipse cx="178" cy="92" rx="18" ry="26" stroke="currentColor" strokeWidth={strokeWidth} />
-      <path d="M126 58c10-12 58-12 68 0" stroke="currentColor" strokeWidth={strokeWidth} />
-    </svg>
+    <div className="min-w-0 px-3 py-3.5">
+      <div className="mb-2 flex items-center gap-1.5">
+        <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] border border-[hsl(214,24%,86%)] bg-white text-[hsl(216,24%,38%)]">
+          {icon}
+        </div>
+
+        <p className="min-w-0 text-[8.5px] font-semibold uppercase tracking-[0.14em] text-[hsl(216,15%,62%)]">
+          {label}
+        </p>
+      </div>
+
+      <p className="min-w-0 text-left text-[10.5px] font-semibold leading-[1.22] tracking-[-0.01em] text-[hsl(219,36%,18%)]">
+        {value}
+      </p>
+    </div>
   );
 }
 
 const MedicalImagingViewer = () => {
-  const orderedStudies = useMemo(
-    () =>
-      [...studies].sort(
-        (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime(),
-      ),
-    [],
-  );
+  const orderedStudies = useMemo(() => studies, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const activeStudy = orderedStudies[activeIndex];
-  const canGoPrev = activeIndex > 0;
-  const canGoNext = activeIndex < orderedStudies.length - 1;
-
-  const goPrev = () => {
-    if (canGoPrev) setActiveIndex((prev) => prev - 1);
-  };
 
   const goNext = () => {
-    if (canGoNext) setActiveIndex((prev) => prev + 1);
+    setActiveIndex((prev) =>
+      prev >= orderedStudies.length - 1 ? 0 : prev + 1,
+    );
+  };
+
+  const goPrev = () => {
+    setActiveIndex((prev) =>
+      prev <= 0 ? orderedStudies.length - 1 : prev - 1,
+    );
   };
 
   return (
     <>
-      <section className="flex h-full w-full flex-col rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="mb-3 flex items-start gap-4">
-          <div className="flex items-start gap-4">
-            <div className={sectionIconClass}>
-              <ActivitySquare size={18} />
-            </div>
-
-            <div>
-              <p className="text-[14px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,18%,44%)]">
-                Attēldiagnostika
-              </p>
-              <p className="mt-0.5 text-[11px] text-[hsl(214,14%,50%)]">
-                RTG, CT un citu izmeklējumu pārskats
-              </p>
-            </div>
+      <section className="flex h-full min-h-[420px] w-full flex-col overflow-hidden rounded-[6px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+        <div className="mb-4 flex shrink-0 items-center gap-3">
+          <div className={sectionIconClass}>
+            <ActivitySquare size={18} className="text-current" />
           </div>
 
+          <div className="min-w-0">
+            <p className="truncate text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
+              Attēldiagnostika
+            </p>
+            <p className="truncate text-xs text-heading">
+              RTG, CT un citu izmeklējumu pārskats
+            </p>
+          </div>
         </div>
 
-        <div className="flex flex-1 flex-col rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,99%)] p-2.5">
-          <div className="mb-3 flex items-start justify-between gap-2">
-            <div className="min-w-0 flex-1">
-              <h3 className="text-[13px] font-semibold tracking-[-0.02em] text-[hsl(222,28%,20%)]">
-                {activeStudy.title}
-              </h3>
-              <p className="mt-0.5 text-[10px] text-[hsl(214,14%,66%)]">
-                {formatLatvianDate(activeStudy.date)}
-              </p>
+        <div className="mb-3 flex items-start justify-between gap-3">
+          <h3 className="min-w-0 text-[15px] font-semibold leading-tight tracking-[-0.02em] text-text-dark">
+            {activeStudy.title}
+          </h3>
+
+          <div className="inline-flex shrink-0 items-center gap-1.5 pt-0.5 text-[11px] font-medium text-heading">
+            <CalendarDays size={12} strokeWidth={1.8} />
+            {formatLatvianDate(activeStudy.date)}
+          </div>
+        </div>
+
+        <div
+          className={`mb-3 rounded-[5px] border px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] ${
+            conclusionPanelStyles[activeStudy.status]
+          }`}
+        >
+          <div className="mb-2 flex items-center gap-2">
+            <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] border border-[hsl(214,26%,86%)] bg-white text-[hsl(218,30%,34%)]">
+              <FileText size={12} strokeWidth={1.8} />
             </div>
 
-            <button
-              type="button"
-              onClick={() => setIsFullscreen(true)}
-              className="inline-flex items-center gap-2 rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-2.5 py-2 text-[9px] font-medium text-[hsl(214,18%,44%)] shadow-[0_6px_14px_rgba(29,53,87,0.05)] transition hover:bg-[hsl(214,20%,98%)]"
-              aria-label="Skatīt pilnekrānā"
-            >
-              <Search size={13} />
-              <span>Skatīt pilnekrānā</span>
-            </button>
+            <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-heading">
+              Slēdziens
+            </p>
           </div>
 
-          <div className="relative overflow-hidden rounded-[10px] border border-[hsl(214,22%,90%)] bg-[hsl(214,20%,98%)]">
+          <div className="flex items-center gap-2.5">
+            <span
+              className={`inline-flex shrink-0 items-center justify-center rounded-full border px-2 py-1 text-center text-[8.5px] font-semibold leading-none ${statusStyles[activeStudy.status]}`}
+            >
+              {activeStudy.status}
+            </span>
+
+            <p className="line-clamp-3 text-[11px] leading-[1.45] tracking-[-0.02em] text-text-dark">
+              {activeStudy.conclusion}
+            </p>
+          </div>
+        </div>
+
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[5px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]">
+          <div className="relative flex h-[155px] shrink-0 items-center justify-center overflow-hidden p-3">
             <button
               type="button"
               onClick={goPrev}
-              disabled={!canGoPrev}
-              className={`${navButtonClass} absolute left-3 top-1/2 z-20 -translate-y-1/2`}
-              aria-label="Iepriekšējais attēls"
+              className="absolute left-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-[4px] border border-[hsl(214,22%,88%)] bg-white/95 text-[hsl(216,22%,38%)] shadow-[0_6px_14px_rgba(29,53,87,0.08)] transition hover:bg-white"
+              aria-label="Iepriekšējais izmeklējums"
             >
               <ChevronLeft size={18} />
             </button>
 
-            <div className="mx-auto flex min-h-[135px] w-full max-w-[500px] items-center justify-center px-4 py-2.5">
-              {activeStudy.imageSrc ? (
+            {activeStudy.imageSrc ? (
+              <button
+                type="button"
+                onClick={() => setIsFullscreen(true)}
+                className="flex h-full w-full items-center justify-center"
+                aria-label="Atvērt attēlu pilnekrānā"
+              >
                 <img
                   src={activeStudy.imageSrc}
                   alt={activeStudy.title}
-                  className="block max-h-[145px] w-full rounded-[8px] object-contain"
+                  className="block max-h-[128px] w-full rounded-[3px] object-contain"
                 />
-              ) : (
-                <div className="h-[120px] w-full max-w-[420px]">
-                  <ImagingPlaceholder type={activeStudy.type} />
+              </button>
+            ) : (
+              <div className="mx-9 flex h-full w-full min-w-0 items-center justify-center rounded-[3px] px-3 py-3">
+                <div className="flex min-w-0 max-w-[230px] flex-col items-center text-center">
+                  <div className="mb-2 flex h-9 w-9 items-center justify-center rounded-[3px] border border-[hsl(214,24%,84%)] bg-white text-[hsl(214,18%,58%)]">
+                    <ImageOff size={19} />
+                  </div>
+
+                  <p className="text-[13px] font-semibold leading-tight text-text-dark">
+                    Attēli šobrīd nav pieejami
+                  </p>
+
+                  <a
+                    href={activeStudy.datamedUrl ?? "https://www.datamed.lv"}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="mt-2 inline-flex h-7 items-center justify-center gap-1.5 rounded-[4px] border border-[hsl(216,34%,66%)] bg-white px-3 text-[9px] font-semibold text-[hsl(219,42%,24%)] shadow-[0_5px_12px_rgba(29,53,87,0.06)] transition hover:bg-[hsl(214,30%,98%)]"
+                  >
+                    <ExternalLink size={11} strokeWidth={1.9} />
+                    Atvērt DATAMED
+                  </a>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             <button
               type="button"
               onClick={goNext}
-              disabled={!canGoNext}
-              className={`${navButtonClass} absolute right-3 top-1/2 z-20 -translate-y-1/2`}
-              aria-label="Nākamais attēls"
+              className="absolute right-3 top-1/2 z-10 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-[4px] border border-[hsl(214,22%,88%)] bg-white/95 text-[hsl(216,22%,38%)] shadow-[0_6px_14px_rgba(29,53,87,0.08)] transition hover:bg-white"
+              aria-label="Nākamais izmeklējums"
             >
               <ChevronRight size={18} />
             </button>
           </div>
 
-          <div className="mt-3 border-t border-[hsl(214,22%,88%)] pt-3">
-            <div className="grid gap-3 md:grid-cols-[0.78fr_1.32fr_0.8fr]">
-              <div className="border-b border-[hsl(214,22%,90%)] pb-3 md:border-b-0 md:border-r md:pr-3">
-                <div className="mb-1.5 flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,66%)]">
-                  <CalendarDays size={14} className="text-[hsl(214,18%,44%)]" />
-                  Datums
-                </div>
-                <p className="text-[11px] font-semibold text-[hsl(222,28%,20%)]">
-                  {formatLatvianDate(activeStudy.date)}
-                </p>
-              </div>
+          <div className="grid min-h-[82px] grid-cols-[0.78fr_1.44fr_0.78fr] border-t border-[hsl(214,22%,88%)] bg-white">
+            <div className="relative">
+              <InfoColumn
+                icon={<CalendarDays size={12} strokeWidth={1.8} />}
+                label="Datums"
+                value={formatLatvianDate(activeStudy.date)}
+              />
 
-              <div className="border-b border-[hsl(214,22%,90%)] pb-3 md:border-b-0 md:border-r md:px-3">
-                <div className="mb-1.5 flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,66%)]">
-                  <MapPin size={14} className="text-[hsl(214,18%,44%)]" />
-                  Iestāde
-                </div>
-                <p className="text-[11px] font-semibold leading-[1.3] text-[hsl(222,28%,20%)]">
-                  {activeStudy.hospitalLocation}
-                </p>
-              </div>
-
-              <div className="md:pl-3">
-                <div className="mb-1.5 flex items-center gap-2 text-[9px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,66%)]">
-                  <UserRound size={14} className="text-[hsl(214,18%,44%)]" />
-                  Ārsts
-                </div>
-                <p className="text-[11px] font-semibold text-[hsl(222,28%,20%)]">
-                  {activeStudy.doctor}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-2.5 border-t border-[hsl(214,22%,88%)] pt-2.5">
-            <div className="mb-2 flex items-center gap-2 text-[8px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,66%)]">
-              <FileText size={14} className="text-[hsl(214,18%,44%)]" />
-              Slēdziens
+              <div className="absolute right-0 top-5 h-[42px] w-px bg-[hsl(214,22%,88%)]" />
             </div>
 
-            <div className="flex items-start gap-3">
-              <span
-                className={`mt-0.5 inline-flex shrink-0 rounded-full border px-3 py-1 text-[9px] font-semibold ${statusStyles[activeStudy.status]}`}
-              >
-                {activeStudy.status}
-              </span>
+            <div className="relative">
+              <InfoColumn
+                icon={<MapPin size={13} strokeWidth={1.8} />}
+                label="Iestāde"
+                value={activeStudy.hospitalLocation}
+              />
 
-              <p className="text-[11px] leading-5 text-[hsl(214,14%,42%)]">
-                {activeStudy.conclusion}
-              </p>
+              <div className="absolute right-0 top-5 h-[42px] w-px bg-[hsl(214,22%,88%)]" />
+            </div>
+
+            <div>
+              <InfoColumn
+                icon={<UserRound size={13} strokeWidth={1.8} />}
+                label="Ārsts"
+                value={activeStudy.doctor}
+              />
             </div>
           </div>
         </div>
@@ -331,16 +315,18 @@ const MedicalImagingViewer = () => {
           onClose={() => setIsFullscreen(false)}
           overlayClassName="bg-[hsla(218,30%,12%,0.72)] backdrop-blur-md"
         >
-          <div className="relative mx-auto w-full max-w-5xl rounded-[14px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
-            <div className="mb-4 flex items-center justify-between gap-4">
+          <div className="relative mx-auto w-full max-w-5xl rounded-[6px] border border-[hsl(214,24%,86%)] bg-white p-5 shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
+            <div className="mb-5 flex items-start justify-between gap-5">
               <div className="min-w-0">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-heading">
                   {activeStudy.type}
                 </p>
-                <h3 className="text-lg font-semibold text-[hsl(222,28%,20%)]">
+
+                <h3 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-text-dark">
                   {activeStudy.title}
                 </h3>
-                <p className="mt-1 text-sm text-[hsl(214,16%,60%)]">
+
+                <p className="mt-1 text-sm text-heading">
                   {formatLatvianDate(activeStudy.date)}
                 </p>
               </div>
@@ -348,45 +334,59 @@ const MedicalImagingViewer = () => {
               <button
                 type="button"
                 onClick={() => setIsFullscreen(false)}
-                className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-3 py-1.5 text-sm font-medium text-[hsl(222,28%,20%)] transition hover:bg-[hsl(214,20%,98%)]"
+                className="rounded-[4px] border border-[hsl(214,24%,86%)] bg-white px-4 py-2 text-sm font-semibold text-[hsl(219,42%,20%)] transition hover:bg-[hsl(214,30%,98%)]"
               >
                 Aizvērt
               </button>
             </div>
 
-            <div className="relative isolate flex h-[78vh] items-center justify-center overflow-visible rounded-[14px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]">
+            <div className="relative flex h-[76vh] items-center justify-center overflow-hidden rounded-[5px] border border-[hsl(214,24%,86%)] bg-[hsl(214,35%,98%)] p-5">
               <button
                 type="button"
                 onClick={goPrev}
-                disabled={!canGoPrev}
-                className={`${navButtonClass} absolute left-3 top-1/2 z-40 -translate-y-1/2 md:left-4`}
-                aria-label="Iepriekšējais attēls pilnekrānā"
+                className="absolute left-5 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-[4px] border border-[hsl(214,24%,86%)] bg-white text-[hsl(216,22%,38%)] shadow-[0_12px_24px_rgba(29,53,87,0.12)]"
+                aria-label="Iepriekšējais izmeklējums"
               >
-                <ChevronLeft size={22} />
+                <ChevronLeft size={24} />
               </button>
 
-              <div className="relative z-10 flex h-full w-full items-center justify-center px-6 py-8 md:px-8 md:py-10">
-                {activeStudy.imageSrc ? (
-                  <img
-                    src={activeStudy.imageSrc}
-                    alt={activeStudy.title}
-                    className="block h-full w-full object-contain"
-                  />
-                ) : (
-                  <div className="h-[66vh] w-[96%] max-w-[1100px]">
-                    <ImagingPlaceholder type={activeStudy.type} />
+              {activeStudy.imageSrc ? (
+                <img
+                  src={activeStudy.imageSrc}
+                  alt={activeStudy.title}
+                  className="block h-full w-full object-contain"
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center rounded-[3px] bg-white/60">
+                  <div className="flex max-w-sm flex-col items-center text-center">
+                    <div className="mb-5 flex h-16 w-16 items-center justify-center rounded-[3px] border border-[hsl(214,26%,84%)] bg-white text-[hsl(214,18%,58%)]">
+                      <ImageOff size={30} />
+                    </div>
+
+                    <p className="text-xl font-semibold text-text-dark">
+                      Attēli šobrīd nav pieejami
+                    </p>
+
+                    <a
+                      href={activeStudy.datamedUrl ?? "https://www.datamed.lv"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="mt-4 inline-flex h-9 items-center justify-center gap-2 rounded-[4px] border border-[hsl(216,34%,66%)] bg-white px-4 text-sm font-semibold text-[hsl(219,42%,24%)] shadow-[0_5px_12px_rgba(29,53,87,0.06)] transition hover:bg-[hsl(214,30%,98%)]"
+                    >
+                      <ExternalLink size={15} strokeWidth={1.9} />
+                      Atvērt DATAMED
+                    </a>
                   </div>
-                )}
-              </div>
+                </div>
+              )}
 
               <button
                 type="button"
                 onClick={goNext}
-                disabled={!canGoNext}
-                className={`${navButtonClass} absolute right-3 top-1/2 z-40 -translate-y-1/2 md:right-4`}
-                aria-label="Nākamais attēls pilnekrānā"
+                className="absolute right-5 top-1/2 z-10 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-[4px] border border-[hsl(214,24%,86%)] bg-white text-[hsl(216,22%,38%)] shadow-[0_12px_24px_rgba(29,53,87,0.12)]"
+                aria-label="Nākamais izmeklējums"
               >
-                <ChevronRight size={22} />
+                <ChevronRight size={24} />
               </button>
             </div>
           </div>

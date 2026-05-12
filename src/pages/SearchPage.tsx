@@ -1,5 +1,5 @@
-import * as React from "react";
-import { ArrowRight, Search } from "lucide-react";
+﻿import * as React from "react";
+import { Search } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -24,12 +24,15 @@ function normalizeText(value: string) {
     .toLowerCase();
 }
 
+const personalCodeGroupSizes = [6, 5] as const;
+const personalCodeLength = personalCodeGroupSizes[0] + personalCodeGroupSizes[1];
+
 // format: xxxxxx-xxxxx
 function formatPersonalCode(raw: string) {
-  const digits = raw.replace(/[^\d]/g, "").slice(0, 11);
+  const digits = raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
 
-  if (digits.length <= 6) return digits;
-  return `${digits.slice(0, 6)}-${digits.slice(6)}`;
+  if (digits.length <= personalCodeGroupSizes[0]) return digits;
+  return `${digits.slice(0, personalCodeGroupSizes[0])}-${digits.slice(personalCodeGroupSizes[0])}`;
 }
 
 export default function SearchPage() {
@@ -50,6 +53,13 @@ export default function SearchPage() {
   const [loadingPatient, setLoadingPatient] = React.useState<Patient | null>(
     null,
   );
+  const inputRefs = React.useRef<Array<HTMLInputElement | null>>([]);
+
+  const personalCodeDigits = React.useMemo(() => {
+    const digits = query.replace(/[^\d]/g, "").slice(0, personalCodeLength).split("");
+
+    return Array.from({ length: personalCodeLength }, (_, index) => digits[index] ?? "");
+  }, [query]);
 
   const recentPatients = React.useMemo(
     () =>
@@ -68,12 +78,26 @@ export default function SearchPage() {
     );
   }, [routeState?.layoutOrder]);
 
+  const updateQueryFromDigits = React.useCallback(
+    (nextDigits: string[]) => {
+      setQuery(formatPersonalCode(nextDigits.join("")));
+      if (error) setError("");
+    },
+    [error],
+  );
+
   const handleSearch = () => {
     const trimmedQuery = query.trim();
     const normalizedQuery = normalizeText(trimmedQuery);
+    const digitCount = trimmedQuery.replace(/[^\d]/g, "").length;
 
     if (!trimmedQuery) {
       setError("Ievadiet pacienta personas kodu.");
+      return;
+    }
+
+    if (digitCount < personalCodeLength) {
+      setError("Ievadiet pilnu pacienta personas kodu.");
       return;
     }
 
@@ -116,7 +140,7 @@ export default function SearchPage() {
           E-veselība pieslēgta
         </div>
 
-        <div className="flex w-full max-w-xl flex-col items-center px-6 text-center">
+        <div className="flex w-full max-w-4xl flex-col items-center px-6 text-center">
           <h1 className="mb-6 text-7xl font-light tracking-tight text-[hsl(218,46%,12%)]">
             OMNUS
           </h1>
@@ -128,48 +152,111 @@ export default function SearchPage() {
               handleSearch();
             }}
           >
-            <div className="flex w-full items-center rounded-xl bg-white px-6 py-4 shadow">
-              <Search className="mr-3 h-[22px] w-[22px] text-[hsl(214,18%,70%)]" />
+            <div className="flex w-full items-center justify-center gap-2 px-4 py-4">
+              <div className="flex items-center justify-center gap-1.5">
+                {personalCodeDigits.map((digit, index) => {
+                  const showDivider = index === personalCodeGroupSizes[0] - 1;
 
-              <input
-                type="text"
-                placeholder="Ievadiet personas kodu"
-                className="flex-1 bg-transparent text-center text-lg text-[hsl(214,42%,17%)] outline-none placeholder:text-[hsl(214,18%,70%)]"
-                autoFocus
-                value={query}
-                onChange={(e) => {
-                  const formatted = formatPersonalCode(e.target.value);
-                  setQuery(formatted);
-                  if (error) setError("");
-                }}
-                onPaste={(e) => {
-                  e.preventDefault();
-                  const pasted = e.clipboardData.getData("text");
-                  setQuery(formatPersonalCode(pasted));
-                }}
-                inputMode="numeric"
-                maxLength={12}
-                onKeyDown={(e) => {
-                  const allowed = [
-                    "Backspace",
-                    "Delete",
-                    "ArrowLeft",
-                    "ArrowRight",
-                    "Tab",
-                    "Enter",
-                  ];
+                  return (
+                    <React.Fragment key={index}>
+                      <input
+                        ref={(node) => {
+                          inputRefs.current[index] = node;
+                        }}
+                        type="text"
+                        inputMode="numeric"
+                        autoFocus={index === 0}
+                        maxLength={1}
+                        value={digit}
+                        onChange={(e) => {
+                          const nextValue = e.target.value.replace(/[^\d]/g, "").slice(-1);
+                          const nextDigits = [...personalCodeDigits];
+                          nextDigits[index] = nextValue;
+                          updateQueryFromDigits(nextDigits);
 
-                  if (!/\d/.test(e.key) && !allowed.includes(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-              />
+                          if (nextValue && index < personalCodeLength - 1) {
+                            inputRefs.current[index + 1]?.focus();
+                            inputRefs.current[index + 1]?.select();
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === "Backspace") {
+                            e.preventDefault();
+                            const nextDigits = [...personalCodeDigits];
+
+                            if (nextDigits[index]) {
+                              nextDigits[index] = "";
+                              updateQueryFromDigits(nextDigits);
+                              return;
+                            }
+
+                            if (index > 0) {
+                              nextDigits[index - 1] = "";
+                              updateQueryFromDigits(nextDigits);
+                              inputRefs.current[index - 1]?.focus();
+                            }
+                            return;
+                          }
+
+                          if (e.key === "ArrowLeft" && index > 0) {
+                            e.preventDefault();
+                            inputRefs.current[index - 1]?.focus();
+                            return;
+                          }
+
+                          if (e.key === "ArrowRight" && index < personalCodeLength - 1) {
+                            e.preventDefault();
+                            inputRefs.current[index + 1]?.focus();
+                            return;
+                          }
+
+                          const allowed = ["Delete", "Tab", "Enter"];
+                          if (!/\d/.test(e.key) && !allowed.includes(e.key)) {
+                            e.preventDefault();
+                          }
+                        }}
+                        onPaste={(e) => {
+                          e.preventDefault();
+                          const pastedDigits = e.clipboardData
+                            .getData("text")
+                            .replace(/[^\d]/g, "")
+                            .slice(0, personalCodeLength - index)
+                            .split("");
+
+                          if (pastedDigits.length === 0) return;
+
+                          const nextDigits = [...personalCodeDigits];
+                          pastedDigits.forEach((value, offset) => {
+                            nextDigits[index + offset] = value;
+                          });
+                          updateQueryFromDigits(nextDigits);
+
+                          const nextFocusIndex = Math.min(
+                            index + pastedDigits.length,
+                            personalCodeLength - 1,
+                          );
+                          inputRefs.current[nextFocusIndex]?.focus();
+                        }}
+                        className="h-12 w-12 shrink-0 rounded-[12px] border border-[hsl(214,20%,86%)] bg-white text-center text-lg font-semibold text-[hsl(214,42%,17%)] shadow-[0_6px_18px_rgba(29,53,87,0.06)] outline-none transition focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]"
+                        aria-label={`Personas koda cipars ${index + 1}`}
+                      />
+
+                      {showDivider && (
+                        <span className="px-0.5 text-xl font-semibold text-[hsl(214,18%,52%)]">
+                          -
+                        </span>
+                      )}
+                    </React.Fragment>
+                  );
+                })}
+              </div>
 
               <button
                 type="submit"
-                className="ml-4 flex h-12 w-12 items-center justify-center rounded-xl bg-[hsl(214,42%,17%)] text-white transition hover:opacity-95"
+                className="flex h-12 shrink-0 items-center justify-center gap-2 rounded-xl bg-[hsl(214,42%,17%)] px-4 text-white transition hover:opacity-95"
               >
-                <ArrowRight className="h-6 w-6" />
+                <Search className="h-5 w-5" />
+                <span className="text-sm font-semibold">Meklēt</span>
               </button>
             </div>
 

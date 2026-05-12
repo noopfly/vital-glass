@@ -13,7 +13,7 @@ const PatientSummaryCard = ({
   updatedAt,
 }: PatientSummaryCardProps) => {
   return (
-    <section className="flex h-full w-full rounded-[12px] border border-[hsl(214,22%,88%)] bg-white px-6 py-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+    <section className="flex h-full w-full rounded-[6px] border border-[hsl(214,22%,88%)] bg-white px-6 py-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
       <div className="flex items-start gap-4">
         <div className={sectionIconClass}>
           <Activity size={18} className="text-current" />

@@ -28,7 +28,7 @@ interface Medication {
 const medications: Medication[] = [
   {
     id: "metformin",
-    name: "Metformins",
+    name: "Metformīns",
     dose: "500 mg",
     frequency: "2x dienā",
     status: "active",
@@ -39,7 +39,7 @@ const medications: Medication[] = [
   },
   {
     id: "atorvastatin",
-    name: "Atorvastatins",
+    name: "Atorvastatīns",
     dose: "20 mg",
     frequency: "1x dienā",
     status: "active",
@@ -48,9 +48,9 @@ const medications: Medication[] = [
     prescribedBy: "Dr. Jānis Ozols",
     interactions: [
       {
-        with: "Amlodipins",
+        with: "Amlodipīns",
         severity: "viegla",
-        summary: "Amlodipins var palielināt atorvastatīna koncentrāciju plazmā.",
+        summary: "Amlodipīns var palielināt atorvastatīna koncentrāciju plazmā.",
       },
     ],
   },
@@ -65,7 +65,7 @@ const medications: Medication[] = [
     prescribedBy: "Dr. Jānis Ozols",
     interactions: [
       {
-        with: "Atorvastatins",
+        with: "Atorvastatīns",
         severity: "viegla",
         summary: "Ieteicama blakusparādību novērošana.",
       },
@@ -73,7 +73,7 @@ const medications: Medication[] = [
   },
   {
     id: "amoxicillin",
-    name: "Amoksicilins",
+    name: "Amoksicilīns",
     dose: "500 mg",
     frequency: "3x dienā",
     status: "historical",
@@ -136,7 +136,7 @@ const compactTableGridClass =
   "md:grid-cols-[minmax(0,1.4fr)_0.85fr_0.95fr_0.95fr]";
 
 const fullTableGridClass =
-  "md:grid-cols-[minmax(0,1.25fr)_0.7fr_0.8fr_0.8fr_0.9fr_0.9fr_1.15fr]";
+  "md:grid-cols-7";
 
 const sectionIconClass =
   "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
@@ -203,8 +203,9 @@ function MedicationRow({
   onDeactivate: () => void;
 }) {
   const interactive = medication.interactions.length > 0;
+  const isFullMode = mode === "full";
   const tableGridClass =
-    mode === "full" ? fullTableGridClass : compactTableGridClass;
+    isFullMode ? fullTableGridClass : compactTableGridClass;
 
   return (
     <div
@@ -254,8 +255,12 @@ function MedicationRow({
         </p>
       </div>
 
-      <div className="flex items-center md:justify-end">
-        <div className="flex flex-col items-start md:items-end">
+      <div
+        className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-end"}`}
+      >
+        <div
+          className={`flex flex-col items-start ${isFullMode ? "md:items-start" : "md:items-end"}`}
+        >
           <p className={`mb-1 md:hidden ${headingClass}`}>
             {columnLabels.status}
           </p>
@@ -326,6 +331,7 @@ function MedicationTableContent({
 
   const tableGridClass =
     mode === "full" ? fullTableGridClass : compactTableGridClass;
+  const isFullMode = mode === "full";
 
   const updateCursorPosition = (position: { x: number; y: number }) => {
     const container = containerRef.current;
@@ -362,7 +368,9 @@ function MedicationTableContent({
           <p className={headingClass}>{columnLabels.name}</p>
           <p className={headingClass}>{columnLabels.dose}</p>
           <p className={headingClass}>{columnLabels.frequency}</p>
-          <div className="flex items-center md:justify-end md:pr-4">
+          <div
+            className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-end md:pr-4"}`}
+          >
             <p className={headingClass}>{columnLabels.status}</p>
           </div>
 
@@ -433,7 +441,7 @@ const MedicationTable = () => {
 
   return (
     <>
-      <section className="flex h-full flex-col rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex h-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="mb-3.5 flex items-center gap-3">
           <div className={sectionIconClass}>
             <Pill size={18} className="text-current" />
@@ -457,7 +465,7 @@ const MedicationTable = () => {
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="inline-flex items-center justify-center text-sm font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
+            className="inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus medikamentus →
           </button>

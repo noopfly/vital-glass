@@ -36,14 +36,13 @@ const referrals: ReferralHistoryItem[] = [
     date: "2026-03-18",
     title: "E-nosūtījums uz kardiologa konsultāciju sirdsklauvju izvērtēšanai",
     specialty: "Kardiologs",
-    facility: "Stradiņi",
+    facility: "PSKUS",
     doctor: "Dr. Liepa",
     reason: "Sirdsklauves",
     validUntil: "2026-06-18",
     status: "aktivs",
     events: [
-      { id: "e1", label: "Izveidots", date: "2026-03-18" },
-      { id: "e2", label: "Pieejams pacientam", date: "2026-03-18" },
+      { id: "e1", label: "Izveidots nosūtījums", date: "2026-03-18" },
     ],
   },
   {
@@ -57,9 +56,9 @@ const referrals: ReferralHistoryItem[] = [
     validUntil: "2026-05-05",
     status: "izlietots",
     events: [
-      { id: "e1", label: "Izveidots", date: "2026-02-05" },
-      { id: "e2", label: "Pieraksts veikts", date: "2026-02-06" },
-      { id: "e3", label: "Izlietots", date: "2026-02-07" },
+      { id: "e1", label: "Izveidots nosūtījums", date: "2026-02-05" },
+      { id: "e2", label: "Veikts pieraksts", date: "2026-02-06" },
+      { id: "e3", label: "Izlietots nosūtījums", date: "2026-02-07" },
     ],
   },
   {
@@ -73,7 +72,7 @@ const referrals: ReferralHistoryItem[] = [
     validUntil: "2026-04-22",
     status: "atcelts",
     events: [
-      { id: "e1", label: "Izveidots", date: "2026-01-22" },
+      { id: "e1", label: "Izveidots nosūtījums", date: "2026-01-22" },
       { id: "e2", label: "Atcelts", date: "2026-01-25" },
     ],
   },
@@ -88,9 +87,8 @@ const referrals: ReferralHistoryItem[] = [
     validUntil: "2026-03-12",
     status: "izlietots",
     events: [
-      { id: "e1", label: "Izveidots", date: "2025-12-12" },
-      { id: "e2", label: "Pieejams pacientam", date: "2025-12-12" },
-      { id: "e3", label: "Izlietots", date: "2025-12-18" },
+      { id: "e1", label: "Izveidots nosūtījums", date: "2025-12-12" },
+      { id: "e3", label: "Izlietots nosūtījums", date: "2025-12-18" },
     ],
   },
   {
@@ -104,8 +102,7 @@ const referrals: ReferralHistoryItem[] = [
     validUntil: "2026-02-03",
     status: "aktivs",
     events: [
-      { id: "e1", label: "Izveidots", date: "2025-11-03" },
-      { id: "e2", label: "Pieejams pacientam", date: "2025-11-03" },
+      { id: "e1", label: "Izveidots nosūtījums", date: "2025-11-03" },
     ],
   },
 ];
@@ -409,7 +406,7 @@ const ReferralHistory = () => {
 
   return (
     <>
-      <section className="flex h-full w-full flex-col overflow-hidden rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
+      <section className="flex h-full w-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="flex items-center gap-3 border-b border-[hsl(214,22%,88%)] pb-3.5">
           <div className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
             <FileText size={18} />

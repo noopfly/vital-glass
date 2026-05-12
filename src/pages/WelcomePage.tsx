@@ -40,7 +40,7 @@ export default function WelcomePage() {
             <Button
               type="button"
               onClick={() => navigate("/search")}
-              className={`${hoverButtonClass} h-16 w-full rounded-[16px] border border-[rgba(218,225,233,0.96)] px-6 text-[16px] font-semibold shadow-[0_12px_28px_rgba(29,53,87,0.06)]`}
+              className={`${hoverButtonClass} h-16 w-full rounded-[10px] border border-[rgba(218,225,233,0.96)] px-6 text-[16px] font-semibold shadow-[0_12px_28px_rgba(29,53,87,0.06)]`}
             >
               <span className="relative z-10 flex items-center justify-center">
                 <KeyRound className="mr-3 h-5 w-5" strokeWidth={1.9} />
@@ -67,7 +67,7 @@ export default function WelcomePage() {
               <Button
                 type="button"
                 variant="ghost"
-                className={`${hoverButtonClass} h-14 rounded-[14px] border border-[rgba(210,219,228,0.96)] px-7 text-[15px] font-semibold shadow-[0_10px_24px_rgba(29,53,87,0.05)]`}
+                className={`${hoverButtonClass} h-14 rounded-[10px] border border-[rgba(210,219,228,0.96)] px-7 text-[15px] font-semibold shadow-[0_10px_24px_rgba(29,53,87,0.05)]`}
               >
                 <span className="relative z-10 flex items-center justify-center">
                   Reģistrēties sistēmai

@@ -996,7 +996,7 @@ export default function RegistrationPage() {
                 </p>
 
                 <h1 className="mt-1.5 text-[26px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[34px]">
-                  Izkārtojiet savu darba paneli
+                  Iekārtojiet savu darba paneli
                 </h1>
 
                 <p className="mt-1.5 text-[13px] leading-5 text-[hsl(214,16%,46%)]">

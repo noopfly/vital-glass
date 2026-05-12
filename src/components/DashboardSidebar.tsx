@@ -398,6 +398,7 @@ export default function DashboardSidebar({
   });
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
+  const [isReportOpen, setIsReportOpen] = React.useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = React.useState(false);
   const [isAllPatientsOpen, setIsAllPatientsOpen] = React.useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
@@ -408,6 +409,10 @@ export default function DashboardSidebar({
     () => normalizeDashboardLayoutOrder(layoutOrder ?? defaultSettingsOrder),
   );
   const [supportMessage, setSupportMessage] = React.useState("");
+  const [reportMessage, setReportMessage] = React.useState("");
+  const [reportSeverity, setReportSeverity] = React.useState<
+    "blocking" | "annoying" | "suggestion" | null
+  >(null);
 
   const orderedPatients = React.useMemo(
     () => [
@@ -587,9 +592,9 @@ export default function DashboardSidebar({
             to="/search"
             state={{ patient: activePatient, layoutOrder }}
             className={cn(
-              "flex w-full items-center rounded-[12px] px-3 py-3 text-left transition",
+              "flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
               currentView === "search"
-                ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.16)]"
+                ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                 : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
               isCollapsed ? "justify-center px-0" : "gap-3",
             )}
@@ -608,9 +613,9 @@ export default function DashboardSidebar({
             to="/day-list"
             state={{ patient: activePatient, layoutOrder }}
             className={cn(
-              "mt-3 flex w-full items-center rounded-[12px] px-3 py-3 text-left transition",
+              "mt-3 flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
               currentView === "day-list"
-                ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.16)]"
+                ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                 : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
               isCollapsed ? "justify-center px-0" : "gap-3",
             )}
@@ -686,6 +691,18 @@ export default function DashboardSidebar({
           </div>
         )}
 
+        {!isCollapsed && (
+          <div className="px-4 pb-3">
+            <button
+              type="button"
+              onClick={() => setIsReportOpen(true)}
+              className="text-[12px] font-medium text-[hsl(214,16%,58%)] transition hover:text-[hsl(214,24%,38%)]"
+            >
+              Ziņot par problēmu
+            </button>
+          </div>
+        )}
+
         <div
           ref={footerRef}
           className={cn(
@@ -736,7 +753,7 @@ export default function DashboardSidebar({
             aria-expanded={!isCollapsed ? isProfileMenuOpen : undefined}
             aria-haspopup={!isCollapsed ? "menu" : undefined}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,38%,22%),hsl(217,40%,30%))] text-[11px] font-semibold text-white">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,38%,22%),hsl(217,40%,30%))] text-[11px] font-semibold text-white shadow-none">
               {getInitials("Dr. A. Liepiņa")}
             </div>
 
@@ -812,6 +829,110 @@ export default function DashboardSidebar({
                   onClick={() => {
                     setIsHelpOpen(false);
                     setSupportMessage("");
+                  }}
+                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                >
+                  Nosūtīt
+                </button>
+              </div>
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
+
+      {isReportOpen && (
+        <CenteredOverlay
+          onClose={() => setIsReportOpen(false)}
+          overlayClassName="bg-[rgba(16,24,40,0.18)] backdrop-blur-[6px]"
+          contentClassName="max-w-[520px]"
+        >
+          <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+            <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-6 py-5">
+              <div>
+                <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                  Ziņojums
+                </p>
+                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                  Ziņot par problēmu
+                </h2>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsReportOpen(false)}
+                className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
+                aria-label="Aizvērt ziņojuma logu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="px-6 py-6">
+              <label
+                htmlFor="report-message"
+                className="text-[13px] font-semibold text-[hsl(220,24%,24%)]"
+              >
+                Kas notika?
+              </label>
+
+              <textarea
+                id="report-message"
+                value={reportMessage}
+                onChange={(event) => setReportMessage(event.target.value)}
+                placeholder='Piemēram, "Pacientu saraksts neielādējas"'
+                className="mt-3 min-h-[120px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-3 text-[14px] text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
+              />
+
+              <div className="mt-5">
+                <p className="text-[13px] font-semibold text-[hsl(220,24%,24%)]">
+                  Svarīgums
+                </p>
+
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {[
+                    {
+                      key: "blocking",
+                      label: "🔴 Bloķē darbu",
+                    },
+                    {
+                      key: "annoying",
+                      label: "🟡 Traucē",
+                    },
+                    {
+                      key: "suggestion",
+                      label: "🟢 Ieteikums",
+                    },
+                  ].map((item) => (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onClick={() =>
+                        setReportSeverity((current) =>
+                          current === item.key
+                            ? null
+                            : (item.key as "blocking" | "annoying" | "suggestion"),
+                        )
+                      }
+                      className={cn(
+                        "inline-flex items-center rounded-[10px] border px-3 py-2 text-[13px] font-medium transition",
+                        reportSeverity === item.key
+                          ? "border-[hsl(214,28%,76%)] bg-[hsl(214,22%,98%)] text-[hsl(220,30%,24%)]"
+                          : "border-[rgba(220,228,236,0.96)] bg-white text-[hsl(214,18%,48%)] hover:bg-[hsl(214,22%,98%)]",
+                      )}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsReportOpen(false);
+                    setReportMessage("");
+                    setReportSeverity(null);
                   }}
                   className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >

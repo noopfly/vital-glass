@@ -251,7 +251,7 @@ function formatDate(date: string) {
 
 const EventTimelineHorizontal = () => {
   const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
-  const [activeEventId, setActiveEventId] = useState<string | null>("3");
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
@@ -317,7 +317,7 @@ const EventTimelineHorizontal = () => {
   return (
     <div
       ref={containerRef}
-      className="rounded-[12px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+      className="rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
     >
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className={sectionIconClass}>
