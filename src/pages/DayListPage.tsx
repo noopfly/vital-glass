@@ -45,7 +45,7 @@ const personalCodeLength =
 const pageBg = "bg-[hsl(214,34%,97%)]";
 
 const panelClass =
-  "relative overflow-hidden rounded-[16px] border border-[hsl(214,28%,88%)] bg-white";
+  "relative overflow-hidden rounded-[8px] border border-[hsl(214,28%,88%)] bg-white";
 
 const sectionLabelClass =
   "text-[11px] font-semibold uppercase tracking-[0.15em] text-[hsl(218,22%,42%)]";
@@ -413,7 +413,7 @@ export default function DayListPage() {
             <div className="relative flex flex-col gap-5 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between xl:px-7">
               <div className="min-w-0">
                 <div className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-[10px] text-[hsl(219,44%,19%)]">
+                  <span className="flex h-8 w-8 items-center justify-center rounded-[6px] text-[hsl(219,44%,19%)]">
                     <CalendarDays className="h-5 w-5" strokeWidth={2.3} />
                   </span>
 
@@ -603,7 +603,7 @@ export default function DayListPage() {
 
                                 inputRefs.current[nextFocusIndex]?.focus();
                               }}
-                              className="h-[42px] w-[42px] shrink-0 rounded-[10px] border border-[hsl(214,28%,84%)] bg-white text-center text-[15px] font-medium text-[hsl(220,38%,24%)] outline-none transition focus:border-[hsl(216,46%,58%)] focus:ring-2 focus:ring-[rgba(59,130,246,0.12)]"
+                              className="h-[42px] w-[42px] shrink-0 rounded-[6px] border border-[hsl(214,28%,84%)] bg-white text-center text-[15px] font-medium text-[hsl(220,38%,24%)] outline-none transition focus:border-[hsl(216,46%,58%)] focus:ring-2 focus:ring-[rgba(59,130,246,0.12)]"
                               aria-label={`Personas koda cipars ${index + 1}`}
                             />
 
@@ -631,7 +631,7 @@ export default function DayListPage() {
 
                   <Button
                     type="submit"
-                    className="h-[42px] w-full rounded-[10px] bg-[hsl(219,44%,19%)] px-5 text-[14px] font-medium text-white hover:bg-[hsl(219,44%,22%)] lg:mt-0.5 lg:w-auto lg:min-w-[200px]"
+                    className="h-[42px] w-full rounded-[6px] bg-[hsl(219,44%,19%)] px-5 text-[14px] font-medium text-white hover:bg-[hsl(219,44%,22%)] lg:mt-0.5 lg:w-auto lg:min-w-[200px]"
                   >
                     <UserPlus className="mr-2 h-4 w-4" strokeWidth={2.2} />
                     Pievienot pacientu
@@ -709,7 +709,7 @@ export default function DayListPage() {
 
                           <span
                             className={cn(
-                              "inline-flex w-fit items-center gap-1.5 rounded-[7px] border px-2 py-0.5 text-[11px] font-medium",
+                              "inline-flex w-fit items-center gap-1.5 rounded-[4px] border px-2 py-0.5 text-[11px] font-medium",
                               statusMeta.badgeClass,
                             )}
                           >

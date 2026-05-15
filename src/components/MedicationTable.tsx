@@ -256,16 +256,16 @@ function MedicationRow({
       </div>
 
       <div
-        className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-end"}`}
+        className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-center"}`}
       >
         <div
-          className={`flex flex-col items-start ${isFullMode ? "md:items-start" : "md:items-end"}`}
+          className={`flex flex-col items-start ${isFullMode ? "md:items-start" : "md:items-center"}`}
         >
           <p className={`mb-1 md:hidden ${headingClass}`}>
             {columnLabels.status}
           </p>
           <span
-            className={`inline-flex min-w-[82px] items-center justify-center rounded-full border px-2 py-1 text-[9px] font-medium leading-none tracking-[0.02em] ${statusStyles[medication.status]}`}
+            className={`inline-flex items-center justify-center rounded-full border px-1.5 py-1 text-[9px] font-medium leading-none tracking-[0.02em] ${statusStyles[medication.status]}`}
           >
             {statusLabels[medication.status]}
           </span>
@@ -369,7 +369,7 @@ function MedicationTableContent({
           <p className={headingClass}>{columnLabels.dose}</p>
           <p className={headingClass}>{columnLabels.frequency}</p>
           <div
-            className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-end md:pr-4"}`}
+            className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-center"}`}
           >
             <p className={headingClass}>{columnLabels.status}</p>
           </div>

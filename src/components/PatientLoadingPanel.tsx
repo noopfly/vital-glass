@@ -61,6 +61,7 @@ type PatientLoadingPanelProps = {
   onContinue: () => void;
   onCancel: () => void;
   variant?: "page" | "overlay";
+  onProgressChange?: (progress: number, isComplete: boolean) => void;
 };
 
 export default function PatientLoadingPanel({
@@ -68,6 +69,7 @@ export default function PatientLoadingPanel({
   onContinue,
   onCancel,
   variant = "page",
+  onProgressChange,
 }: PatientLoadingPanelProps) {
   const [elapsedMs, setElapsedMs] = React.useState(0);
   const isComplete = elapsedMs >= totalDurationMs;
@@ -87,6 +89,10 @@ export default function PatientLoadingPanel({
     100,
     Math.max(4, Math.round((elapsedMs / totalDurationMs) * 100)),
   );
+
+  React.useEffect(() => {
+    onProgressChange?.(progressValue, isComplete);
+  }, [isComplete, onProgressChange, progressValue]);
 
   const currentStepIndex = React.useMemo(() => {
     let accumulated = 0;
@@ -115,15 +121,14 @@ export default function PatientLoadingPanel({
         </h1>
 
         <div className="mt-2 text-center">
-          <p className="flex flex-wrap items-center justify-center gap-2 text-[12px] leading-5 text-[hsl(214,16%,50%)]">
-            <span>Pacients</span>
-            <span className="font-semibold text-[hsl(219,30%,24%)]">
-              {patient.name}
-            </span>
-            <span aria-hidden="true" className="text-[hsl(214,16%,60%)]">
-              &bull;
-            </span>
-            <span>{patient.personalCode}</span>
+          <p className="text-[12px] font-medium leading-5 text-[hsl(214,16%,50%)]">
+            Pacients
+          </p>
+          <p className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-[hsl(219,30%,24%)] md:text-[28px]">
+            {patient.name}
+          </p>
+          <p className="mt-1 text-[12px] font-medium leading-5 text-[hsl(214,16%,50%)]">
+            {patient.personalCode}
           </p>
         </div>
 
@@ -157,7 +162,7 @@ export default function PatientLoadingPanel({
                 <div
                   key={step.title}
                   className={cn(
-                    "flex items-start justify-between gap-3 border-b px-4 py-3 text-left transition-all duration-500 last:border-b-0",
+                    "flex items-center justify-between gap-3 border-b px-4 py-3 text-left transition-all duration-500 last:border-b-0",
                     isCompleted
                       ? "border-[rgba(196,220,205,0.96)] bg-[rgba(247,250,248,0.92)]"
                       : isActive
@@ -165,13 +170,13 @@ export default function PatientLoadingPanel({
                         : "border-[rgba(232,237,242,0.96)] bg-[rgba(251,252,253,0.96)] text-[hsl(214,12%,56%)]",
                   )}
                 >
-                  <div className="flex min-w-0 flex-1 items-start gap-3">
+                  <div className="flex min-w-0 flex-1 items-center gap-3">
                     <div className="shrink-0">
                       <div
                         className={cn(
                           "flex h-7 w-7 items-center justify-center rounded-full border",
                           isCompleted
-                            ? "border-[rgba(181,204,191,0.92)] bg-[rgba(241,247,243,0.96)] text-[hsl(154,30%,34%)]"
+                            ? "border-[rgba(174,223,186,0.96)] bg-[rgba(232,248,236,0.98)] text-[hsl(148,54%,34%)]"
                             : isActive
                               ? "border-[rgba(199,210,223,0.96)] bg-[hsl(220,22%,95%)] text-[hsl(219,36%,24%)]"
                               : "border-[rgba(221,228,236,0.92)] bg-[hsl(214,18%,97%)] text-[hsl(214,10%,68%)]",
@@ -210,12 +215,12 @@ export default function PatientLoadingPanel({
                     </div>
                   </div>
 
-                  <div className="shrink-0 pt-1">
+                  <div className="shrink-0">
                     <span
                       className={cn(
                         "inline-flex rounded-[8px] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
                         isCompleted
-                          ? "bg-[rgba(241,247,243,0.96)] text-[hsl(154,30%,34%)]"
+                          ? "bg-[rgba(228,247,233,0.98)] text-[hsl(148,54%,34%)]"
                           : isActive
                             ? "bg-[hsl(220,22%,95%)] text-[hsl(219,36%,24%)]"
                             : "bg-[hsl(214,18%,97%)] text-[hsl(214,10%,68%)]",

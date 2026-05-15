@@ -200,8 +200,7 @@ const alertSectionIconClass =
 const tabButtonBaseClass =
   "inline-flex items-center justify-center rounded-[10px] px-3 py-2 text-sm font-medium transition";
 
-const compactAlertRowHeight = 72;
-const compactAlertRowGap = 8;
+const compactAlertRowGap = 10;
 
 interface AlertRowProps {
   alert: AlertItem;
@@ -226,7 +225,8 @@ function AlertRow({
   return (
     <div
       data-alert-menu-root
-      className={`rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] shadow-[0_6px_18px_rgba(29,53,87,0.05)] ${compact ? "px-3 py-2.5" : "p-4"
+      data-alert-row
+      className={`rounded-[6px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] ${compact ? "px-3 py-2.5" : "p-4"
         }`}
     >
       <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5">
@@ -268,7 +268,7 @@ function AlertRow({
             </button>
 
             {isMenuOpen && (
-              <div className="absolute right-0 top-6 z-20 min-w-[164px] overflow-hidden rounded-[10px] border border-[hsl(214,20%,88%)] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)]">
+              <div className="absolute right-0 top-6 z-20 min-w-[164px] overflow-hidden rounded-[6px] border border-[hsl(214,20%,88%)] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)]">
                 <button
                   type="button"
                   onClick={() => onMarkAsRead(alert.id)}
@@ -326,11 +326,14 @@ const AlertsCard = () => {
     if (!element) return undefined;
 
     const updateVisibleAlertCount = () => {
+      const firstRow = element.querySelector("[data-alert-row]");
+      if (!(firstRow instanceof HTMLElement)) return;
+
       const nextCount = Math.max(
         1,
         Math.floor(
           (element.clientHeight + compactAlertRowGap) /
-            (compactAlertRowHeight + compactAlertRowGap),
+            (firstRow.offsetHeight + compactAlertRowGap),
         ),
       );
 
@@ -348,7 +351,7 @@ const AlertsCard = () => {
     observer.observe(element);
 
     return () => observer.disconnect();
-  }, []);
+  }, [unreadAlerts.length]);
 
   useEffect(() => {
     const handlePointerDown = (event: MouseEvent) => {
@@ -406,7 +409,7 @@ const AlertsCard = () => {
           </div>
         </div>
 
-        <div ref={listContainerRef} className="mt-4 flex-1 min-h-0 space-y-2">
+        <div ref={listContainerRef} className="mt-4 flex-1 min-h-0 space-y-2.5">
           {visibleAlerts.length === 0 ? (
             <div className="rounded-[10px] border border-dashed border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] px-4 py-5 text-center">
               <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">

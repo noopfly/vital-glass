@@ -249,7 +249,7 @@ function formatDate(date: string) {
   });
 }
 
-const EventTimelineHorizontal = () => {
+const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
   const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -317,7 +317,7 @@ const EventTimelineHorizontal = () => {
   return (
     <div
       ref={containerRef}
-      className="rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+      className="flex h-full min-h-[420px] w-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
     >
       <div className="mb-5 flex flex-wrap items-center gap-3">
         <div className={sectionIconClass}>
@@ -352,11 +352,11 @@ const EventTimelineHorizontal = () => {
       </div>
 
       {filteredEvents.length === 0 ? (
-        <div className="flex min-h-[110px] items-center justify-center rounded-[10px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
+        <div className="flex min-h-[110px] flex-1 items-center justify-center rounded-[10px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
           Nav atlasītu notikumu tipu.
         </div>
       ) : (
-        <div className="relative">
+        <div className="relative flex-1">
           {canScrollLeft ? (
             <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-10 rounded-l-xl bg-gradient-to-r from-[rgba(255,255,255,0.94)] via-[rgba(255,255,255,0.75)] to-transparent" />
           ) : null}
@@ -595,7 +595,7 @@ const EventTimelineHorizontal = () => {
         </div>
       )}
 
-      <p className="mt-4 text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 14.04.2026.</p>
+      <p className="mt-4 text-xs text-[hsl(214,18%,62%)]">Atjaunināts: {updatedAt}</p>
     </div>
   );
 };

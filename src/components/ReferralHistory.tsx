@@ -298,7 +298,7 @@ const ReferralList = ({
   onSelect: (referral: ReferralHistoryItem) => void;
 }) => {
   return (
-    <div className="space-y-2">
+    <div className="space-y-2.5">
       {items.map((referral) => {
         const style = statusStyles[referral.status];
 

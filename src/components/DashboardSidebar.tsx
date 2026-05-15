@@ -8,6 +8,7 @@ import {
   GripVertical,
   Info,
   LayoutGrid,
+  Loader2,
   Plus,
   RotateCcw,
   X,
@@ -32,6 +33,8 @@ type DashboardSidebarProps = {
   dayListCount?: number;
   layoutOrder?: DashboardComponentKey[];
   onSaveLayoutOrder?: (layoutOrder: DashboardComponentKey[]) => void;
+  loadingPatientId?: string | null;
+  loadingPatientComplete?: boolean;
 };
 
 type SettingsModuleKey = DashboardComponentKey;
@@ -84,7 +87,7 @@ const profileMenuItems = [
 const settingsModules = [
   {
     key: "patientCard",
-    title: "Pacienta profils",
+    title: "Pacienta klīniskais profils",
     description: "Galvenie pacienta dati un kontaktinformacija",
     sizeLabel: "Plats",
     previewColumns: 2,
@@ -148,7 +151,7 @@ const settingsPreviewDefinitions: Record<
   SettingsPreviewDefinition
 > = {
   patientCard: {
-    note: "Pacienta profils",
+    note: "Pacienta klīniskais profils",
     pattern: "profile",
     previewClassName: "col-span-3",
     surfaceClassName:
@@ -199,7 +202,7 @@ const settingsPreviewDefinitions: Record<
   eventTimeline: {
     note: "Notikumu laika līnija",
     pattern: "timeline",
-    previewClassName: "col-span-3",
+    previewClassName: "col-span-2",
     surfaceClassName:
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
@@ -215,18 +218,35 @@ const settingsPreviewDefinitions: Record<
 function SettingsPreviewCard({
   module,
   index,
+  draggedKey,
+  onDragStart,
+  onDragEnd,
+  onDragOver,
 }: {
   module: (typeof settingsModules)[number];
   index: number;
+  draggedKey: DashboardComponentKey | null;
+  onDragStart: (key: DashboardComponentKey) => void;
+  onDragEnd: () => void;
+  onDragOver: (key: DashboardComponentKey) => void;
 }) {
   const preview = settingsPreviewDefinitions[module.key];
 
   return (
     <div
+      draggable
+      onDragStart={() => onDragStart(module.key)}
+      onDragEnd={onDragEnd}
+      onDragOver={(event) => {
+        event.preventDefault();
+        onDragOver(module.key);
+      }}
       className={cn(
-        "overflow-hidden rounded-[14px] border p-2",
+        "cursor-grab overflow-hidden rounded-[14px] border p-2 transition active:cursor-grabbing",
         preview.previewClassName,
         preview.surfaceClassName,
+        draggedKey === module.key &&
+          "opacity-70 shadow-[0_10px_24px_rgba(29,53,87,0.08)]",
       )}
     >
       <div className="flex items-center justify-between gap-1.5">
@@ -261,25 +281,34 @@ function SettingsPreviewCard({
 
         {preview.pattern === "trend" && (
           <div className="space-y-2">
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="space-y-1.5">
               {[62, 58, 54].map((width, cardIndex) => (
                 <div
                   key={cardIndex}
-                  className="rounded-[10px] bg-[hsl(214,20%,97%)] p-1.5"
+                  className="flex items-center gap-2 rounded-[10px] bg-[hsl(214,20%,97%)] px-2 py-1.5"
                 >
-                  <div className="h-2 bg-[hsl(214,18%,88%)]" style={{ width: `${width}%` }} />
-                  <div className="mt-1.5 h-3 w-[44%] bg-[hsl(214,20%,82%)]" />
+                  <div className="h-5 w-5 shrink-0 rounded-[8px] bg-[hsl(214,20%,90%)]" />
+                  <div className="min-w-0 flex-1">
+                    <div
+                      className="h-2 bg-[hsl(214,18%,88%)]"
+                      style={{ width: `${width}%` }}
+                    />
+                    <div className="mt-1.5 h-2 w-[36%] bg-[hsl(214,20%,82%)]" />
+                  </div>
                 </div>
               ))}
             </div>
-            <div className="flex h-[42px] items-end gap-1.5 rounded-[10px] bg-[hsl(214,20%,97%)] px-2 pb-2 pt-1.5">
-              {[4, 6, 5, 8, 6, 9].map((height, barIndex) => (
-                <div
-                  key={barIndex}
-                  className="w-4 rounded-[3px] bg-[hsl(220,34%,74%)]"
-                  style={{ height: `${height * 4}px` }}
-                />
-              ))}
+            <div className="rounded-[10px] bg-[hsl(214,20%,97%)] px-2 py-2">
+              <div className="mb-2 h-2 w-[28%] bg-[hsl(214,18%,86%)]" />
+              <div className="flex h-[26px] items-end gap-1.5">
+                {[4, 6, 5, 8, 6, 9].map((height, barIndex) => (
+                  <div
+                    key={barIndex}
+                    className="w-4 rounded-[3px] bg-[hsl(220,34%,74%)]"
+                    style={{ height: `${height * 2.5}px` }}
+                  />
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -314,12 +343,11 @@ function SettingsPreviewCard({
         )}
 
         {preview.pattern === "imaging" && (
-          <div className="space-y-1.5">
-            <div className="grid grid-cols-2 gap-1.5">
-              <div className="h-[56px] rounded-[10px] bg-[linear-gradient(135deg,hsl(214,18%,90%),hsl(214,18%,84%))]" />
-              <div className="h-[56px] rounded-[10px] bg-[linear-gradient(135deg,hsl(214,18%,92%),hsl(214,18%,86%))]" />
-            </div>
-            <div className="h-2 w-[58%] bg-[hsl(214,18%,88%)]" />
+          <div className="space-y-1.5 rounded-[10px] bg-[hsl(214,20%,97%)] p-2">
+            <div className="h-2 w-[56%] bg-[hsl(214,18%,86%)]" />
+            <div className="h-2 w-[82%] bg-[hsl(214,18%,90%)]" />
+            <div className="h-2 w-[74%] bg-[hsl(214,18%,90%)]" />
+            <div className="h-2 w-[48%] bg-[hsl(214,18%,88%)]" />
           </div>
         )}
 
@@ -383,6 +411,8 @@ export default function DashboardSidebar({
   dayListCount = 0,
   layoutOrder,
   onSaveLayoutOrder,
+  loadingPatientId = null,
+  loadingPatientComplete = false,
 }: DashboardSidebarProps) {
   const navigate = useNavigate();
   const footerRef = React.useRef<HTMLDivElement | null>(null);
@@ -648,6 +678,46 @@ export default function DashboardSidebar({
                 const isActivePatient =
                   shouldHighlightActivePatient &&
                   patient.id === activePatient.id;
+                const isLoadingPatient = patient.id === loadingPatientId;
+
+                if (isLoadingPatient) {
+                  return (
+                    <div
+                      key={patient.id}
+                      className="group relative overflow-hidden rounded-[12px] border border-[rgba(204,216,234,0.96)] bg-white px-4 py-3 text-left shadow-[0_10px_22px_rgba(29,53,87,0.08)] transition"
+                    >
+                      <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-[hsl(220,36%,18%)]" />
+
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center justify-between gap-3">
+                            <p className="truncate text-[15px] font-semibold leading-5 text-[hsl(220,36%,18%)]">
+                              {patient.name}
+                            </p>
+
+                            <span
+                              className={cn(
+                                "inline-flex shrink-0 translate-y-px items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-semibold",
+                                loadingPatientComplete
+                                  ? "bg-[rgba(228,247,233,0.98)] text-[hsl(148,54%,34%)]"
+                                  : "bg-[hsl(220,34%,94%)] text-[hsl(220,42%,34%)]",
+                              )}
+                            >
+                              {!loadingPatientComplete && (
+                                <Loader2 className="h-3 w-3 animate-spin" />
+                              )}
+                              {loadingPatientComplete ? "Pabeigts" : "Notiek ielāde"}
+                            </span>
+                          </div>
+
+                          <p className="mt-0.5 text-[11px] text-[hsl(214,18%,56%)]">
+                            {patient.personalCode}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                }
 
                 return (
                   <Link
@@ -662,19 +732,30 @@ export default function DashboardSidebar({
                         : "text-[hsl(220,36%,18%)] hover:bg-[hsl(214,22%,98%)]",
                     )}
                   >
-                    <p className="truncate text-[15px] font-semibold leading-5">
-                      {patient.name}
-                    </p>
-                    <p
-                      className={cn(
-                        "mt-0.5 text-[11px]",
-                        isActivePatient
-                          ? "text-white/72"
-                          : "text-[hsl(214,16%,62%)]",
-                      )}
-                    >
-                      {patient.personalCode}
-                    </p>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center justify-between gap-3">
+                          <p
+                            className={cn(
+                              "truncate text-[15px] font-semibold leading-5",
+                              undefined,
+                            )}
+                          >
+                            {patient.name}
+                          </p>
+                        </div>
+                        <p
+                          className={cn(
+                            "mt-0.5 text-[11px]",
+                            isActivePatient
+                                ? "text-white/72"
+                                : "text-[hsl(214,16%,62%)]",
+                          )}
+                        >
+                          {patient.personalCode}
+                        </p>
+                      </div>
+                    </div>
                   </Link>
                 );
               })}
@@ -696,8 +777,9 @@ export default function DashboardSidebar({
             <button
               type="button"
               onClick={() => setIsReportOpen(true)}
-              className="text-[12px] font-medium text-[hsl(214,16%,58%)] transition hover:text-[hsl(214,24%,38%)]"
+              className="inline-flex items-center gap-2 text-[12px] font-medium text-[hsl(214,16%,58%)] transition hover:text-[hsl(214,24%,38%)]"
             >
+              <Info className="h-4 w-4" />
               Ziņot par problēmu
             </button>
           </div>
@@ -1188,7 +1270,14 @@ export default function DashboardSidebar({
                         </p>
                       </div>
 
-                      <span className="inline-flex shrink-0 rounded-full border border-[rgba(220,228,236,0.96)] bg-[hsl(214,22%,98%)] px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-[hsl(214,18%,58%)]">
+                      <span
+                        className={cn(
+                          "inline-flex shrink-0 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em]",
+                          module.sizeLabel === "Plats"
+                            ? "border-[rgba(199,214,231,0.96)] bg-[hsl(214,30%,97%)] text-[hsl(214,24%,54%)]"
+                            : "border-[rgba(223,212,196,0.96)] bg-[hsl(38,34%,97%)] text-[hsl(34,24%,52%)]",
+                        )}
+                      >
                         {module.sizeLabel}
                       </span>
                     </button>
@@ -1221,12 +1310,16 @@ export default function DashboardSidebar({
                     </div>
                   </div>
 
-                  <div className="grid auto-rows-[76px] grid-cols-3 gap-1.5">
+                  <div className="grid auto-rows-[92px] grid-cols-3 gap-1.5">
                     {orderedSettingsModules.map((module, index) => (
                       <SettingsPreviewCard
                         key={module.key}
                         module={module}
                         index={index}
+                        draggedKey={draggedSettingsKey}
+                        onDragStart={setDraggedSettingsKey}
+                        onDragEnd={() => setDraggedSettingsKey(null)}
+                        onDragOver={handleSettingsDragOver}
                       />
                     ))}
                   </div>

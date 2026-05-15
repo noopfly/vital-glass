@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { GripVertical, Mail, Phone, RefreshCw } from "lucide-react";
+import { Mail, Phone, RefreshCw } from "lucide-react";
 
 import AlertsCard from "@/components/AlertsCard";
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -34,7 +34,7 @@ const layoutClasses: Record<DashboardComponentKey, string> = {
   medicationTable: dashboardCardHeight,
   alertsCard: dashboardCardHeight,
   patientSummaryCard: "lg:col-span-2 lg:aspect-[2/1]",
-  eventTimeline: "lg:col-span-3",
+  eventTimeline: `lg:col-span-2 ${dashboardCardHeight}`,
   humanBodyModel: dashboardCardHeight,
   referralHistory: dashboardCardHeight,
 };
@@ -44,6 +44,14 @@ function formatRefreshTime(date: Date) {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
+}
+
+function formatRefreshDate(date: Date) {
+  return `${new Intl.DateTimeFormat("lv-LV", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date)}.`;
 }
 
 const InfoDivider = () => (
@@ -67,9 +75,6 @@ const Index = () => {
 
   const [order, setOrder] =
     React.useState<DashboardComponentKey[]>(routeLayoutOrder);
-
-  const [draggedKey, setDraggedKey] =
-    React.useState<DashboardComponentKey | null>(null);
 
   const [lastRefreshedAt, setLastRefreshedAt] = React.useState(new Date());
   const [isRefreshing, setIsRefreshing] = React.useState(false);
@@ -114,15 +119,16 @@ const Index = () => {
 
   const phone = "phone" in patient ? patient.phone : "";
   const email = "email" in patient ? patient.email : "";
+  const refreshedDateLabel = formatRefreshDate(lastRefreshedAt);
 
   const componentItems = [
     {
       key: "patientCard" as const,
-      element: <PatientCard patient={patient} />,
+      element: <PatientCard patient={{ ...patient, updatedAt: refreshedDateLabel }} />,
     },
     {
       key: "healthTrends" as const,
-      element: <HealthTrends />,
+      element: <HealthTrends updatedAt={refreshedDateLabel} />,
     },
     {
       key: "medicalImagingViewer" as const,
@@ -138,7 +144,7 @@ const Index = () => {
     },
     {
       key: "eventTimeline" as const,
-      element: <EventTimelineHorizontal />,
+      element: <EventTimelineHorizontal updatedAt={refreshedDateLabel} />,
     },
     {
       key: "humanBodyModel" as const,
@@ -270,17 +276,8 @@ const Index = () => {
             {visibleItems.map((item) => (
               <div
                 key={item.key}
-                draggable
-                onDragStart={() => setDraggedKey(item.key)}
-                onDragEnd={() => setDraggedKey(null)}
-                className={`group relative min-w-0 ${layoutClasses[item.key]} ${
-                  draggedKey === item.key ? "opacity-60" : ""
-                }`}
+                className={`relative min-w-0 ${layoutClasses[item.key]}`}
               >
-                <div className="pointer-events-none absolute right-3 top-3 z-20 opacity-0 transition group-hover:opacity-100">
-                  <GripVertical className="h-3.5 w-3.5 text-[hsl(214,18%,58%)]" />
-                </div>
-
                 <div className="h-full">{item.element}</div>
               </div>
             ))}

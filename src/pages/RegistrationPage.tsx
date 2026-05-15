@@ -281,7 +281,7 @@ const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> =
 
 const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
   "patient-card": {
-    note: "Pacienta profils",
+    note: "Pacienta klīniskais profils",
     summary: "Personas dati, diagnozes un primārie riski.",
   },
   "health-trends": {
@@ -316,7 +316,7 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
 
 const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   "patient-card": {
-    note: "Pacienta profils",
+    note: "Pacienta klīniskais profils",
     summary: "Personas dati, diagnozes un primārie riski.",
     pattern: "profile",
     colSpan: 3,

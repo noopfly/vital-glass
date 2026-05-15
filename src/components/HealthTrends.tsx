@@ -737,7 +737,7 @@ function TrendsList({
           onClick={() => onToggleExpanded(result.id)}
           className={`grid w-full cursor-pointer items-center gap-3 rounded-[5px] text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_100px_76px_auto] ${
             compact
-              ? "border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-3.5 py-2.5 shadow-[0_5px_14px_rgba(29,53,87,0.04)]"
+              ? "border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-3.5 py-2.5"
               : "px-3 py-3"
           } ${
             expandedId === result.id
@@ -821,6 +821,7 @@ function HealthTrendsContent({
   onVisibleCountChange,
   showOpenAll,
   compact,
+  updatedAt,
 }: {
   results: LabResult[];
   expandedId: string | null;
@@ -829,6 +830,7 @@ function HealthTrendsContent({
   onVisibleCountChange?: (count: number) => void;
   showOpenAll?: boolean;
   compact?: boolean;
+  updatedAt: string;
 }) {
   const compactListRef = useRef<HTMLDivElement | null>(null);
 
@@ -931,7 +933,7 @@ function HealthTrendsContent({
       </div>
 
       <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3">
-        <p className="text-xs text-[hsl(214,18%,62%)]">Atjaunināts: 04.08.2025.</p>
+        <p className="text-xs text-[hsl(214,18%,62%)]">Atjaunināts: {updatedAt}</p>
 
         {showOpenAll && onOpenAll && (
           <button
@@ -947,7 +949,7 @@ function HealthTrendsContent({
   );
 }
 
-const HealthTrends = () => {
+const HealthTrends = ({ updatedAt }: { updatedAt: string }) => {
   const [visibleLabCount, setVisibleLabCount] = useState(defaultVisibleLabCount);
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [expandedFullId, setExpandedFullId] = useState<string | null>(null);
@@ -984,6 +986,7 @@ const HealthTrends = () => {
         onVisibleCountChange={setVisibleLabCount}
         showOpenAll={sortedResults.length > visibleLabCount}
         compact
+        updatedAt={updatedAt}
       />
 
       {isAllLabsOpen && (
@@ -1009,6 +1012,7 @@ const HealthTrends = () => {
                 onToggleExpanded={(id) =>
                   setExpandedFullId(expandedFullId === id ? null : id)
                 }
+                updatedAt={updatedAt}
               />
             </div>
           </div>
