@@ -76,6 +76,12 @@ const statusIconBg: Record<Status, string> = {
   critical: "bg-[hsl(0,56%,96%)]",
 };
 
+const statusIconBorder: Record<Status, string> = {
+  normal: "border-[rgba(199,223,210,0.96)]",
+  warning: "border-[rgba(236,221,197,0.96)]",
+  critical: "border-[rgba(239,208,208,0.96)]",
+};
+
 const sectionIconClass =
   "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
@@ -455,7 +461,7 @@ const MiniSparkline = ({
   const color = statusColors[status];
 
   return (
-    <div className={compact ? "mx-auto h-8 w-[90px]" : "mx-auto h-11 w-[118px]"}>
+    <div className={compact ? "mx-auto h-8 w-[124px]" : "mx-auto h-11 w-[168px]"}>
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 4, right: 2, left: 2, bottom: 0 }}>
           <defs>
@@ -730,30 +736,26 @@ function TrendsList({
   compact?: boolean;
 }) {
   return (
-    <div className={compact ? "space-y-2" : "space-y-2"}>
+    <div className="overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white divide-y divide-[hsl(214,22%,90%)]">
       {results.map((result) => (
         <button
           key={result.id}
           onClick={() => onToggleExpanded(result.id)}
-          className={`grid w-full cursor-pointer items-center gap-3 rounded-[5px] text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,1fr)_100px_76px_auto] ${
+          className={`grid w-full cursor-pointer items-center gap-x-4 gap-y-1 text-left transition-all duration-200 md:grid-cols-[auto_minmax(0,0.9fr)_190px_minmax(96px,auto)_auto] ${
             compact
-              ? "border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-3.5 py-2.5"
-              : "px-3 py-3"
+              ? "px-4 py-3"
+              : "px-4 py-3.5"
           } ${
             expandedId === result.id
-              ? compact
-                ? "ring-2 ring-primary/20"
-                : "glass-card-solid ring-2 ring-primary/30"
-              : compact
-                ? "hover:bg-white"
-                : "glass-card-solid hover:shadow-md"
+              ? "bg-[hsl(214,20%,98%)]"
+              : "bg-white hover:bg-[hsl(214,20%,99%)]"
           }`}
         >
           <div
-            className={`flex shrink-0 items-center justify-center rounded-[5px] ${statusIconBg[result.status]} ${statusTextClass[result.status]} ${
+            className={`flex shrink-0 items-center justify-center rounded-[10px] border ${statusIconBg[result.status]} ${statusIconBorder[result.status]} ${statusTextClass[result.status]} shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] [&>svg]:h-4 [&>svg]:w-4 ${
               compact
-                ? "h-8 w-8 border border-[hsl(214,22%,88%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]"
-                : "h-9 w-9"
+                ? "h-9 w-9"
+                : "h-10 w-10"
             }`}
           >
             {result.icon}
@@ -768,19 +770,25 @@ function TrendsList({
             </p>
           </div>
 
-          <div className={compact ? "hidden justify-center md:flex" : "flex justify-center"}>
+          <div className={compact ? "hidden justify-center md:flex md:justify-self-center md:pr-2" : "flex justify-center justify-self-center pr-2"}>
             <MiniSparkline data={result.history} status={result.status} compact={compact} />
           </div>
 
           <div className="min-w-[70px] text-left md:text-right">
-            <p
-              className={`font-bold leading-none text-text-dark ${
+            <div
+              className={`flex items-baseline gap-1 whitespace-nowrap font-bold text-text-dark md:justify-end ${
                 compact ? "text-[1.05rem]" : "text-[1.35rem]"
               }`}
             >
-              {result.displayValue ?? formatResultValue(result, result.value)}{" "}
-              <span className="text-[10px] font-normal text-heading">{result.unit}</span>
-            </p>
+              <span>{result.displayValue ?? formatResultValue(result, result.value)}</span>
+              <span
+                className={`font-normal text-heading ${
+                  compact ? "text-[0.95rem]" : "text-[1rem]"
+                }`}
+              >
+                {result.unit}
+              </span>
+            </div>
 
             <p
               className={`mt-1 flex items-center gap-0.5 text-[10px] font-medium md:justify-end ${

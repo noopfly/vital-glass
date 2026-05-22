@@ -852,9 +852,11 @@ export default function RegistrationPage() {
           <div className="flex flex-col gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center">
             <div className="flex items-center gap-4 md:justify-self-start">
               <div className="flex items-center gap-3">
-                <p className="text-[15px] font-semibold uppercase tracking-[0.22em] text-[hsl(219,36%,18%)]">
-                  OMNUS
-                </p>
+                <img
+                  src="/omnus-logo.svg"
+                  alt="Omnus"
+                  className="h-auto w-[96px]"
+                />
                 <span className="hidden h-4 w-px bg-[rgba(214,222,230,0.96)] md:block" />
               </div>
             </div>
@@ -1212,7 +1214,7 @@ export default function RegistrationPage() {
                     type="button"
                     onClick={handleNext}
                     disabled={!form.specialty}
-                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)] transition hover:opacity-95 disabled:opacity-45"
+                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
                   >
                     Turpināt
                     <ArrowRight className="h-4 w-4" />
@@ -1232,7 +1234,7 @@ export default function RegistrationPage() {
                   <Button
                     type="button"
                     onClick={handleSubmit}
-                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white shadow-[0_10px_24px_rgba(29,53,87,0.16)] transition hover:opacity-95"
+                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white transition hover:opacity-95"
                   >
                     Sākt darbu
                     <ArrowRight className="h-4 w-4" />

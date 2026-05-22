@@ -200,11 +200,12 @@ const alertSectionIconClass =
 const tabButtonBaseClass =
   "inline-flex items-center justify-center rounded-[10px] px-3 py-2 text-sm font-medium transition";
 
-const compactAlertRowGap = 10;
+const compactAlertRowGap = 0;
 
 interface AlertRowProps {
   alert: AlertItem;
   compact?: boolean;
+  connected?: boolean;
   openMenuId: string | null;
   onToggleMenu: (alertId: string) => void;
   onMarkAsRead: (alertId: string) => void;
@@ -214,6 +215,7 @@ interface AlertRowProps {
 function AlertRow({
   alert,
   compact = false,
+  connected = false,
   openMenuId,
   onToggleMenu,
   onMarkAsRead,
@@ -221,68 +223,86 @@ function AlertRow({
 }: AlertRowProps) {
   const Icon = iconMap[alert.type];
   const isMenuOpen = openMenuId === alert.id;
+  const usesConnectedLayout = compact || connected;
 
   return (
     <div
       data-alert-menu-root
       data-alert-row
-      className={`rounded-[6px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] ${compact ? "px-3 py-2.5" : "p-4"
-        }`}
+      className={
+        usesConnectedLayout
+          ? "bg-white transition-colors hover:bg-[hsl(214,20%,98%)]"
+          : "rounded-[6px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-4"
+      }
     >
-      <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 gap-y-1.5">
+      <div
+        className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 ${
+          compact ? "gap-y-1.5" : "gap-y-0.5"
+        } ${
+          usesConnectedLayout ? "px-4 py-4" : ""
+        }`}
+      >
         <div
-  className={`${compact ? "" : "row-span-2 "}flex h-5 w-5 shrink-0 items-center justify-center self-center ${
-    iconStyles[alert.type]
-      .match(/text-\[[^\]]+\]/)?.[0] ?? "text-[hsl(214,14%,48%)]"
-  }`}
->
-  <Icon size={16} strokeWidth={2.2} />
-</div>
+          className={`${compact ? "" : "row-span-2 "}flex ${
+            compact ? "h-5 w-5" : "h-6 w-6"
+          } shrink-0 items-center justify-center self-center ${
+            iconStyles[alert.type].match(/text-\[[^\]]+\]/)?.[0] ??
+            "text-[hsl(214,14%,48%)]"
+          }`}
+        >
+          <Icon size={compact ? 16 : 18} strokeWidth={2.2} />
+        </div>
 
         <p
-          className={`min-w-0 font-semibold text-[hsl(222,28%,20%)] ${compact
-              ? "line-clamp-2 text-[12px] leading-4"
-              : "text-sm"
-            }`}
+          className={`min-w-0 font-semibold text-[hsl(222,28%,20%)] ${
+            compact ? "line-clamp-2 text-[12px] leading-4" : "text-sm"
+          }`}
         >
           {alert.title}
         </p>
 
         <div className="flex shrink-0 items-start gap-1.5">
           <span
-            className={`rounded-full font-medium ${dateStyles[alert.type]} ${compact ? "px-2 py-0.5 text-[10px]" : "px-3 py-1 text-[11px]"
-              }`}
+            className={`rounded-full font-medium ${dateStyles[alert.type]} ${
+              compact ? "px-2.5 py-1 text-[10px]" : "px-3 py-1 text-[11px]"
+            }`}
           >
             {formatAlertDate(alert.occurredAt)}
           </span>
 
-          <div className="relative shrink-0">
-            <button
-              type="button"
-              onClick={() => onToggleMenu(alert.id)}
-              className="inline-flex h-5 w-5 items-center justify-center text-[hsl(214,14%,48%)] transition hover:text-[hsl(215,22%,28%)]"
-              aria-label={menuLabel}
-              aria-expanded={isMenuOpen}
-            >
-              <EllipsisVertical className="h-3.5 w-3.5" />
-            </button>
+          {compact ? null : (
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => onToggleMenu(alert.id)}
+                className="inline-flex h-5 w-5 items-center justify-center text-[hsl(214,14%,48%)] transition hover:text-[hsl(215,22%,28%)]"
+                aria-label={menuLabel}
+                aria-expanded={isMenuOpen}
+              >
+                <EllipsisVertical className="h-3.5 w-3.5" />
+              </button>
 
-            {isMenuOpen && (
-              <div className="absolute right-0 top-6 z-20 min-w-[164px] overflow-hidden rounded-[6px] border border-[hsl(214,20%,88%)] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)]">
-                <button
-                  type="button"
-                  onClick={() => onMarkAsRead(alert.id)}
-                  className="flex w-full items-center px-3 py-2.5 text-left text-sm text-[hsl(214,18%,34%)] transition hover:bg-[hsl(214,20%,97%)]"
-                >
-                  Marķēt kā lasītu
-                </button>
-              </div>
-            )}
-          </div>
+              {isMenuOpen && (
+                <div className="absolute right-0 top-6 z-20 min-w-[164px] overflow-hidden rounded-[6px] border border-[hsl(214,20%,88%)] bg-white shadow-[0_18px_36px_rgba(15,23,42,0.14)]">
+                  <button
+                    type="button"
+                    onClick={() => onMarkAsRead(alert.id)}
+                    className="flex w-full items-center px-3 py-2.5 text-left text-sm text-[hsl(214,18%,34%)] transition hover:bg-[hsl(214,20%,97%)]"
+                  >
+                    Marķēt kā lasītu
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {!compact && (
-          <p className="col-[2/4] text-sm text-[hsl(214,14%,42%)]">
+          <p
+            className={`col-[2/4] text-sm text-[hsl(214,14%,42%)] ${
+              connected ? "pr-8 leading-6" : ""
+            }`}
+          >
             {alert.description}
           </p>
         )}
@@ -409,7 +429,7 @@ const AlertsCard = () => {
           </div>
         </div>
 
-        <div ref={listContainerRef} className="mt-4 flex-1 min-h-0 space-y-2.5">
+        <div ref={listContainerRef} className="mt-4 min-h-0 flex-1">
           {visibleAlerts.length === 0 ? (
             <div className="rounded-[10px] border border-dashed border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] px-4 py-5 text-center">
               <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
@@ -420,17 +440,20 @@ const AlertsCard = () => {
               </p>
             </div>
           ) : (
-            visibleAlerts.map((alert) => (
-              <AlertRow
-                key={alert.id}
-                alert={alert}
-                compact
-                openMenuId={openMenuId}
-                onToggleMenu={toggleMenu}
-                onMarkAsRead={markAsRead}
-                menuLabel="Atvērt brīdinājuma darbības"
-              />
-            ))
+            <div className="overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white divide-y divide-[hsl(214,22%,90%)]">
+              {visibleAlerts.map((alert) => (
+                <AlertRow
+                    key={alert.id}
+                    alert={alert}
+                    compact
+                    connected
+                    openMenuId={openMenuId}
+                    onToggleMenu={toggleMenu}
+                    onMarkAsRead={markAsRead}
+                    menuLabel="Atvērt brīdinājuma darbības"
+                />
+              ))}
+            </div>
           )}
         </div>
 
@@ -531,23 +554,26 @@ const AlertsCard = () => {
                       ? "Nav aktīvu brīdinājumu"
                       : "Nav lasīto brīdinājumu"}
                   </p>
-                  <p className="mt-1 text-sm text-[hsl(214,14%,42%)]">
+              <p className="mt-1 text-sm text-[hsl(214,14%,42%)]">
                     {activeTab === "unread"
                       ? "Visi atzīmējamie ieraksti jau pārvietoti uz lasītajiem."
                       : "Šeit parādīsies brīdinājumi, ko atzīmēsiet kā lasītus."}
                   </p>
                 </div>
               ) : (
-                activeList.map((alert) => (
-                  <AlertRow
-                    key={alert.id}
-                    alert={alert}
-                    openMenuId={activeTab === "unread" ? openMenuId : null}
-                    onToggleMenu={toggleMenu}
-                    onMarkAsRead={markAsRead}
-                    menuLabel="Atvērt brīdinājuma darbības"
-                  />
-                ))
+                <div className="overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white divide-y divide-[hsl(214,22%,90%)]">
+                  {activeList.map((alert) => (
+                    <AlertRow
+                      key={alert.id}
+                      alert={alert}
+                      connected
+                      openMenuId={activeTab === "unread" ? openMenuId : null}
+                      onToggleMenu={toggleMenu}
+                      onMarkAsRead={markAsRead}
+                      menuLabel="Atvērt brīdinājuma darbības"
+                    />
+                  ))}
+                </div>
               )}
             </div>
           </div>

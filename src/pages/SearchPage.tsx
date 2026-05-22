@@ -1,5 +1,5 @@
 ﻿import * as React from "react";
-import { CircleX, Search } from "lucide-react";
+import { CircleX, Search, ShieldCheck } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import DashboardSidebar from "@/components/DashboardSidebar";
@@ -25,15 +25,25 @@ function normalizeText(value: string) {
     .toLowerCase();
 }
 
-const personalCodeGroupSizes = [6, 5] as const;
-const personalCodeLength = personalCodeGroupSizes[0] + personalCodeGroupSizes[1];
+const personalCodeFirstPartLength = 6;
+const personalCodeSecondPartLength = 5;
+const personalCodeLength = personalCodeFirstPartLength + personalCodeSecondPartLength;
 
-// format: xxxxxx-xxxxx
+// Format: xxxxxx-xxxxx
 function formatPersonalCode(raw: string) {
   const digits = raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
 
-  if (digits.length <= personalCodeGroupSizes[0]) return digits;
-  return `${digits.slice(0, personalCodeGroupSizes[0])}-${digits.slice(personalCodeGroupSizes[0])}`;
+  if (digits.length <= personalCodeFirstPartLength) {
+    return digits;
+  }
+
+  return `${digits.slice(0, personalCodeFirstPartLength)}-${digits.slice(
+    personalCodeFirstPartLength,
+  )}`;
+}
+
+function getPersonalCodeDigits(value: string) {
+  return value.replace(/[^\d]/g, "").slice(0, personalCodeLength);
 }
 
 export default function SearchPage() {
@@ -42,6 +52,7 @@ export default function SearchPage() {
   const routeState = location.state as SearchLocationState | undefined;
 
   const activePatient = routeState?.patient ?? patients[0];
+
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
       normalizeDashboardLayoutOrder(
@@ -52,20 +63,17 @@ export default function SearchPage() {
   const [query, setQuery] = React.useState(() =>
     formatPersonalCode(routeState?.searchQuery ?? ""),
   );
+
   const [error, setError] = React.useState("");
+
   const [loadingPatient, setLoadingPatient] = React.useState<Patient | null>(
     null,
   );
+
   const [loadingPatientComplete, setLoadingPatientComplete] =
     React.useState(false);
-  const inputRefs = React.useRef<Array<HTMLInputElement | null>>([]);
+
   const sidebarPatient = loadingPatient ?? activePatient;
-
-  const personalCodeDigits = React.useMemo(() => {
-    const digits = query.replace(/[^\d]/g, "").slice(0, personalCodeLength).split("");
-
-    return Array.from({ length: personalCodeLength }, (_, index) => digits[index] ?? "");
-  }, [query]);
 
   const recentPatients = React.useMemo(
     () =>
@@ -88,31 +96,37 @@ export default function SearchPage() {
     setQuery(formatPersonalCode(routeState?.searchQuery ?? ""));
   }, [routeState?.searchQuery]);
 
-  const updateQueryFromDigits = React.useCallback(
-    (nextDigits: string[]) => {
-      setQuery(formatPersonalCode(nextDigits.join("")));
-      if (error) setError("");
-    },
-    [error],
-  );
+  const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const formattedValue = formatPersonalCode(event.target.value);
+
+    setQuery(formattedValue);
+
+    if (error) {
+      setError("");
+    }
+  };
 
   const handleSearch = () => {
     const trimmedQuery = query.trim();
     const normalizedQuery = normalizeText(trimmedQuery);
-    const digitCount = trimmedQuery.replace(/[^\d]/g, "").length;
+    const queryDigits = getPersonalCodeDigits(trimmedQuery);
 
     if (!trimmedQuery) {
       setError("Ievadiet pacienta personas kodu.");
       return;
     }
 
-    if (digitCount < personalCodeLength) {
+    if (queryDigits.length < personalCodeLength) {
       setError("Ievadiet pilnu pacienta personas kodu.");
       return;
     }
 
     const patient = patients.find((item) => {
+      const itemPersonalCodeDigits = getPersonalCodeDigits(item.personalCode);
+
       if (item.personalCode === trimmedQuery) return true;
+      if (itemPersonalCodeDigits === queryDigits) return true;
+
       return normalizeText(item.name).includes(normalizedQuery);
     });
 
@@ -127,7 +141,7 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA] overflow-hidden">
+    <div className="min-h-screen overflow-hidden bg-[#F5F7FA]">
       <DashboardSidebar
         activePatient={sidebarPatient}
         recentPatients={recentPatients}
@@ -154,9 +168,11 @@ export default function SearchPage() {
         </div>
 
         <div className="flex w-full max-w-5xl flex-col items-center px-6 text-center">
-          <h1 className="text-7xl font-light tracking-tight text-[hsl(218,46%,12%)] [text-shadow:0_8px_26px_rgba(29,53,87,0.08)]">
-            OMNUS
-          </h1>
+          <img
+            src="/omnus-logo.svg"
+            alt="Omnus"
+            className="h-auto w-full max-w-[620px] [filter:drop-shadow(0_8px_26px_rgba(29,53,87,0.08))]"
+          />
 
           <form
             className="mt-10 w-full"
@@ -165,204 +181,32 @@ export default function SearchPage() {
               handleSearch();
             }}
           >
-            <div className="mx-auto flex w-fit flex-col items-center justify-center gap-8 px-4 py-4">
-              <div className="grid grid-cols-[1fr_1fr] items-center">
-                <div className="flex w-[318px] justify-end gap-1.5 pr-[3px]">
-                  {personalCodeDigits
-                    .slice(0, personalCodeGroupSizes[0])
-                    .map((digit, localIndex) => {
-                      const index = localIndex;
+            <div className="mx-auto flex w-full max-w-[520px] flex-col items-center">
+              <div className="relative w-full">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoFocus
+                  value={query}
+                  onChange={handleQueryChange}
+                  placeholder="Ievadiet personas kodu..."
+                  aria-label="Personas kods"
+                  className="h-14 w-full rounded-[14px] border border-[hsl(214,20%,86%)] bg-white py-0 pl-5 pr-14 text-[16px] font-medium tracking-[0.02em] text-[hsl(214,42%,17%)] shadow-[0_12px_32px_rgba(29,53,87,0.08)] outline-none transition placeholder:text-[hsl(214,14%,62%)] focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08),0_12px_32px_rgba(29,53,87,0.08)]"
+                />
 
-                      return (
-                        <input
-                          key={index}
-                          ref={(node) => {
-                            inputRefs.current[index] = node;
-                          }}
-                          type="text"
-                          inputMode="numeric"
-                          autoFocus={index === 0}
-                          maxLength={1}
-                          value={digit}
-                          onChange={(e) => {
-                            const nextValue = e.target.value.replace(/[^\d]/g, "").slice(-1);
-                            const nextDigits = [...personalCodeDigits];
-                            nextDigits[index] = nextValue;
-                            updateQueryFromDigits(nextDigits);
-
-                            if (nextValue && index < personalCodeLength - 1) {
-                              inputRefs.current[index + 1]?.focus();
-                              inputRefs.current[index + 1]?.select();
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Backspace") {
-                              e.preventDefault();
-                              const nextDigits = [...personalCodeDigits];
-
-                              if (nextDigits[index]) {
-                                nextDigits[index] = "";
-                                updateQueryFromDigits(nextDigits);
-                                return;
-                              }
-
-                              if (index > 0) {
-                                nextDigits[index - 1] = "";
-                                updateQueryFromDigits(nextDigits);
-                                inputRefs.current[index - 1]?.focus();
-                              }
-                              return;
-                            }
-
-                            if (e.key === "ArrowLeft" && index > 0) {
-                              e.preventDefault();
-                              inputRefs.current[index - 1]?.focus();
-                              return;
-                            }
-
-                            if (e.key === "ArrowRight" && index < personalCodeLength - 1) {
-                              e.preventDefault();
-                              inputRefs.current[index + 1]?.focus();
-                              return;
-                            }
-
-                            const allowed = ["Delete", "Tab", "Enter"];
-                            if (!/\d/.test(e.key) && !allowed.includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          onPaste={(e) => {
-                            e.preventDefault();
-                            const pastedDigits = e.clipboardData
-                              .getData("text")
-                              .replace(/[^\d]/g, "")
-                              .slice(0, personalCodeLength - index)
-                              .split("");
-
-                            if (pastedDigits.length === 0) return;
-
-                            const nextDigits = [...personalCodeDigits];
-                            pastedDigits.forEach((value, offset) => {
-                              nextDigits[index + offset] = value;
-                            });
-                            updateQueryFromDigits(nextDigits);
-
-                            const nextFocusIndex = Math.min(
-                              index + pastedDigits.length,
-                              personalCodeLength - 1,
-                            );
-                            inputRefs.current[nextFocusIndex]?.focus();
-                          }}
-                          className="h-12 w-12 shrink-0 rounded-[8px] border border-[hsl(214,20%,86%)] bg-white text-center text-lg font-semibold text-[hsl(214,42%,17%)] shadow-[0_6px_18px_rgba(29,53,87,0.06)] outline-none transition focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]"
-                          aria-label={`Personas koda cipars ${index + 1}`}
-                        />
-                      );
-                    })}
-                </div>
-
-                <div className="flex w-[318px] justify-start gap-1.5 pl-[3px]">
-                  <span className="inline-flex h-12 w-12 items-center justify-center rounded-[8px] border border-[hsl(214,18%,82%)] bg-[hsl(214,18%,94%)] text-xl font-semibold leading-none text-[hsl(214,18%,46%)] shadow-[0_4px_12px_rgba(29,53,87,0.04)]">
-                    -
-                  </span>
-                  {personalCodeDigits
-                    .slice(personalCodeGroupSizes[0])
-                    .map((digit, localIndex) => {
-                      const index = personalCodeGroupSizes[0] + localIndex;
-
-                      return (
-                        <input
-                          key={index}
-                          ref={(node) => {
-                            inputRefs.current[index] = node;
-                          }}
-                          type="text"
-                          inputMode="numeric"
-                          maxLength={1}
-                          value={digit}
-                          onChange={(e) => {
-                            const nextValue = e.target.value.replace(/[^\d]/g, "").slice(-1);
-                            const nextDigits = [...personalCodeDigits];
-                            nextDigits[index] = nextValue;
-                            updateQueryFromDigits(nextDigits);
-
-                            if (nextValue && index < personalCodeLength - 1) {
-                              inputRefs.current[index + 1]?.focus();
-                              inputRefs.current[index + 1]?.select();
-                            }
-                          }}
-                          onKeyDown={(e) => {
-                            if (e.key === "Backspace") {
-                              e.preventDefault();
-                              const nextDigits = [...personalCodeDigits];
-
-                              if (nextDigits[index]) {
-                                nextDigits[index] = "";
-                                updateQueryFromDigits(nextDigits);
-                                return;
-                              }
-
-                              if (index > 0) {
-                                nextDigits[index - 1] = "";
-                                updateQueryFromDigits(nextDigits);
-                                inputRefs.current[index - 1]?.focus();
-                              }
-                              return;
-                            }
-
-                            if (e.key === "ArrowLeft" && index > 0) {
-                              e.preventDefault();
-                              inputRefs.current[index - 1]?.focus();
-                              return;
-                            }
-
-                            if (e.key === "ArrowRight" && index < personalCodeLength - 1) {
-                              e.preventDefault();
-                              inputRefs.current[index + 1]?.focus();
-                              return;
-                            }
-
-                            const allowed = ["Delete", "Tab", "Enter"];
-                            if (!/\d/.test(e.key) && !allowed.includes(e.key)) {
-                              e.preventDefault();
-                            }
-                          }}
-                          onPaste={(e) => {
-                            e.preventDefault();
-                            const pastedDigits = e.clipboardData
-                              .getData("text")
-                              .replace(/[^\d]/g, "")
-                              .slice(0, personalCodeLength - index)
-                              .split("");
-
-                            if (pastedDigits.length === 0) return;
-
-                            const nextDigits = [...personalCodeDigits];
-                            pastedDigits.forEach((value, offset) => {
-                              nextDigits[index + offset] = value;
-                            });
-                            updateQueryFromDigits(nextDigits);
-
-                            const nextFocusIndex = Math.min(
-                              index + pastedDigits.length,
-                              personalCodeLength - 1,
-                            );
-                            inputRefs.current[nextFocusIndex]?.focus();
-                          }}
-                          className="h-12 w-12 shrink-0 rounded-[8px] border border-[hsl(214,20%,86%)] bg-white text-center text-lg font-semibold text-[hsl(214,42%,17%)] shadow-[0_6px_18px_rgba(29,53,87,0.06)] outline-none transition focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_3px_rgba(37,99,235,0.08)]"
-                          aria-label={`Personas koda cipars ${index + 1}`}
-                        />
-                      );
-                    })}
-                </div>
+                <button
+                  type="submit"
+                  aria-label="Meklēt pacientu"
+                  className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-[10px] text-[hsl(214,26%,38%)] transition hover:bg-[hsl(214,24%,95%)] hover:text-[hsl(218,46%,16%)]"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
               </div>
 
-              <button
-                type="submit"
-                className="flex h-12 min-w-[184px] shrink-0 items-center justify-center gap-2.5 rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%)_0%,hsl(218,34%,22%)_100%)] px-6 text-white shadow-[0_14px_30px_rgba(29,53,87,0.14)] transition hover:opacity-95"
-              >
-                <Search className="h-5 w-5" />
-                <span className="text-[15px] font-semibold">Meklēt</span>
-              </button>
+              <div className="mt-6 flex items-center justify-center gap-2 text-[12px] font-medium text-[#8A8F98]">
+  <ShieldCheck className="h-30 w-4 shrink-0 text-[#9AA0AA]" />
+  <span>Dati tiek apstrādāti droši un atbilstoši GDPR prasībām</span>
+</div>
             </div>
 
             {error && (

@@ -3,6 +3,7 @@ import {
   FileText,
   ArrowRight,
   CheckCircle2,
+  ChevronRight,
   XCircle,
   Clock3,
   CalendarDays,
@@ -243,44 +244,46 @@ const ReferralDetailOverlay = ({
         </div>
 
         <div className="max-h-[78vh] space-y-4 overflow-y-auto px-6 py-5">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            <div className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
+          <div className="overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3">
+            <div className="border-b border-[hsl(214,22%,88%)] px-4 py-3.5 sm:border-r lg:border-b-0">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
                 Statuss
               </p>
               <p
-                className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium ${style.pill}`}
+                className={`mt-1.5 inline-flex rounded-full px-2.5 py-1 text-[10px] font-medium ${style.pill}`}
               >
                 {statusLabel[referral.status]}
               </p>
             </div>
 
-            <div className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
+            <div className="border-b border-[hsl(214,22%,88%)] px-4 py-3.5 lg:border-b-0 lg:border-r">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
                 Datums
               </p>
-              <p className="mt-1 text-[12px] font-semibold text-[hsl(222,28%,20%)]">
+              <p className="mt-1.5 text-[12px] font-semibold text-[hsl(222,28%,20%)]">
                 {referral.date}
               </p>
             </div>
 
-            <div className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
+            <div className="px-4 py-3.5 sm:col-span-2 lg:col-span-1">
               <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
                 Derīgs līdz
               </p>
-              <p className="mt-1 text-[12px] font-semibold text-[hsl(222,28%,20%)]">
+              <p className="mt-1.5 text-[12px] font-semibold text-[hsl(222,28%,20%)]">
                 {referral.validUntil}
               </p>
             </div>
-          </div>
+            </div>
 
-          <div className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-3.5">
+            <div className="border-t border-[hsl(214,22%,88%)] px-4 py-3.5">
             <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-heading">
               Iemesls
             </p>
             <p className="mt-2 text-[12px] leading-5 text-[hsl(214,14%,42%)]">
               {referral.reason}
             </p>
+            </div>
           </div>
 
           <ReferralTimeline referral={referral} />
@@ -293,12 +296,20 @@ const ReferralDetailOverlay = ({
 const ReferralList = ({
   items,
   onSelect,
+  compact = false,
 }: {
   items: ReferralHistoryItem[];
   onSelect: (referral: ReferralHistoryItem) => void;
+  compact?: boolean;
 }) => {
   return (
-    <div className="space-y-2.5">
+    <div
+      className={
+        compact
+          ? "overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white divide-y divide-[hsl(214,22%,90%)]"
+          : "space-y-2.5"
+      }
+    >
       {items.map((referral) => {
         const style = statusStyles[referral.status];
 
@@ -307,11 +318,15 @@ const ReferralList = ({
             key={referral.id}
             type="button"
             onClick={() => onSelect(referral)}
-            className="flex w-full items-start justify-between gap-3 rounded-[10px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2.5 text-left transition hover:bg-white"
+            className={
+              compact
+                ? "flex w-full items-start justify-between gap-3 bg-white px-4 py-4 text-left transition hover:bg-[hsl(214,20%,99%)]"
+                : "flex w-full items-start justify-between gap-3 rounded-[10px] border border-[hsl(214,20%,90%)] bg-[hsl(214,20%,98%)] px-3 py-2.5 text-left transition hover:bg-white"
+            }
           >
             <div className="flex min-w-0 flex-1 items-start gap-2.5">
               <div
-                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)] ${style.icon}`}
+                className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-[8px] border bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] ${style.icon}`}
               >
                 <StatusIcon status={referral.status} />
               </div>
@@ -340,7 +355,11 @@ const ReferralList = ({
               >
                 {statusLabel[referral.status]}
               </span>
-              <ArrowRight size={12} className="mt-0.5 text-heading" />
+              {compact ? (
+                <ChevronRight size={14} className="mt-0.5 text-heading" />
+              ) : (
+                <ArrowRight size={12} className="mt-0.5 text-heading" />
+              )}
             </div>
           </button>
         );
@@ -392,7 +411,7 @@ const AllReferralsOverlay = ({
         </div>
 
         <div className="max-h-[78vh] overflow-y-auto px-6 py-5">
-          <ReferralList items={items} onSelect={onSelect} />
+          <ReferralList items={items} onSelect={onSelect} compact />
         </div>
       </div>
     </CenteredOverlay>
@@ -413,10 +432,10 @@ const ReferralHistory = () => {
           </div>
 
           <div>
-            <p className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
               E-nosūtījumi
             </p>
-            <p className="text-[10px] text-heading">
+            <p className="text-xs text-heading">
               Aktīvie un vēsturiskie nosūtījumi
             </p>
           </div>
@@ -425,6 +444,7 @@ const ReferralHistory = () => {
         <div className="mt-3 flex-1 overflow-y-auto pr-1">
           <ReferralList
             items={visibleReferrals}
+            compact
             onSelect={(referral) => setSelectedReferral(referral)}
           />
         </div>

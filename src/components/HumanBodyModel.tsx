@@ -987,10 +987,6 @@ export default function HumanBodyModel() {
           </div>
         </div>
 
-        <p className="mt-2 text-left text-[10px] leading-4 text-[hsl(214,14%,58%)]">
-          Nospiediet uz orgāna vai diagnozes, lai atvērtu detalizētu informāciju
-        </p>
-
         <div className="relative mx-auto mt-3 flex h-[390px] w-full max-w-[360px] items-center justify-center overflow-visible rounded-[1.4rem] px-2 py-2 shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]">
           <img
             src={humanBody}
@@ -1004,6 +1000,7 @@ export default function HumanBodyModel() {
             height={2200}
             draggable={false}
           />
+        
 
           {ORGANS.map((organ) => (
             <OrganHotspot
@@ -1019,7 +1016,12 @@ export default function HumanBodyModel() {
             />
           ))}
         </div>
+
+        <p className="mt-2 text-center text-[10px] leading-4 text-[hsl(214,14%,58%)]">
+          Nospiediet uz orgāna vai diagnozes, lai atvērtu detalizētu informāciju
+        </p>
       </div>
+      
 
       {activeOrgan && (
         <OrganModal organ={activeOrgan} onClose={() => setSelectedOrganId(null)} />

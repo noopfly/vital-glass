@@ -1,5 +1,5 @@
 import { useRef, useState } from "react";
-import { AlertTriangle, Pill, X } from "lucide-react";
+import { AlertTriangle, Clock3, Pill, X } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 
@@ -13,6 +13,11 @@ interface Interaction {
   summary: string;
 }
 
+interface DuplicateAlert {
+  with: string;
+  summary: string;
+}
+
 interface Medication {
   id: string;
   name: string;
@@ -23,6 +28,7 @@ interface Medication {
   endDate: string;
   prescribedBy: string;
   interactions: Interaction[];
+  duplicate: DuplicateAlert | null;
 }
 
 const medications: Medication[] = [
@@ -36,6 +42,7 @@ const medications: Medication[] = [
     endDate: "—",
     prescribedBy: "Dr. Anna Kalniņa",
     interactions: [],
+    duplicate: null,
   },
   {
     id: "atorvastatin",
@@ -53,10 +60,15 @@ const medications: Medication[] = [
         summary: "Amlodipīns var palielināt atorvastatīna koncentrāciju plazmā.",
       },
     ],
+    duplicate: {
+      with: "Rosuvastatīns",
+      summary:
+        "Pacienta terapijā ir atrasts vēl viens statīna ieraksts ar līdzīgu terapeitisko mērķi.",
+    },
   },
   {
     id: "amlodipine",
-    name: "Amlodipins",
+    name: "Amlodipīns",
     dose: "5 mg",
     frequency: "1x dienā",
     status: "active",
@@ -70,6 +82,7 @@ const medications: Medication[] = [
         summary: "Ieteicama blakusparādību novērošana.",
       },
     ],
+    duplicate: null,
   },
   {
     id: "amoxicillin",
@@ -81,6 +94,7 @@ const medications: Medication[] = [
     endDate: "09.10.2023",
     prescribedBy: "Dr. Līga Bērziņa",
     interactions: [],
+    duplicate: null,
   },
   {
     id: "pantoprazole",
@@ -92,6 +106,7 @@ const medications: Medication[] = [
     endDate: "15.11.2023",
     prescribedBy: "Dr. Anna Kalniņa",
     interactions: [],
+    duplicate: null,
   },
 ];
 
@@ -102,21 +117,9 @@ const statusStyles: Record<MedicationStatus, string> = {
     "border-[rgba(210,219,228,0.96)] bg-[hsl(214,22%,95%)] text-[hsl(220,14%,48%)]",
 };
 
-const severityStyles: Record<InteractionSeverity, string> = {
-  viegla:
-    "border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
-  videja:
-    "border-[rgba(239,208,208,0.96)] bg-[hsl(0,56%,96%)] text-[hsl(0,54%,52%)]",
-};
-
 const statusLabels: Record<MedicationStatus, string> = {
   active: "Aktīvs",
   historical: "Vēsturisks",
-};
-
-const severityLabels: Record<InteractionSeverity, string> = {
-  viegla: "Viegla",
-  videja: "Vidēja",
 };
 
 const columnLabels = {
@@ -136,26 +139,30 @@ const compactTableGridClass =
   "md:grid-cols-[minmax(0,1.4fr)_0.85fr_0.95fr_0.95fr]";
 
 const fullTableGridClass =
-  "md:grid-cols-7";
+  "md:grid-cols-[minmax(0,1.8fr)_0.85fr_0.9fr_1fr_1fr_1fr_1.15fr]";
 
 const sectionIconClass =
   "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const interactionBadgeClass =
   "inline-flex items-center gap-1.5 rounded-full border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,97%)] px-2.5 py-1 text-[10px] font-medium text-[hsl(34,52%,42%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]";
-const interactionOverlayOffsetX = 28;
+
+const duplicateBadgeClass =
+  "inline-flex items-center gap-1.5 rounded-full border border-[rgba(239,208,208,0.96)] bg-[hsl(0,56%,97%)] px-2.5 py-1 text-[10px] font-medium text-[hsl(0,54%,52%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]";
+
+const compactSignalBadgeClass = "shrink-0 gap-1 px-1.5 py-0.5 text-[8px] [&>svg]:h-[10px] [&>svg]:w-[10px]";
+const fullSignalBadgeClass = "shrink-0 gap-1 px-1.5 py-0.5 text-[8px] [&>svg]:h-[10px] [&>svg]:w-[10px]";
+const interactionOverlayOffsetX = -8;
 const interactionOverlayOffsetY = 18;
 
-function InteractionOverlay({
+function MedicationSignalOverlay({
   medication,
   overlayPosition,
 }: {
   medication: Medication;
   overlayPosition: { x: number; y: number };
 }) {
-  if (medication.interactions.length === 0) return null;
-
-  const interaction = medication.interactions[0];
+  if (medication.interactions.length === 0 && !medication.duplicate) return null;
 
   return (
     <div
@@ -166,29 +173,46 @@ function InteractionOverlay({
       }}
     >
       <div className="relative rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
-        <p className="mb-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,52%)]">
-          Mijiedarbība
-        </p>
+        <div className="divide-y divide-[rgba(220,228,236,0.72)]">
+          {medication.interactions.map((interaction, index) => (
+            <div
+              key={`${medication.id}-interaction-${index}`}
+              className={index === 0 ? "pb-4" : "pt-4 pb-4"}
+            >
+              <div className="mb-2">
+                <p className="text-[10px] font-semibold text-[hsl(34,52%,42%)]">
+                  Mijiedarbība
+                </p>
+              </div>
 
-        <div className="mb-0.5 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]">
-            <AlertTriangle size={15} />
-          </div>
+              <p className="text-[14px] font-semibold text-[hsl(222,28%,20%)]">
+                {medication.name} ↔ {interaction.with}
+              </p>
 
-          <p className="min-w-0 flex-1 truncate text-[14px] font-semibold text-[hsl(222,28%,20%)]">
-            {medication.name} ↔ {interaction.with}
-          </p>
+              <p className="mt-2 text-[13px] leading-6 text-[hsl(214,14%,42%)]">
+                {interaction.summary}
+              </p>
+            </div>
+          ))}
 
-          <span
-            className={`inline-flex items-center justify-center rounded-full border px-2 py-1 text-[10px] font-medium leading-none tracking-[0.02em] ${severityStyles[interaction.severity]}`}
-          >
-            {severityLabels[interaction.severity]}
-          </span>
+          {medication.duplicate ? (
+            <div className={medication.interactions.length > 0 ? "pt-4" : ""}>
+              <div className="mb-2">
+                <p className="text-[10px] font-semibold text-[hsl(0,54%,52%)]">
+                  Dublēts
+                </p>
+              </div>
+
+              <p className="text-[14px] font-semibold text-[hsl(222,28%,20%)]">
+                {medication.name} ↔ {medication.duplicate.with}
+              </p>
+
+              <p className="mt-2 text-[13px] leading-6 text-[hsl(214,14%,42%)]">
+                {medication.duplicate.summary}
+              </p>
+            </div>
+          ) : null}
         </div>
-
-        <p className="pl-10 text-[13px] text-[hsl(214,14%,42%)]">
-          {interaction.summary}
-        </p>
       </div>
     </div>
   );
@@ -207,26 +231,25 @@ function MedicationRow({
   onPointerMove: (rowElement: HTMLDivElement) => void;
   onDeactivate: () => void;
 }) {
-  const interactive = medication.interactions.length > 0;
   const isFullMode = mode === "full";
   const tableGridClass =
     isFullMode ? fullTableGridClass : compactTableGridClass;
+  const hasSignals =
+    medication.interactions.length > 0 || Boolean(medication.duplicate);
 
   return (
     <div
-      className={`grid w-full gap-x-2.5 gap-y-1.5 px-4 py-3.5 text-left transition-colors ${tableGridClass} ${
-        interactive ? "cursor-help hover:bg-[hsl(214,20%,99%)]" : ""
-      }`}
+      className={`grid w-full gap-x-2.5 gap-y-1.5 px-4 py-3.5 text-left transition-colors md:items-start ${hasSignals ? "cursor-help hover:bg-[hsl(214,20%,99%)]" : ""} ${tableGridClass}`}
       onMouseEnter={(event) => {
-        if (!interactive) return;
+        if (!hasSignals) return;
         onActivate(medication.id, event.currentTarget);
       }}
       onMouseMove={(event) => {
-        if (!interactive) return;
+        if (!hasSignals) return;
         onPointerMove(event.currentTarget);
       }}
       onMouseLeave={() => {
-        if (!interactive) return;
+        if (!hasSignals) return;
         onDeactivate();
       }}
     >
@@ -237,11 +260,34 @@ function MedicationRow({
             {medication.name}
           </p>
 
-          {medication.interactions.length > 0 && (
-            <span className={`mt-1.5 ${interactionBadgeClass}`}>
-              <AlertTriangle size={12} strokeWidth={2} />
-              Mijiedarbība
-            </span>
+          {hasSignals && (
+            <div
+              className={`mt-2.5 flex items-center gap-2 ${
+                isFullMode ? "flex-nowrap whitespace-nowrap" : "flex-nowrap whitespace-nowrap"
+              }`}
+            >
+              {medication.interactions.length > 0 && (
+                <span
+                  className={`${interactionBadgeClass} ${
+                    isFullMode ? fullSignalBadgeClass : compactSignalBadgeClass
+                  }`}
+                >
+                  <AlertTriangle size={12} strokeWidth={2} />
+                  Mijiedarbība
+                </span>
+              )}
+
+              {medication.duplicate && (
+                <span
+                  className={`${duplicateBadgeClass} ${
+                    isFullMode ? fullSignalBadgeClass : compactSignalBadgeClass
+                  }`}
+                >
+                  <AlertTriangle size={12} strokeWidth={2} />
+                  Dublēts
+                </span>
+              )}
+            </div>
           )}
         </div>
       </div>
@@ -261,7 +307,7 @@ function MedicationRow({
       </div>
 
       <div
-        className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-center"}`}
+        className={`flex self-start pt-0.5 ${isFullMode ? "md:justify-start" : "md:justify-center"}`}
       >
         <div
           className={`flex flex-col items-start ${isFullMode ? "md:items-start" : "md:items-center"}`}
@@ -365,7 +411,7 @@ function MedicationTableContent({
     <>
       <div
         ref={containerRef}
-        className="relative overflow-visible rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
+        className="relative overflow-visible rounded-[10px] border border-[hsl(214,22%,88%)] bg-white"
       >
         <div
           className={`hidden gap-x-2.5 border-b border-[hsl(214,22%,88%)] bg-[hsl(214,20%,96%)] px-4 py-2.5 md:grid ${tableGridClass}`}
@@ -404,10 +450,13 @@ function MedicationTableContent({
           ))}
 
           {historicalMedications.length > 0 && (
-            <div className="bg-[hsl(214,20%,97%)] px-4 py-1.5">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,14%,56%)]">
-                Vēsturiskie medikamenti
-              </p>
+            <div className="bg-[hsl(214,20%,96%)] px-4 py-1.5">
+              <div className="inline-flex items-center gap-2 text-[hsl(214,14%,56%)]">
+                <Clock3 className="h-3.5 w-3.5" strokeWidth={1.8} />
+                <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-current">
+                  Vēsturiskie medikamenti
+                </p>
+              </div>
             </div>
           )}
 
@@ -426,12 +475,12 @@ function MedicationTableContent({
           ))}
         </div>
 
-        {hoveredMedication && (
-          <InteractionOverlay
+        {hoveredMedication ? (
+          <MedicationSignalOverlay
             medication={hoveredMedication}
             overlayPosition={overlayPosition}
           />
-        )}
+        ) : null}
       </div>
     </>
   );

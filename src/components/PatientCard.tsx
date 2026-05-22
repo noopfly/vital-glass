@@ -29,7 +29,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
         <div className="flex items-start">
           <div className="flex flex-1 flex-col gap-2">
             <div className="min-w-0">
-              <p className="text-[13px] font-semibold uppercase tracking-[0.18em] text-heading">
+              <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
                 Pacienta klīniskais profils
               </p>
 

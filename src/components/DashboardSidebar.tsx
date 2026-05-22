@@ -7,7 +7,6 @@ import {
   Columns2,
   GripVertical,
   Info,
-  LayoutGrid,
   Loader2,
   Plus,
   RotateCcw,
@@ -599,10 +598,15 @@ export default function DashboardSidebar({
                     state: { patient: activePatient, layoutOrder },
                   })
                 }
-                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] bg-[linear-gradient(180deg,hsl(219,36%,18%),hsl(218,34%,24%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.18)]"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
                 aria-label="Atvērt sākuma paneli"
               >
-                <LayoutGrid className="h-4 w-4" />
+                <img
+                  src="/omnus-icon-logo.svg"
+                  alt=""
+                  className="h-10 w-10 rounded-[10px] object-contain"
+                  aria-hidden="true"
+                />
               </button>
             )}
 
@@ -728,7 +732,7 @@ export default function DashboardSidebar({
                     className={cn(
                       "block rounded-[12px] px-3 py-1.5 text-left transition",
                       isActivePatient
-                        ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.16)]"
+                        ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                         : "text-[hsl(220,36%,18%)] hover:bg-[hsl(214,22%,98%)]",
                     )}
                   >
@@ -1108,10 +1112,7 @@ export default function DashboardSidebar({
           <div className="mx-auto w-full max-w-[760px] overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-8 py-7">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
-                  Pacienti
-                </p>
-                <h2 className="mt-2 text-[24px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="text-[24px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Visi pacienti
                 </h2>
               </div>
@@ -1141,38 +1142,37 @@ export default function DashboardSidebar({
                       onClick={() => setIsAllPatientsOpen(false)}
                       aria-current={isActivePatient ? "page" : undefined}
                       className={cn(
-                        "flex items-center justify-between gap-4 rounded-[14px] px-4 py-3 transition",
+                        "block w-full overflow-hidden rounded-[14px] border px-4 py-3 transition duration-200",
                         isActivePatient
-                          ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white shadow-[0_8px_20px_rgba(29,53,87,0.16)]"
-                          : "text-[hsl(220,36%,18%)] hover:bg-[hsl(214,22%,98%)]",
+                          ? "border-[rgba(199,214,231,0.96)] bg-[hsl(214,30%,97%)] text-[hsl(220,36%,18%)] shadow-[0_8px_20px_rgba(29,53,87,0.08)]"
+                          : "border-transparent text-[hsl(220,36%,18%)] hover:-translate-y-[1px] hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,22%,98%)] hover:shadow-[0_8px_18px_rgba(29,53,87,0.06)]",
                       )}
                     >
-                      <div className="min-w-0">
-                        <p className="truncate text-[15px] font-semibold leading-5">
+                      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-6 text-[15px] leading-5">
+                        <p className="min-w-0 truncate font-semibold">
                           {patient.name}
                         </p>
                         <p
                           className={cn(
-                            "mt-0.5 text-[12px]",
+                            "justify-self-center whitespace-nowrap font-normal",
                             isActivePatient
-                              ? "text-white/72"
+                              ? "text-[hsl(214,16%,52%)]"
                               : "text-[hsl(214,16%,62%)]",
                           )}
                         >
                           {patient.personalCode}
                         </p>
+                        <span
+                          className={cn(
+                            "justify-self-end whitespace-nowrap text-right font-normal",
+                            isActivePatient
+                              ? "text-[hsl(214,16%,52%)]"
+                              : "text-[hsl(214,16%,56%)]",
+                          )}
+                        >
+                          {patient.age} gadi
+                        </span>
                       </div>
-
-                      <span
-                        className={cn(
-                          "shrink-0 text-[12px] font-medium",
-                          isActivePatient
-                            ? "text-white/80"
-                            : "text-[hsl(214,16%,56%)]",
-                        )}
-                      >
-                        {patient.age} gadi
-                      </span>
                     </Link>
                   );
                 })}
