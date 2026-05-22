@@ -30,11 +30,22 @@ const personalCodeSecondPartLength = 5;
 const personalCodeLength = personalCodeFirstPartLength + personalCodeSecondPartLength;
 
 // Format: xxxxxx-xxxxx
-function formatPersonalCode(raw: string) {
+function formatPersonalCode(
+  raw: string,
+  options?: {
+    forceSeparatorAfterFirstPart?: boolean;
+  },
+) {
   const digits = raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
+  const forceSeparatorAfterFirstPart =
+    options?.forceSeparatorAfterFirstPart ?? false;
 
-  if (digits.length <= personalCodeFirstPartLength) {
+  if (digits.length < personalCodeFirstPartLength) {
     return digits;
+  }
+
+  if (digits.length === personalCodeFirstPartLength) {
+    return forceSeparatorAfterFirstPart ? `${digits}-` : digits;
   }
 
   return `${digits.slice(0, personalCodeFirstPartLength)}-${digits.slice(
@@ -97,7 +108,10 @@ export default function SearchPage() {
   }, [routeState?.searchQuery]);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const formattedValue = formatPersonalCode(event.target.value);
+    const isDeleting = event.target.value.length < query.length;
+    const formattedValue = formatPersonalCode(event.target.value, {
+      forceSeparatorAfterFirstPart: !isDeleting,
+    });
 
     setQuery(formattedValue);
 
@@ -168,20 +182,29 @@ export default function SearchPage() {
         </div>
 
         <div className="flex w-full max-w-5xl flex-col items-center px-6 text-center">
-          <img
-            src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
-            alt="Omnus"
-            className="h-auto w-full max-w-[620px] [filter:drop-shadow(0_8px_26px_rgba(29,53,87,0.08))]"
-          />
+          <div className="flex items-center justify-center gap-3">
+            <img
+              src={`${import.meta.env.BASE_URL}omnus-icon-logo.svg`}
+              alt=""
+              aria-hidden="true"
+              className="h-14 w-14 rounded-[14px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:h-16 md:w-16"
+            />
+
+            <img
+              src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
+              alt="Omnus"
+              className="h-auto w-[190px] max-w-full [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:w-[210px]"
+            />
+          </div>
 
           <form
-            className="mt-10 w-full"
+            className="mt-6 w-full"
             onSubmit={(e) => {
               e.preventDefault();
               handleSearch();
             }}
           >
-            <div className="mx-auto flex w-full max-w-[520px] flex-col items-center">
+              <div className="mx-auto flex w-full max-w-[760px] flex-col items-center">
               <div className="relative w-full">
                 <input
                   type="text"

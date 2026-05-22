@@ -57,7 +57,7 @@ type SettingsPreviewDefinition = {
 
 const storageKey = "omnis-sidebar-collapsed";
 const expandedSidebarWidth = "280px";
-const collapsedSidebarWidth = "92px";
+const collapsedSidebarWidth = "76px";
 
 function getInitials(name: string) {
   return name
@@ -579,7 +579,7 @@ export default function DashboardSidebar({
     <aside
       className={cn(
         "w-full shrink-0 transition-[width] duration-300 lg:fixed lg:left-0 lg:top-0 lg:z-30 lg:h-screen lg:w-[280px]",
-        isCollapsed && "lg:w-[92px]",
+        isCollapsed && "lg:w-[76px]",
       )}
     >
       <div className="flex h-full min-h-[calc(100vh-2.5rem)] flex-col rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.94),rgba(248,251,255,0.92))] shadow-[0_12px_32px_rgba(126,158,187,0.1)] backdrop-blur-xl lg:min-h-screen lg:rounded-none lg:border-y-0 lg:border-l-0 lg:shadow-[12px_0_32px_rgba(126,158,187,0.08)]">
@@ -594,7 +594,7 @@ export default function DashboardSidebar({
               <button
                 type="button"
                 onClick={() =>
-                  navigate("/components", {
+                  navigate("/search", {
                     state: { patient: activePatient, layoutOrder },
                   })
                 }
@@ -625,12 +625,13 @@ export default function DashboardSidebar({
           <Link
             to="/search"
             state={{ patient: activePatient, layoutOrder }}
+            title={isCollapsed ? "Jauna meklēšana" : undefined}
             className={cn(
               "flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
               currentView === "search"
                 ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                 : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
-              isCollapsed ? "justify-center px-0" : "gap-3",
+              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[12px] px-0" : "gap-3",
             )}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -646,12 +647,13 @@ export default function DashboardSidebar({
           <Link
             to="/day-list"
             state={{ patient: activePatient, layoutOrder }}
+            title={isCollapsed ? "Dienas saraksts" : undefined}
             className={cn(
               "mt-3 flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
               currentView === "day-list"
                 ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                 : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
-              isCollapsed ? "justify-center px-0" : "gap-3",
+              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[12px] px-0" : "gap-3",
             )}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -793,7 +795,7 @@ export default function DashboardSidebar({
           ref={footerRef}
           className={cn(
             "relative mt-auto border-t border-[rgba(221,228,236,0.96)] px-4 py-4",
-            isCollapsed && "px-1 flex flex-col items-center",
+            isCollapsed && "px-0 flex flex-col items-center",
           )}
         >
           {!isCollapsed && isProfileMenuOpen && (
@@ -833,7 +835,7 @@ export default function DashboardSidebar({
             className={cn(
               "flex w-full items-center transition",
               isCollapsed
-                ? "justify-center"
+                ? "mx-auto h-11 w-11 justify-center rounded-[12px]"
                 : "gap-3 rounded-[12px] px-2 py-2 hover:bg-[hsl(214,22%,98%)]",
             )}
             aria-expanded={!isCollapsed ? isProfileMenuOpen : undefined}
