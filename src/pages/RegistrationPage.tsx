@@ -853,7 +853,7 @@ export default function RegistrationPage() {
             <div className="flex items-center gap-4 md:justify-self-start">
               <div className="flex items-center gap-3">
                 <img
-                  src="/omnus-logo.svg"
+                    src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
                   alt="Omnus"
                   className="h-auto w-[96px]"
                 />

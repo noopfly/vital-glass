@@ -169,7 +169,7 @@ export default function SearchPage() {
 
         <div className="flex w-full max-w-5xl flex-col items-center px-6 text-center">
           <img
-            src="/omnus-logo.svg"
+            src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
             alt="Omnus"
             className="h-auto w-full max-w-[620px] [filter:drop-shadow(0_8px_26px_rgba(29,53,87,0.08))]"
           />

@@ -602,7 +602,7 @@ export default function DashboardSidebar({
                 aria-label="Atvērt sākuma paneli"
               >
                 <img
-                  src="/omnus-icon-logo.svg"
+                  src={`${import.meta.env.BASE_URL}omnus-icon-logo.svg`}
                   alt=""
                   className="h-10 w-10 rounded-[10px] object-contain"
                   aria-hidden="true"
