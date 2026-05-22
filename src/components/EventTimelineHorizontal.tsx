@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import {
   Activity,
   Beaker,
@@ -9,9 +9,13 @@ import {
   ChevronUp,
   History,
   Hospital,
+  Maximize2,
   Scissors,
   Stethoscope,
+  X,
 } from "lucide-react";
+
+import { CenteredOverlay } from "@/components/ui/centered-overlay";
 
 type EventType =
   | "laboratorija"
@@ -53,7 +57,7 @@ const events: TimelineEvent[] = [
     type: "ambulatora_vizite",
     date: "2026-04-10",
     title: "Ģimenes ārsta ambulatorā vizīte",
-    facility: "Ģimenes ārsta prakse – Dr. I. Bērziņa",
+    facility: "Ģimenes ārsta prakse - Dr. I. Bērziņa",
     summary: "Regulārā pārbaude, recepšu atjaunošana",
     details: [
       "Asinsspiediens stabils, normas robežās.",
@@ -133,7 +137,7 @@ const typeConfig: Record<
   EventType,
   {
     label: string;
-    icon: React.ReactNode;
+    icon: ReactNode;
     dotOuterClass: string;
     dotInnerClass: string;
     activeDotOuterClass: string;
@@ -151,19 +155,19 @@ const typeConfig: Record<
     label: "Laboratorija",
     icon: <Beaker size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(214,24%,78%)] bg-[hsl(214,38%,95%)] shadow-[0_0_0_4px_hsl(214_38%_95%/0.95)]",
-    dotInnerClass: "bg-[hsl(214,30%,38%)]",
+      "border-[hsl(196,20%,78%)] bg-[hsl(192,30%,95%)] shadow-[0_0_0_4px_hsl(192_30%_95%/0.95)]",
+    dotInnerClass: "bg-[hsl(196,34%,36%)]",
     activeDotOuterClass:
-      "border-[hsl(214,24%,78%)] bg-[hsl(214,38%,95%)] shadow-[0_0_0_4px_hsl(214_38%_95%/0.95)]",
-    activeDotInnerClass: "bg-[hsl(214,30%,38%)]",
-    textClass: "text-[hsl(214,28%,34%)]",
+      "border-[hsl(196,20%,78%)] bg-[hsl(192,30%,95%)] shadow-[0_0_0_4px_hsl(192_30%_95%/0.95)]",
+    activeDotInnerClass: "bg-[hsl(196,34%,36%)]",
+    textClass: "text-[hsl(196,30%,34%)]",
     badgeClass:
-      "border-[hsl(214,24%,80%)] bg-[hsl(214,38%,94%)] text-[hsl(214,28%,34%)]",
-    activeBorderClass: "border-[hsl(214,24%,80%)]",
-    activeTextClass: "text-[hsl(214,28%,34%)]",
-    activeBackgroundClass: "bg-[hsl(214,38%,94%)]",
-    detailDotClass: "bg-[hsl(214,30%,38%)]",
-    activeConnectorClass: "bg-[hsl(214,22%,70%)]",
+      "border-[hsl(196,22%,80%)] bg-[hsl(192,30%,94%)] text-[hsl(196,30%,34%)]",
+    activeBorderClass: "border-[hsl(196,22%,80%)]",
+    activeTextClass: "text-[hsl(196,30%,34%)]",
+    activeBackgroundClass: "bg-[hsl(192,30%,94%)]",
+    detailDotClass: "bg-[hsl(196,34%,36%)]",
+    activeConnectorClass: "bg-[hsl(196,18%,68%)]",
   },
   ambulatora_vizite: {
     label: "Ambulatorā vizīte",
@@ -249,47 +253,30 @@ function formatDate(date: string) {
   });
 }
 
-const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
-  const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
-  const [activeEventId, setActiveEventId] = useState<string | null>(null);
-  const containerRef = useRef<HTMLDivElement | null>(null);
+type TimelineContentProps = {
+  updatedAt: string;
+  selectedTypes: EventType[];
+  activeEventId: string | null;
+  filteredEvents: TimelineEvent[];
+  onToggleType: (type: EventType) => void;
+  onToggleEvent: (eventId: string) => void;
+  onOpenExpanded?: () => void;
+  expanded?: boolean;
+};
+
+function TimelineContent({
+  updatedAt,
+  selectedTypes,
+  activeEventId,
+  filteredEvents,
+  onToggleType,
+  onToggleEvent,
+  onOpenExpanded,
+  expanded = false,
+}: TimelineContentProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
-
-  const filteredEvents = useMemo(() => {
-    return [...events]
-      .filter((event) => selectedTypes.includes(event.type))
-      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-  }, [selectedTypes]);
-
-  useEffect(() => {
-    if (activeEventId && !filteredEvents.some((event) => event.id === activeEventId)) {
-      setActiveEventId(null);
-    }
-  }, [activeEventId, filteredEvents]);
-
-  useEffect(() => {
-    const handlePointerDown = (event: MouseEvent) => {
-      const container = containerRef.current;
-      if (!container) return;
-      if (container.contains(event.target as Node)) return;
-      setActiveEventId(null);
-    };
-
-    document.addEventListener("mousedown", handlePointerDown);
-    return () => {
-      document.removeEventListener("mousedown", handlePointerDown);
-    };
-  }, []);
-
-  const toggleType = (type: EventType) => {
-    setSelectedTypes((current) =>
-      current.includes(type)
-        ? current.filter((item) => item !== type)
-        : [...current, type],
-    );
-  };
 
   const updateScrollState = () => {
     const element = scrollRef.current;
@@ -312,23 +299,47 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
 
   useEffect(() => {
     updateScrollState();
-  }, [filteredEvents]);
+  }, [filteredEvents, activeEventId, expanded]);
 
   return (
     <div
-      ref={containerRef}
-      className="flex h-full min-h-[420px] w-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+      data-timeline-container
+      className={`flex w-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)] ${
+        expanded ? "min-h-[520px]" : "h-full min-h-[420px]"
+      }`}
     >
       <div className="mb-5 flex flex-wrap items-center gap-3">
-        <div className={sectionIconClass}>
-          <History size={18} />
-        </div>
+          <div className={sectionIconClass}>
+            <History size={18} />
+          </div>
 
-        <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
-          Notikumu laika līnija
+        <p className="text-[14px] font-semibold uppercase leading-[1.12] tracking-[0.12em] text-heading">
+          {expanded ? (
+            "Notikumu laika l\u012bnija"
+          ) : (
+            <>
+              <span className="block">Notikumu laika</span>
+              <span className="block">{"l\u012bnija"}</span>
+            </>
+          )}
         </p>
 
-        <div className="ml-auto flex flex-wrap gap-2">
+        {!expanded && onOpenExpanded ? (
+          <button
+            type="button"
+            onClick={onOpenExpanded}
+            className="order-last ml-auto inline-flex h-10 w-10 items-center justify-center rounded-[10px] border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)] transition hover:bg-white"
+            aria-label="Izvērst pilnskatā"
+            title="Izvērst pilnskatā"
+          >
+            <Maximize2 size={18} />
+          </button>
+        ) : null}
+
+
+        <div
+          className={`flex flex-1 flex-wrap items-center ${expanded ? "ml-auto justify-end gap-2 pr-16" : "ml-auto justify-end gap-1 pr-3"}`}
+        >
           {allTypes.map((type) => {
             const isSelected = selectedTypes.includes(type);
             const config = typeConfig[type];
@@ -337,20 +348,22 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
               <button
                 key={type}
                 type="button"
-                onClick={() => toggleType(type)}
-                className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 text-[10px] font-medium transition-all ${isSelected
+                onClick={() => onToggleType(type)}
+                className={`inline-flex items-center rounded-full border font-medium transition-all ${
+                  expanded ? "gap-1.5 px-2.5 py-1.5 text-[10px]" : "gap-0.5 px-1.5 py-[3px] text-[8px]"
+                } ${
+                  isSelected
                     ? `${config.badgeClass} shadow-sm`
                     : "border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,38%)]"
-                  }`}
+                }`}
               >
-                <span className={config.textClass}>{config.icon}</span>
+                <span className={`${config.textClass} ${expanded ? "" : "scale-75"}`}>{config.icon}</span>
                 <span>{config.label}</span>
               </button>
             );
           })}
         </div>
       </div>
-
       {filteredEvents.length === 0 ? (
         <div className="flex min-h-[110px] flex-1 items-center justify-center rounded-[10px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
           Nav atlasītu notikumu tipu.
@@ -403,69 +416,69 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
                   return (
                     <div
                       key={event.id}
-                      className={`relative shrink-0 transition-all duration-200 ${active ? "w-[300px]" : "w-[186px]"
-                        }`}
+                      className={`relative shrink-0 transition-all duration-200 ${
+                        active ? "w-[300px]" : "w-[186px]"
+                      }`}
                     >
                       <div className="relative flex flex-col items-center">
                         <p
-                          className={`mb-3 text-[11px] font-semibold tracking-[0.03em] ${active
+                          className={`mb-3 text-[11px] font-semibold tracking-[0.03em] ${
+                            active
                               ? "text-[hsl(220,24%,36%)]"
                               : "text-[hsl(215,18%,40%)]"
-                            }`}
+                          }`}
                         >
                           {formatDate(event.date)}
                         </p>
 
                         <div
-                          className={`relative z-10 flex items-center justify-center rounded-full border transition-all ${active
+                          className={`relative z-10 flex items-center justify-center rounded-full border transition-all ${
+                            active
                               ? `h-8 w-8 ${config.activeDotOuterClass}`
                               : `h-5 w-5 ${config.dotOuterClass}`
-                            }`}
+                          }`}
                         >
                           <span
-                            className={`rounded-full ${active
+                            className={`rounded-full ${
+                              active
                                 ? `h-3.5 w-3.5 ${config.activeDotInnerClass}`
                                 : `h-2 w-2 ${config.dotInnerClass}`
-                              }`}
+                            }`}
                           />
                         </div>
 
                         <div
-                          className={`w-px transition-all ${active ? `h-9 ${config.activeConnectorClass}` : "h-5 bg-[hsl(210,18%,80%)]"
-                            }`}
+                          className={`w-px transition-all ${
+                            active
+                              ? `h-9 ${config.activeConnectorClass}`
+                              : "h-5 bg-[hsl(210,18%,80%)]"
+                          }`}
                         />
                       </div>
 
                       <div
                         role="button"
                         tabIndex={0}
-                        onClick={() =>
-                          setActiveEventId((current) =>
-                            current === event.id ? null : event.id,
-                          )
-                        }
+                        onClick={() => onToggleEvent(event.id)}
                         onKeyDown={(eventKey) => {
                           if (eventKey.key === "Enter" || eventKey.key === " ") {
                             eventKey.preventDefault();
-                            setActiveEventId((current) =>
-                              current === event.id ? null : event.id,
-                            );
+                            onToggleEvent(event.id);
                           }
                         }}
                         aria-expanded={active}
-                        className={`relative w-full text-left transition-all duration-300 ease-out ${active
+                        className={`relative w-full text-left transition-all duration-300 ease-out ${
+                          active
                             ? `rounded-[10px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-[0_10px_24px_rgba(29,53,87,0.08)]`
                             : "rounded-[10px] border border-[hsl(210,22%,88%)] bg-[hsl(214,20%,98%)] px-2.5 py-3 shadow-[0_6px_18px_rgba(29,53,87,0.05)] hover:bg-white"
-                          }`}
+                        }`}
                       >
                         {active ? (
                           <button
                             type="button"
                             onClick={(eventClick) => {
                               eventClick.stopPropagation();
-                              setActiveEventId((current) =>
-                                current === event.id ? null : event.id,
-                              );
+                              onToggleEvent(event.id);
                             }}
                             aria-label="Sakļaut detaļas"
                             className={`absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full transition ${config.activeTextClass} ${config.activeBackgroundClass}`}
@@ -476,15 +489,13 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
 
                         <div className={active ? "mb-4 pr-10" : "mb-2"}>
                           <div className="min-w-0">
-                            <div
-                              className={`flex items-center gap-1.5 ${active ? "mb-4" : "mb-1"
-                                }`}
-                            >
+                            <div className={`flex items-center gap-1.5 ${active ? "mb-4" : "mb-1"}`}>
                               <span
-                                className={`inline-flex items-center gap-1.5 rounded-xl border ${active
+                                className={`inline-flex items-center gap-1.5 rounded-xl border ${
+                                  active
                                     ? `${config.activeBorderClass} ${config.activeBackgroundClass} px-3 py-1.5 text-[11px] font-semibold ${config.activeTextClass}`
                                     : `${config.badgeClass} px-1.5 py-0.5 text-[9px] font-medium`
-                                  }`}
+                                }`}
                               >
                                 <span className={active ? config.activeTextClass : config.textClass}>
                                   {config.icon}
@@ -494,26 +505,29 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
                             </div>
 
                             <h3
-                              className={`font-semibold text-text-dark ${active ? "text-[15px] leading-[22px]" : "text-[12px] leading-[16px]"
-                                }`}
+                              className={`font-semibold text-text-dark ${
+                                active ? "text-[15px] leading-[22px]" : "text-[12px] leading-[16px]"
+                              }`}
                             >
                               {event.title}
                             </h3>
 
                             <p
-                              className={`${active
+                              className={`${
+                                active
                                   ? "mt-1.5 text-[12px] leading-[20px] text-[hsl(214,18%,54%)]"
                                   : "mt-0.5 line-clamp-2 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
-                                }`}
+                              }`}
                             >
                               {event.summary}
                             </p>
 
                             <div
-                              className={`flex items-start gap-2 ${active
+                              className={`flex items-start gap-2 ${
+                                active
                                   ? "mt-2 text-[12px] leading-[20px] text-[hsl(214,18%,50%)]"
                                   : "mt-1 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
-                                }`}
+                              }`}
                             >
                               <Building2
                                 size={active ? 14 : 12}
@@ -529,9 +543,7 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
                             type="button"
                             onClick={(eventClick) => {
                               eventClick.stopPropagation();
-                              setActiveEventId((current) =>
-                                current === event.id ? null : event.id,
-                              );
+                              onToggleEvent(event.id);
                             }}
                             aria-label="Izvērst detaļas"
                             className="absolute right-2.5 top-3 inline-flex h-5 w-5 items-center justify-center rounded-md text-heading transition hover:bg-[hsl(210,30%,97%)] hover:text-text-dark"
@@ -541,10 +553,11 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
                         ) : null}
 
                         <div
-                          className={`overflow-hidden transition-all duration-300 ease-out ${active && (event.details?.length || event.originalDocumentUrl)
+                          className={`overflow-hidden transition-all duration-300 ease-out ${
+                            active && (event.details?.length || event.originalDocumentUrl)
                               ? "mt-5 max-h-[320px] border-t pt-5 opacity-100"
                               : "mt-0 max-h-0 border-t-0 pt-0 opacity-0"
-                            } ${active ? config.activeBorderClass : "border-transparent"}`}
+                          } ${active ? config.activeBorderClass : "border-transparent"}`}
                         >
                           {active && (event.details?.length || event.originalDocumentUrl) ? (
                             <>
@@ -597,6 +610,95 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
 
       <p className="mt-4 text-xs text-[hsl(214,18%,62%)]">Atjaunināts: {updatedAt}</p>
     </div>
+  );
+}
+
+const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
+  const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
+  const [activeEventId, setActiveEventId] = useState<string | null>(null);
+  const [isExpandedOpen, setIsExpandedOpen] = useState(false);
+
+  const filteredEvents = useMemo(() => {
+    return [...events]
+      .filter((event) => selectedTypes.includes(event.type))
+      .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  }, [selectedTypes]);
+
+  useEffect(() => {
+    if (activeEventId && !filteredEvents.some((event) => event.id === activeEventId)) {
+      setActiveEventId(null);
+    }
+  }, [activeEventId, filteredEvents]);
+
+  useEffect(() => {
+    const handlePointerDown = (event: MouseEvent) => {
+      const target = event.target;
+      if (!(target instanceof HTMLElement)) return;
+      if (target.closest("[data-timeline-container]")) return;
+      setActiveEventId(null);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+    };
+  }, []);
+
+  const toggleType = (type: EventType) => {
+    setSelectedTypes((current) =>
+      current.includes(type)
+        ? current.filter((item) => item !== type)
+        : [...current, type],
+    );
+  };
+
+  const toggleEvent = (eventId: string) => {
+    setActiveEventId((current) => (current === eventId ? null : eventId));
+  };
+
+  return (
+    <>
+      <TimelineContent
+        updatedAt={updatedAt}
+        selectedTypes={selectedTypes}
+        activeEventId={activeEventId}
+        filteredEvents={filteredEvents}
+        onToggleType={toggleType}
+        onToggleEvent={toggleEvent}
+        onOpenExpanded={() => setIsExpandedOpen(true)}
+      />
+
+      {isExpandedOpen ? (
+        <CenteredOverlay
+          onClose={() => setIsExpandedOpen(false)}
+          overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
+          contentClassName="max-w-[1280px]"
+        >
+          <div className="relative mx-auto w-full max-w-[1280px]">
+            <button
+              type="button"
+              onClick={() => setIsExpandedOpen(false)}
+              className="absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-[10px] border border-[hsl(214,22%,88%)] bg-white/95 text-[hsl(215,14%,55%)] shadow-[0_12px_24px_rgba(15,23,42,0.08)] transition hover:text-[hsl(215,22%,28%)]"
+              aria-label="Aizvērt pilnskatu"
+            >
+              <X className="h-4 w-4" />
+            </button>
+
+            <div className="max-h-[84vh] overflow-y-auto">
+              <TimelineContent
+                updatedAt={updatedAt}
+                selectedTypes={selectedTypes}
+                activeEventId={activeEventId}
+                filteredEvents={filteredEvents}
+                onToggleType={toggleType}
+                onToggleEvent={toggleEvent}
+                expanded
+              />
+            </div>
+          </div>
+        </CenteredOverlay>
+      ) : null}
+    </>
   );
 };
 

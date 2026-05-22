@@ -14,6 +14,8 @@ export const patients: Patient[] = [
     diagnoses: [
       { code: "J06.9", description: "Akūta augšējo elpceļu infekcija", diagnosedAt: "12.04.2026" },
       { code: "M54.5", description: "Muguras sāpes", diagnosedAt: "03.09.2021" },
+      { code: "J30.4", description: "Alerģisks rinīts", diagnosedAt: "18.05.2023" },
+      { code: "E66.9", description: "Aptaukošanās", diagnosedAt: "27.01.2020" },
     ],
     chronicDiseases: [{ code: "E11", description: "2. tipa cukura diabēts", diagnosedAt: "19.08.2008" }],
     deviations: ["Glikoze ↑", "HbA1c ↑"],

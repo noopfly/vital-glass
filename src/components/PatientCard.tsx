@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Activity,
   AlertTriangle,
@@ -14,6 +15,12 @@ interface PatientCardProps {
 }
 
 const PatientCard = ({ patient }: PatientCardProps) => {
+  const [showAllDiagnoses, setShowAllDiagnoses] = useState(false);
+  const visibleDiagnoses = showAllDiagnoses
+    ? patient.diagnoses
+    : patient.diagnoses.slice(0, 2);
+  const hasHiddenDiagnoses = patient.diagnoses.length > 2;
+
   return (
     <div className="overflow-hidden rounded-[6px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
 
@@ -70,7 +77,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
           </div>
 
           <ul className="space-y-1 text-sm leading-5 text-text-dark">
-            {patient.diagnoses.slice(0, 2).map((diag, index) => (
+            {visibleDiagnoses.map((diag, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
 
@@ -87,6 +94,16 @@ const PatientCard = ({ patient }: PatientCardProps) => {
               </li>
             ))}
           </ul>
+
+          {hasHiddenDiagnoses && (
+            <button
+              type="button"
+              onClick={() => setShowAllDiagnoses((current) => !current)}
+              className="mt-2 text-[12px] font-semibold text-[hsl(214,14%,62%)] transition-colors hover:text-[hsl(214,14%,48%)]"
+            >
+              {showAllDiagnoses ? "Rādīt mazāk" : "Rādīt vairāk"}
+            </button>
+          )}
         </div>
 
         <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />

@@ -141,12 +141,17 @@ const fullTableGridClass =
 const sectionIconClass =
   "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
+const interactionBadgeClass =
+  "inline-flex items-center gap-1.5 rounded-full border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,97%)] px-2.5 py-1 text-[10px] font-medium text-[hsl(34,52%,42%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]";
+const interactionOverlayOffsetX = 28;
+const interactionOverlayOffsetY = 18;
+
 function InteractionOverlay({
   medication,
-  cursorPosition,
+  overlayPosition,
 }: {
   medication: Medication;
-  cursorPosition: { x: number; y: number };
+  overlayPosition: { x: number; y: number };
 }) {
   if (medication.interactions.length === 0) return null;
 
@@ -154,10 +159,10 @@ function InteractionOverlay({
 
   return (
     <div
-      className="pointer-events-none absolute z-30 w-[360px] -translate-x-[46%] -translate-y-[calc(100%+18px)]"
+      className="pointer-events-none absolute z-30 w-[360px] -translate-x-1/2 -translate-y-[calc(100%-18px)]"
       style={{
-        left: `${cursorPosition.x}px`,
-        top: `${cursorPosition.y}px`,
+        left: `${overlayPosition.x + interactionOverlayOffsetX}px`,
+        top: `${overlayPosition.y + interactionOverlayOffsetY}px`,
       }}
     >
       <div className="relative rounded-[10px] border border-[hsl(214,22%,88%)] bg-white px-4 py-3 shadow-[0_14px_30px_rgba(15,23,42,0.12)]">
@@ -198,8 +203,8 @@ function MedicationRow({
 }: {
   medication: Medication;
   mode: MedicationTableMode;
-  onActivate: (medicationId: string, position: { x: number; y: number }) => void;
-  onPointerMove: (position: { x: number; y: number }) => void;
+  onActivate: (medicationId: string, rowElement: HTMLDivElement) => void;
+  onPointerMove: (rowElement: HTMLDivElement) => void;
   onDeactivate: () => void;
 }) {
   const interactive = medication.interactions.length > 0;
@@ -214,17 +219,11 @@ function MedicationRow({
       }`}
       onMouseEnter={(event) => {
         if (!interactive) return;
-        onActivate(medication.id, {
-          x: event.clientX,
-          y: event.clientY,
-        });
+        onActivate(medication.id, event.currentTarget);
       }}
       onMouseMove={(event) => {
         if (!interactive) return;
-        onPointerMove({
-          x: event.clientX,
-          y: event.clientY,
-        });
+        onPointerMove(event.currentTarget);
       }}
       onMouseLeave={() => {
         if (!interactive) return;
@@ -233,12 +232,18 @@ function MedicationRow({
     >
       <div className="min-w-0">
         <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.name}</p>
-        <p className="truncate text-[11px] font-semibold leading-tight text-[hsl(222,28%,20%)]">
-          {medication.name}
+        <div className="min-w-0">
+          <p className="truncate text-[11px] font-semibold leading-tight text-[hsl(222,28%,20%)]">
+            {medication.name}
+          </p>
+
           {medication.interactions.length > 0 && (
-            <span className="ml-1 text-[hsl(34,52%,42%)]">*</span>
+            <span className={`mt-1.5 ${interactionBadgeClass}`}>
+              <AlertTriangle size={12} strokeWidth={2} />
+              Mijiedarbība
+            </span>
           )}
-        </p>
+        </div>
       </div>
 
       <div>
@@ -315,7 +320,7 @@ function MedicationTableContent({
   const [hoveredMedicationId, setHoveredMedicationId] = useState<string | null>(
     null,
   );
-  const [cursorPosition, setCursorPosition] = useState({ x: 0, y: 0 });
+  const [overlayPosition, setOverlayPosition] = useState({ x: 0, y: 0 });
 
   const activeMedications = medications.filter(
     (medication) => medication.status === "active",
@@ -333,24 +338,24 @@ function MedicationTableContent({
     mode === "full" ? fullTableGridClass : compactTableGridClass;
   const isFullMode = mode === "full";
 
-  const updateCursorPosition = (position: { x: number; y: number }) => {
+  const updateOverlayPosition = (rowElement: HTMLDivElement) => {
     const container = containerRef.current;
 
     if (!container) {
-      setCursorPosition(position);
       return;
     }
 
-    const rect = container.getBoundingClientRect();
-    const localX = position.x - rect.left;
-    const localY = position.y - rect.top;
-    const cardHalfWidth = 180;
+    const containerRect = container.getBoundingClientRect();
+    const rowRect = rowElement.getBoundingClientRect();
+    const localX = rowRect.left - containerRect.left + rowRect.width / 2;
+    const localY = rowRect.top - containerRect.top;
+    const overlayHalfWidth = 180;
     const horizontalPadding = 18;
 
-    setCursorPosition({
+    setOverlayPosition({
       x: Math.min(
-        Math.max(localX, cardHalfWidth + horizontalPadding),
-        rect.width - cardHalfWidth - horizontalPadding,
+        Math.max(localX, overlayHalfWidth + horizontalPadding),
+        containerRect.width - overlayHalfWidth - horizontalPadding,
       ),
       y: Math.max(localY, 80),
     });
@@ -389,11 +394,11 @@ function MedicationTableContent({
               key={medication.id}
               medication={medication}
               mode={mode}
-              onActivate={(medicationId, position) => {
+              onActivate={(medicationId, rowElement) => {
                 setHoveredMedicationId(medicationId);
-                updateCursorPosition(position);
+                updateOverlayPosition(rowElement);
               }}
-              onPointerMove={updateCursorPosition}
+              onPointerMove={updateOverlayPosition}
               onDeactivate={() => setHoveredMedicationId(null)}
             />
           ))}
@@ -411,11 +416,11 @@ function MedicationTableContent({
               key={medication.id}
               medication={medication}
               mode={mode}
-              onActivate={(medicationId, position) => {
+              onActivate={(medicationId, rowElement) => {
                 setHoveredMedicationId(medicationId);
-                updateCursorPosition(position);
+                updateOverlayPosition(rowElement);
               }}
-              onPointerMove={updateCursorPosition}
+              onPointerMove={updateOverlayPosition}
               onDeactivate={() => setHoveredMedicationId(null)}
             />
           ))}
@@ -424,14 +429,10 @@ function MedicationTableContent({
         {hoveredMedication && (
           <InteractionOverlay
             medication={hoveredMedication}
-            cursorPosition={cursorPosition}
+            overlayPosition={overlayPosition}
           />
         )}
       </div>
-
-      <p className="mt-2 text-[10px] text-[hsl(214,14%,52%)]">
-        * Norāda uz iespējamu mijiedarbību.
-      </p>
     </>
   );
 }
