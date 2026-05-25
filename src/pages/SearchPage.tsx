@@ -214,7 +214,7 @@ export default function SearchPage() {
                   onChange={handleQueryChange}
                   placeholder="Ievadiet personas kodu..."
                   aria-label="Personas kods"
-                  className="h-14 w-full rounded-[14px] border border-[hsl(214,20%,86%)] bg-white py-0 pl-5 pr-14 text-[16px] font-medium tracking-[0.02em] text-[hsl(214,42%,17%)] shadow-[0_12px_32px_rgba(29,53,87,0.08)] outline-none transition placeholder:text-[hsl(214,14%,62%)] focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08),0_12px_32px_rgba(29,53,87,0.08)]"
+                  className="h-14 w-full rounded-full border border-[hsl(214,20%,86%)] bg-white py-0 pl-5 pr-14 text-[16px] font-medium tracking-[0.02em] text-[hsl(214,42%,17%)] shadow-[0_12px_32px_rgba(29,53,87,0.08)] outline-none transition placeholder:font-normal placeholder:text-[hsl(214,14%,62%)] focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08),0_12px_32px_rgba(29,53,87,0.08)]"
                 />
 
                 <button

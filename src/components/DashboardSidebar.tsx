@@ -631,7 +631,7 @@ export default function DashboardSidebar({
               currentView === "search"
                 ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                 : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
-              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[12px] px-0" : "gap-3",
+              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[8px] px-0" : "gap-3",
             )}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center">
@@ -653,7 +653,7 @@ export default function DashboardSidebar({
               currentView === "day-list"
                 ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                 : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
-              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[12px] px-0" : "gap-3",
+              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[8px] px-0" : "gap-3",
             )}
           >
             <div className="flex h-5 w-5 shrink-0 items-center justify-center">
