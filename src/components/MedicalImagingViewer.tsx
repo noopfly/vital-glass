@@ -216,7 +216,7 @@ const MedicalImagingViewer = () => {
           </div>
         </div>
 
-        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.99),rgba(246,249,252,0.96))] shadow-[0_10px_24px_rgba(29,53,87,0.05)]">
+        <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_10px_24px_rgba(29,53,87,0.05)]">
           <div className="border-b border-[hsl(214,22%,88%)] px-4 py-4">
             <div className="flex items-start justify-between gap-3">
               <h3 className="min-w-0 text-[15px] font-semibold leading-tight tracking-[-0.02em] text-text-dark">
@@ -356,7 +356,7 @@ const MedicalImagingViewer = () => {
               )}
             </div>
 
-            <div className="grid h-[56px] shrink-0 grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)] border-t border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(247,250,253,0.94))]">
+            <div className="grid h-[56px] shrink-0 grid-cols-[minmax(0,1fr)_60px_minmax(0,1fr)] border-t border-[hsl(214,22%,88%)] bg-white">
               <button
                 type="button"
                 onClick={goPrev}

@@ -155,7 +155,18 @@ export default function SearchPage() {
   };
 
   return (
-    <div className="min-h-screen overflow-hidden bg-[#F5F7FA]">
+    <div className="relative min-h-screen overflow-hidden bg-[#F5F7FA]">
+      <div
+        className="pointer-events-none absolute inset-0 opacity-50"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(177,193,210,0.14) 1px, transparent 1px), linear-gradient(90deg, rgba(177,193,210,0.14) 1px, transparent 1px)",
+          backgroundSize: "56px 56px",
+          maskImage:
+            "radial-gradient(circle at center, black 34%, transparent 88%)",
+        }}
+      />
+
       <DashboardSidebar
         activePatient={sidebarPatient}
         recentPatients={recentPatients}

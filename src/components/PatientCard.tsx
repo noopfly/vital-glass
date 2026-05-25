@@ -2,6 +2,8 @@ import { useState } from "react";
 import {
   Activity,
   AlertTriangle,
+  ChevronDown,
+  ChevronUp,
   HeartPulse,
   ShieldAlert,
 } from "lucide-react";
@@ -99,9 +101,14 @@ const PatientCard = ({ patient }: PatientCardProps) => {
             <button
               type="button"
               onClick={() => setShowAllDiagnoses((current) => !current)}
-              className="mt-2 text-[12px] font-semibold text-[hsl(214,14%,62%)] transition-colors hover:text-[hsl(214,14%,48%)]"
+              className="mt-2 inline-flex items-center gap-1 text-[12px] font-normal text-[hsl(214,14%,62%)] transition-colors hover:text-[hsl(214,14%,48%)]"
             >
               {showAllDiagnoses ? "Rādīt mazāk" : "Rādīt vairāk"}
+              {showAllDiagnoses ? (
+                <ChevronUp className="h-3.5 w-3.5" />
+              ) : (
+                <ChevronDown className="h-3.5 w-3.5" />
+              )}
             </button>
           )}
         </div>

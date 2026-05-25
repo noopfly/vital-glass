@@ -434,7 +434,7 @@ export default function DayListPage() {
                 </p>
               </div>
 
-              <div className="grid gap-0 sm:grid-cols-3 lg:min-w-[390px]">
+              <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[430px]">
                 {[
                   {
                     icon: ClipboardCheck,
@@ -457,13 +457,10 @@ export default function DayListPage() {
                         ? "text-[hsl(0,62%,50%)]"
                         : "text-[hsl(218,18%,42%)]",
                   },
-                ].map(({ icon: Icon, label, value, valueClass }, index) => (
+                ].map(({ icon: Icon, label, value, valueClass }) => (
                   <div
                     key={label}
-                    className={cn(
-                      "px-4 py-2",
-                      index > 0 && "border-l border-[hsl(214,24%,88%)]",
-                    )}
+                    className="rounded-[8px] border border-[hsl(214,24%,88%)] bg-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
                   >
                     <div className="flex items-center gap-1.5 text-[hsl(218,17%,48%)]">
                       <Icon className="h-3 w-3" strokeWidth={2} />

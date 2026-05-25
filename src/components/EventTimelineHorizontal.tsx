@@ -503,7 +503,7 @@ function TimelineContent({
                           className={`relative w-full text-left transition-all duration-300 ease-out ${
                             active
                               ? `rounded-[10px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-sm`
-                              : "rounded-[10px] border border-[hsl(210,22%,88%)] bg-[hsl(214,20%,98%)] px-2.5 py-3 shadow-sm hover:bg-white"
+                              : "rounded-[10px] border border-[hsl(210,22%,88%)] bg-white px-2.5 py-3 shadow-sm hover:bg-white"
                           }`}
                         >
                           {active ? (

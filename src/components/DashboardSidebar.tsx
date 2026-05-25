@@ -879,6 +879,9 @@ export default function DashboardSidebar({
                 <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Sazināties ar komandu
                 </h2>
+                <p className="mt-2 text-[14px] leading-6 text-[hsl(214,16%,50%)]">
+                  Velciet, lai pārkārtotu komponenšu izkārtojumu
+                </p>
               </div>
 
               <button
@@ -1188,9 +1191,9 @@ export default function DashboardSidebar({
         <CenteredOverlay
           onClose={() => setIsSettingsOpen(false)}
           overlayClassName="bg-[rgba(16,24,40,0.14)] backdrop-blur-[6px]"
-          contentClassName="max-w-[1040px]"
+          contentClassName="max-w-[1180px]"
         >
-          <div className="mx-auto flex h-[min(82vh,760px)] w-[min(1040px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+          <div className="mx-auto flex h-[min(82vh,760px)] w-[min(1180px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex shrink-0 items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
@@ -1222,23 +1225,23 @@ export default function DashboardSidebar({
               </div>
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-cols-[320px_minmax(0,1fr)] overflow-hidden">
+            <div className="grid min-h-0 flex-1 grid-cols-[430px_minmax(0,1fr)] overflow-hidden">
               <div
                 ref={settingsListRef}
-                className="min-h-0 overflow-y-auto border-r border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,98%)] px-4 py-4"
+                className="min-h-0 overflow-y-auto border-r border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,98%)] px-5 py-5"
               >
-                <div className="mb-4 flex items-center justify-between">
+                <div className="mb-5 flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,62%)]">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[hsl(219,30%,32%)]">
                       Komponenti
                     </p>
-                    <p className="mt-1 text-[12px] text-[hsl(214,16%,50%)]">
+                    <p className="hidden mt-2 text-[14px] leading-6 text-[hsl(214,16%,50%)]">
                       Velciet, lai pārkārtotu komponenšu izkārtojumu
                     </p>
                   </div>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-2.5">
                   {orderedSettingsModules.map((module, index) => (
                     <button
                       key={module.key}
@@ -1251,33 +1254,33 @@ export default function DashboardSidebar({
                         handleSettingsDragOver(module.key);
                       }}
                       className={cn(
-                        "flex w-full items-start gap-3 rounded-[14px] border border-[rgba(223,230,237,0.96)] bg-white px-3 py-2.5 text-left transition",
+                        "flex w-full items-start gap-3 rounded-[16px] border border-[rgba(223,230,237,0.96)] bg-white px-3.5 py-3 text-left shadow-[0_6px_16px_rgba(29,53,87,0.025)] transition",
                         draggedSettingsKey === module.key &&
-                        "opacity-70 shadow-[0_10px_24px_rgba(29,53,87,0.08)]",
+                        "opacity-70 shadow-[0_12px_28px_rgba(29,53,87,0.08)]",
                       )}
                     >
                       <div className="mt-0.5 flex items-center gap-3 text-[hsl(214,14%,56%)]">
                         <GripVertical className="h-4 w-4" />
-                        <span className="text-[11px] font-semibold">
-                          {String(index + 1).padStart(2, "0")}
+                        <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[hsl(214,22%,97%)] text-[13px] font-medium leading-none text-[hsl(219,30%,22%)]">
+                          {index + 1}
                         </span>
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-[13px] font-semibold text-[hsl(220,36%,18%)]">
+                        <p className="text-[12px] font-semibold text-[hsl(220,36%,18%)]">
                           {module.title}
                         </p>
-                        <p className="mt-1 text-[10px] leading-4 text-[hsl(214,16%,52%)]">
+                        <p className="mt-1 max-w-[310px] text-[10px] leading-4.5 text-[hsl(214,16%,52%)]">
                           {module.description}
                         </p>
                       </div>
 
                       <span
                         className={cn(
-                          "inline-flex shrink-0 rounded-full border px-2 py-1 text-[9px] font-semibold uppercase tracking-[0.08em]",
+                          "mt-0.5 inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]",
                           module.sizeLabel === "Plats"
-                            ? "border-[rgba(199,214,231,0.96)] bg-[hsl(214,30%,97%)] text-[hsl(214,24%,54%)]"
-                            : "border-[rgba(223,212,196,0.96)] bg-[hsl(38,34%,97%)] text-[hsl(34,24%,52%)]",
+                              ? "border-[rgba(203,216,243,0.96)] bg-[hsl(221,70%,97%)] text-[hsl(220,48%,52%)]"
+                              : "border-[rgba(234,223,205,0.96)] bg-[hsl(38,52%,97%)] text-[hsl(34,32%,48%)]",
                         )}
                       >
                         {module.sizeLabel}
@@ -1330,10 +1333,6 @@ export default function DashboardSidebar({
             </div>
 
             <div className="flex shrink-0 items-center justify-between border-t border-[rgba(230,235,241,0.96)] px-5 py-4">
-              <p className="text-[12px] text-[hsl(214,16%,52%)]">
-                {orderedSettingsModules.length} / {settingsModules.length} komponenti redzami
-              </p>
-
               <div className="flex items-center gap-3">
                 <button
                   type="button"

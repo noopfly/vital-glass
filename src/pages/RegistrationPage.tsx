@@ -301,7 +301,7 @@ const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
     summary: "Nokavētas vizītes un izmainīti laboratorijas rezultāti.",
   },
   timeline: {
-    note: "Notikuma laika līnija",
+    note: "Notikumu laika līnija",
     summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
   },
   "body-model": {
@@ -366,12 +366,12 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   timeline: {
-    note: "Notikuma laika līnija",
+    note: "Notikumu laika līnija",
     summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
     pattern: "timeline",
-    colSpan: 3,
+    colSpan: 2,
     rowSpan: 1,
-    previewClassName: "col-span-3",
+    previewClassName: "col-span-2",
     surfaceClassName:
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
@@ -480,32 +480,32 @@ function PreviewCard({
   const preview = modulePreviewDefinitions[item.id];
 
   return (
-      <div
+    <div
       className={cn(
-        "overflow-hidden rounded-[14px] border p-2",
+        "overflow-hidden rounded-[16px] border px-3 py-3",
         preview.previewClassName,
         preview.surfaceClassName,
       )}
     >
-      <div className="flex items-center justify-between gap-1.5">
-        <div className="min-w-0 pr-1">
-          <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,16%,58%)]">
+      <div className="flex items-center gap-2">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[hsl(214,22%,97%)] text-[11px] font-semibold text-[hsl(219,30%,22%)]">
+          {index + 1}
+        </span>
+        <div className="min-w-0">
+          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,16%,58%)]">
             {preview.note}
           </p>
         </div>
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[9px] bg-[hsl(214,20%,96%)] text-[9px] font-semibold text-[hsl(214,16%,48%)]">
-          {index + 1}
-        </span>
       </div>
 
-      <div className="mt-2">
+      <div className="mt-3">
         {preview.pattern === "profile" && (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <div className="flex items-start gap-3">
-              <div className="h-8 w-8 rounded-[10px] bg-[hsl(214,20%,90%)]" />
+              <div className="h-10 w-10 rounded-[12px] bg-[hsl(214,20%,92%)]" />
               <div className="flex-1 space-y-1.5">
-                <div className="h-2.5 w-[34%] bg-[hsl(214,18%,88%)]" />
-                <div className="h-2.5 w-[48%] bg-[hsl(214,20%,93%)]" />
+                <div className="h-2.5 w-[36%] rounded-full bg-[hsl(214,18%,88%)]" />
+                <div className="h-2.5 w-[58%] rounded-full bg-[hsl(214,20%,93%)]" />
               </div>
             </div>
             <div className="grid grid-cols-4 gap-2">
@@ -545,21 +545,14 @@ function PreviewCard({
         )}
 
         {preview.pattern === "alerts" && (
-          <div className="space-y-1.5">
-            {[0, 1, 2].map((alertIndex) => (
-              <div
-                key={alertIndex}
-                className="rounded-[10px] border border-[rgba(239,203,203,0.96)] bg-white/70 px-2 py-1.5"
-              >
-                <div className="flex items-start gap-1.5">
-                  <div className="mt-0.5 h-5 w-5 rounded-[8px] bg-[hsl(0,56%,90%)]" />
-                  <div className="flex-1 space-y-1">
-                    <div className="h-2 w-[88%] bg-[hsl(0,30%,88%)]" />
-                    <div className="h-2 w-[64%] bg-[hsl(0,24%,92%)]" />
-                  </div>
-                </div>
+          <div className="rounded-[10px] border border-[rgba(245,197,197,0.96)] bg-[hsl(0,64%,98%)] px-3 py-2.5">
+            <div className="flex items-center gap-2">
+              <div className="h-5 w-5 rounded-full bg-[hsl(0,78%,84%)]" />
+              <div className="flex-1 space-y-1.5">
+                <div className="h-2.5 w-[90%] rounded-full bg-[hsl(0,58%,86%)]" />
+                <div className="h-2.5 w-[62%] rounded-full bg-[hsl(0,44%,90%)]" />
               </div>
-            ))}
+            </div>
           </div>
         )}
 
@@ -602,15 +595,15 @@ function PreviewCard({
         )}
 
         {preview.pattern === "timeline" && (
-          <div className="space-y-2">
+          <div className="space-y-2.5">
             <div className="flex items-center gap-1.5">
-              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
-              <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
-              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
-              <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
-              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
-              <div className="h-px flex-1 bg-[hsl(214,18%,86%)]" />
-              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(220,34%,74%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(224,81%,56%)]" />
+              <div className="h-px flex-1 bg-[hsl(214,22%,84%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(224,81%,56%)]" />
+              <div className="h-px flex-1 bg-[hsl(214,22%,84%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(224,81%,56%)]" />
+              <div className="h-px flex-1 bg-[hsl(214,22%,84%)]" />
+              <div className="h-2.5 w-2.5 rounded-full bg-[hsl(224,81%,56%)]" />
             </div>
             <div className="grid grid-cols-4 gap-1.5">
               <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
@@ -689,24 +682,6 @@ export default function RegistrationPage() {
         .filter((item) => form.modules.includes(item))
         .map((item) => moduleMap[item]),
     [form.layoutOrder, form.modules, moduleMap],
-  );
-
-  const modulePlacements = React.useMemo(
-    () =>
-      computeModulePlacements(
-        form.layoutOrder.filter((item) => form.modules.includes(item)),
-      ),
-    [form.layoutOrder, form.modules],
-  );
-
-  const aboveTheFoldModuleIds = React.useMemo(
-    () =>
-      new Set(
-        modulePlacements
-          .filter((placement) => placement.row <= 2)
-          .map((placement) => placement.id),
-      ),
-    [modulePlacements],
   );
 
   const aboveTheFoldItems = visibleLayoutItems.slice(0, 3);
@@ -851,63 +826,70 @@ export default function RegistrationPage() {
         <div className="border-b border-[rgba(220,228,236,0.96)] pb-3">
           <div className="flex flex-col gap-3 md:grid md:grid-cols-[1fr_auto_1fr] md:items-center">
             <div className="flex items-center gap-4 md:justify-self-start">
-              <div className="flex items-center gap-3">
+              <div className="flex items-center">
                 <img
                     src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
                   alt="Omnus"
                   className="h-auto w-[96px]"
                 />
-                <span className="hidden h-4 w-px bg-[rgba(214,222,230,0.96)] md:block" />
               </div>
             </div>
 
-            <div className="hidden md:flex md:items-center md:justify-center md:gap-6">
+            <div className="hidden md:flex md:items-center md:justify-center">
               {steps.map((item, index) => {
                 const isActive = index === step;
                 const isComplete = index < step;
 
                 return (
-                  <button
-                    key={item.subtitle}
-                    type="button"
-                    onClick={() => {
-                      if (index <= step || Boolean(form.specialty)) {
-                        setErrors({});
-                        setStep(index);
-                      }
-                    }}
-                    className="flex items-center gap-2 text-left"
-                  >
-                    <span
-                      className={cn(
-                        "flex h-5 w-5 items-center justify-center rounded-full border text-[10px] font-semibold transition",
-                        isActive
-                          ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
-                          : isComplete
-                            ? "border-[hsl(220,36%,18%)] bg-white text-[hsl(220,36%,18%)]"
-                            : "border-[rgba(210,219,228,0.96)] bg-white text-[hsl(214,14%,56%)]",
-                      )}
+                  <React.Fragment key={item.subtitle}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (index <= step || Boolean(form.specialty)) {
+                          setErrors({});
+                          setStep(index);
+                        }
+                      }}
+                      className="flex items-center gap-3 text-left"
                     >
-                      {isComplete ? <Check className="h-3 w-3" /> : item.title}
-                    </span>
+                      <span
+                        className={cn(
+                          "flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold transition",
+                          isActive
+                            ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
+                            : isComplete
+                              ? "border-[hsl(220,36%,18%)] bg-white text-[hsl(220,36%,18%)]"
+                              : "border-[rgba(210,219,228,0.96)] bg-white text-[hsl(214,14%,56%)]",
+                        )}
+                      >
+                        {isComplete ? <Check className="h-3 w-3" /> : item.title}
+                      </span>
 
-                    <span
-                      className={cn(
-                        "text-[10px] font-semibold uppercase tracking-[0.18em]",
-                        isActive || isComplete
-                          ? "text-[hsl(219,30%,22%)]"
-                          : "text-[hsl(214,14%,56%)]",
-                      )}
-                    >
-                      {item.subtitle}
-                    </span>
-                  </button>
+                      <span
+                        className={cn(
+                          "text-[13px] font-medium tracking-[0.04em]",
+                          isActive || isComplete
+                            ? "text-[hsl(219,30%,22%)]"
+                            : "text-[hsl(214,14%,56%)]",
+                        )}
+                      >
+                        {item.subtitle}
+                      </span>
+                    </button>
+
+                    {index < steps.length - 1 && (
+                      <div
+                        aria-hidden="true"
+                        className="mx-8 h-px w-20 bg-[rgba(210,219,228,0.72)]"
+                      />
+                    )}
+                  </React.Fragment>
                 );
               })}
             </div>
 
-            <div className="flex items-center gap-2 self-start rounded-full border border-[rgba(220,228,236,0.96)] bg-white px-3 py-2 shadow-[0_4px_16px_rgba(29,53,87,0.04)] md:justify-self-end md:self-auto">
-              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white">
+            <div className="flex items-center gap-2 self-start rounded-full border border-[rgba(220,228,236,0.96)] bg-white px-3 py-2 md:justify-self-end md:self-auto">
+              <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[hsl(214,20%,96%)] text-[hsl(219,30%,22%)]">
                 <UserRound className="h-3.5 w-3.5" />
               </div>
               <span className="text-[11px] font-medium text-[hsl(219,30%,22%)]">
@@ -919,35 +901,35 @@ export default function RegistrationPage() {
 
         <div className="flex flex-1 flex-col pt-1.5 pb-3">
           {step === 0 && (
-            <section className="flex flex-1 flex-col">
-              <div className="w-full">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,60%)]">
+            <section className="flex flex-1 flex-col pt-6 md:pt-8">
+              <div className="w-full max-w-[920px]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[hsl(219,40%,16%)]">
                   Solis 01
                 </p>
 
-                <h1 className="mt-1 text-[26px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[34px]">
+                <h1 className="mt-4 text-[40px] font-semibold leading-[0.98] tracking-[-0.06em] text-[hsl(219,40%,16%)] md:text-[56px]">
                   Izvēlieties savu specialitāti
                 </h1>
 
-                <p className="mt-1 max-w-[760px] text-[13px] leading-5 text-[hsl(214,16%,46%)]">
+                <p className="mt-5 max-w-[820px] whitespace-nowrap text-[16px] leading-7 text-[hsl(214,16%,46%)]">
                   Mēs pielāgosim pacienta pārskatu jūsu darba prioritātēm. Šos
                   iestatījumus varēsiet mainīt jebkurā brīdī.
                 </p>
               </div>
 
-              <div className="mt-3 max-w-[420px]">
+              <div className="mt-8 max-w-[520px]">
                 <div className="relative">
-                  <Search className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[hsl(214,14%,58%)]" />
+                  <Search className="pointer-events-none absolute left-5 top-1/2 h-5 w-5 -translate-y-1/2 text-[hsl(214,14%,58%)]" />
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
                     placeholder="Meklēt specialitāti..."
-                    className="h-9 border-[rgba(214,222,230,0.96)] bg-white pl-10 pr-3 text-[13px] shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
+                    className="h-14 rounded-[10px] border-[rgba(214,222,230,0.96)] bg-white pl-14 pr-4 text-[16px] shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
                   />
                 </div>
               </div>
 
-              <div className="mt-4 grid gap-2 md:grid-cols-2 xl:grid-cols-4">
+              <div className="mt-8 grid gap-5 md:grid-cols-2 xl:grid-cols-4">
                 {filteredSpecialties.map((option) => {
                   const isSelected = form.specialty === option.id;
                   const SpecialtyIcon = option.icon;
@@ -958,32 +940,46 @@ export default function RegistrationPage() {
                       type="button"
                       onClick={() => applySpecialtyPreset(option.id)}
                       className={cn(
-                        "border bg-white px-3 py-2.5 text-left transition",
+                        "flex min-h-[112px] items-center gap-5 rounded-[10px] border bg-white px-5 py-5 text-left transition",
                         isSelected
-                          ? "border-[hsl(220,36%,18%)] bg-[hsl(220,34%,97%)] shadow-[0_10px_24px_rgba(29,53,87,0.08)]"
+                          ? "border-[hsl(220,36%,18%)] bg-[hsl(220,34%,97%)] shadow-[0_12px_28px_rgba(29,53,87,0.08)]"
                           : "border-[rgba(216,224,232,0.96)] hover:border-[rgba(184,197,210,0.96)]",
                       )}
                     >
-                      <span className="flex h-6 w-6 items-center justify-center rounded-[9px] border border-[rgba(214,222,230,0.96)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,52%)]">
-                        <SpecialtyIcon className="h-4 w-4" />
+                      <span
+                        className={cn(
+                          "flex h-14 w-14 shrink-0 items-center justify-center rounded-full border border-[rgba(214,222,230,0.96)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,52%)]",
+                          isSelected &&
+                            "border-[hsl(220,36%,18%)] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white",
+                        )}
+                      >
+                        <SpecialtyIcon className="h-6 w-6" />
                       </span>
 
-                      <p className="mt-2 text-[21px] font-semibold text-[hsl(219,30%,22%)]">
-                        {option.title}
-                      </p>
+                      <span className="min-w-0 flex-1">
+                        <span className="block text-[16px] font-semibold text-[hsl(219,30%,22%)]">
+                          {option.title}
+                        </span>
+                      </span>
+
+                      {isSelected && (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[hsl(220,36%,18%)] text-white">
+                          <Check className="h-4 w-4" />
+                        </span>
+                      )}
                     </button>
                   );
                 })}
               </div>
 
               {!filteredSpecialties.length && (
-                <div className="mt-4 border border-dashed border-[rgba(214,222,230,0.96)] bg-white px-5 py-8 text-[14px] text-[hsl(214,16%,50%)]">
+                <div className="mt-8 rounded-[14px] border border-dashed border-[rgba(214,222,230,0.96)] bg-white px-5 py-8 text-[14px] text-[hsl(214,16%,50%)]">
                   Neatradām nevienu specialitāti pēc ievadītā meklējuma.
                 </div>
               )}
 
               {errors.specialty && (
-                <p className="mt-4 text-sm text-[hsl(0,68%,52%)]">
+                <p className="mt-5 text-sm text-[hsl(0,68%,52%)]">
                   {errors.specialty}
                 </p>
               )}
@@ -991,17 +987,17 @@ export default function RegistrationPage() {
           )}
 
           {step === 1 && (
-            <section className="flex min-h-0 flex-1 flex-col">
-              <div className="max-w-[880px]">
-                <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,60%)]">
+            <section className="flex min-h-0 flex-1 flex-col pt-6 md:pt-8">
+              <div className="w-full max-w-[920px]">
+                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[hsl(219,40%,16%)]">
                   Solis 02
                 </p>
 
-                <h1 className="mt-1.5 text-[26px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[34px]">
+                <h1 className="mt-4 text-[40px] font-semibold leading-[0.98] tracking-[-0.06em] text-[hsl(219,40%,16%)] md:text-[56px]">
                   Iekārtojiet savu darba paneli
                 </h1>
 
-                <p className="mt-1.5 text-[13px] leading-5 text-[hsl(214,16%,46%)]">
+                <p className="mt-5 max-w-[820px] whitespace-nowrap text-[16px] leading-7 text-[hsl(214,16%,46%)]">
                   {selectedSpecialty ? (
                     <>
                       Sākuma saturs ir pielāgots specialitātei {" "}
@@ -1016,20 +1012,20 @@ export default function RegistrationPage() {
                 </p>
               </div>
 
-              <div className="mt-3 grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(320px,0.68fr)]">
-                <div className="flex flex-col border border-[rgba(216,224,232,0.96)] bg-white p-3">
+              <div className="mt-8 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)]">
+                <div className="rounded-[20px] border border-[rgba(219,226,235,0.96)] bg-white p-5 shadow-[0_18px_42px_rgba(29,53,87,0.06)]">
                   <div>
-                    <p className="text-[14px] font-semibold text-[hsl(219,30%,22%)]">
+                    <p className="text-[15px] font-semibold text-[hsl(219,30%,22%)]">
                       Sakārtojiet pārskatu pēc nozīmīguma
                     </p>
 
-                    <p className="mt-1 text-[11px] leading-4 text-[hsl(214,16%,48%)]">
+                    <p className="mt-2 text-[13px] leading-5 text-[hsl(214,16%,48%)]">
                       Velciet komponentus uz sev atbilstošo izkārtojumu.
                     </p>
                   </div>
 
-                  <div className="mt-3 space-y-1 pr-1">
-                    {aboveTheFoldItems.map((item, index) => (
+                  <div className="mt-4 space-y-2">
+                    {visibleLayoutItems.map((item, index) => (
                       <div
                         key={item.id}
                         draggable
@@ -1047,29 +1043,37 @@ export default function RegistrationPage() {
                           }
                         }}
                         className={cn(
-                          "flex items-center gap-2.5 border px-2.5 py-2 transition",
+                          "flex items-center gap-4 rounded-[14px] border px-4 py-3 shadow-[0_6px_16px_rgba(29,53,87,0.03)] transition",
                           draggedModuleId === item.id
                             ? "border-[hsl(220,36%,18%)] bg-[hsl(220,34%,97%)]"
-                            : "border-[rgba(216,224,232,0.96)] bg-white",
+                            : "border-[rgba(220,228,236,0.96)] bg-white hover:border-[rgba(198,210,223,0.96)]",
                         )}
                       >
-                        <GripVertical className="h-3.5 w-3.5 shrink-0 text-[hsl(214,12%,58%)]" />
-                        <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[11px] font-semibold text-[hsl(214,18%,48%)]">
+                        <div className="flex h-8 w-5 shrink-0 items-center justify-center text-[hsl(214,12%,62%)]">
+                          <GripVertical className="h-4 w-4" />
+                        </div>
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[hsl(214,22%,97%)] text-[16px] font-semibold text-[hsl(219,30%,22%)]">
                           {index + 1}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
+                          <p className="text-[14px] font-semibold text-[hsl(219,30%,22%)]">
                             {item.title}
                           </p>
-                          <p className="mt-0.5 line-clamp-1 text-[10px] leading-3.5 text-[hsl(214,16%,48%)]">
+                          <p className="mt-1 text-[12px] leading-5 text-[hsl(214,16%,48%)]">
                             {item.description}
                           </p>
                         </div>
-                        <div className="flex items-center gap-1">
+                        <div className="flex shrink-0 items-center gap-1">
                           <button
                             type="button"
                             onClick={() => moveModuleByOffset(item.id, -1)}
-                            className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
+                            disabled={index === 0}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-[8px] transition",
+                              index === 0
+                                ? "cursor-not-allowed text-[hsl(214,14%,76%)]"
+                                : "text-[hsl(214,16%,54%)] hover:bg-[hsl(214,22%,97%)] hover:text-[hsl(219,30%,22%)]",
+                            )}
                             aria-label={`${item.title} uz augšu`}
                           >
                             <ChevronUp className="h-4 w-4" />
@@ -1077,7 +1081,13 @@ export default function RegistrationPage() {
                           <button
                             type="button"
                             onClick={() => moveModuleByOffset(item.id, 1)}
-                            className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
+                            disabled={index === visibleLayoutItems.length - 1}
+                            className={cn(
+                              "flex h-7 w-7 items-center justify-center rounded-[8px] transition",
+                              index === visibleLayoutItems.length - 1
+                                ? "cursor-not-allowed text-[hsl(214,14%,76%)]"
+                                : "text-[hsl(214,16%,54%)] hover:bg-[hsl(214,22%,97%)] hover:text-[hsl(219,30%,22%)]",
+                            )}
                             aria-label={`${item.title} uz leju`}
                           >
                             <ChevronDown className="h-4 w-4" />
@@ -1087,7 +1097,7 @@ export default function RegistrationPage() {
                     ))}
                   </div>
 
-                  {belowTheFoldItems.length > 0 && (
+                  {false && (
                     <>
                       <div className="space-y-1 pr-1">
                         {belowTheFoldItems.map((item, index) => (
@@ -1150,43 +1160,43 @@ export default function RegistrationPage() {
                     </>
                   )}
 
-                  <div className="mt-3 flex items-start gap-2.5 border border-[rgba(216,224,232,0.96)] bg-[hsl(214,22%,98%)] px-2.5 py-2 text-[11px] text-[hsl(214,16%,48%)]">
-                    <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[hsl(214,24%,50%)]" />
+                  <div className="mt-4 flex items-start gap-2.5 rounded-[10px] border border-[rgba(223,230,238,0.96)] bg-[hsl(214,22%,98.5%)] px-3 py-3 text-[12px] leading-5 text-[hsl(214,16%,48%)]">
+                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(214,24%,50%)]" />
                     <p>
                       Prioritātes un izkārtojumu varēsiet mainīt arī vēlāk savos iestatījumos.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex flex-col border border-[rgba(216,224,232,0.96)] bg-white p-3">
-                  <div className="border border-[rgba(216,224,232,0.96)] bg-[hsl(214,20%,98%)] px-3 py-2">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-1.5">
-                        <span className="h-2 w-2 rounded-full bg-[hsl(214,14%,76%)]" />
-                        <span className="h-2 w-2 rounded-full bg-[hsl(214,14%,76%)]" />
-                        <span className="h-2 w-2 rounded-full bg-[hsl(214,14%,76%)]" />
+                <div className="overflow-hidden rounded-[20px] border border-[rgba(219,226,235,0.96)] bg-white shadow-[0_18px_42px_rgba(29,53,87,0.06)]">
+                  <div className="flex items-center justify-between border-b border-[rgba(226,232,239,0.96)] px-5 py-3">
+                    <div className="flex w-full items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="h-2.5 w-2.5 rounded-full bg-[hsl(214,14%,76%)]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[hsl(214,14%,76%)]" />
+                        <span className="h-2.5 w-2.5 rounded-full bg-[hsl(214,14%,76%)]" />
                       </div>
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,16%,58%)]">
+                      <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,16%,62%)]">
                         Priekšskatījums
                       </span>
                     </div>
                   </div>
 
-                  <div className="border-x border-b border-[rgba(216,224,232,0.96)] bg-[hsl(214,20%,98%)] p-2.5">
-                    <div className="rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-[hsl(214,20%,99%)] p-2">
-                      <div className="flex items-center justify-between border-b border-[rgba(220,228,236,0.96)] pb-2">
+                  <div className="bg-[linear-gradient(180deg,hsl(214,20%,99%)_0%,white_100%)] p-4">
+                    <div className="rounded-[16px] border border-[rgba(223,230,238,0.96)] bg-white px-4 py-3 shadow-[0_8px_18px_rgba(29,53,87,0.03)]">
+                      <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <p className="text-[10px] font-semibold text-[hsl(219,30%,22%)]">
-                            Vārds Uzvards
+                          <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
+                            Vārds Uzvārds
                           </p>
-                          <p className="text-[8px] text-[hsl(214,14%,52%)]">
-                            Kontakfinformācija
+                          <p className="text-[10px] text-[hsl(214,14%,58%)]">
+                            Kontakinformācija
                           </p>
                         </div>
-                        <div className="h-7 w-7 rounded-[10px] bg-[hsl(214,20%,94%)]" />
+                        <div className="h-9 w-9 rounded-[12px] bg-[hsl(214,20%,94%)]" />
                       </div>
 
-                      <div className="mt-2 grid auto-rows-[76px] grid-cols-3 gap-1.5">
+                      <div className="mt-3 grid auto-rows-[92px] grid-cols-3 gap-2.5">
                         {visibleLayoutItems.map((item, index) => (
                           <PreviewCard key={item.id} item={item} index={index} />
                         ))}
@@ -1198,15 +1208,27 @@ export default function RegistrationPage() {
             </section>
           )}
 
-          <div className="mt-3 flex flex-col items-end gap-2.5 border-t border-[rgba(220,228,236,0.96)] pt-3 md:flex-row md:items-center md:justify-end">
-  <div className="flex items-center gap-3">
+          <div
+            className={cn(
+              "mt-8 border-t border-[rgba(220,228,236,0.96)] pt-8",
+              step <= 1
+                ? "flex flex-col gap-4 md:flex-row md:items-center md:justify-between"
+                : "flex flex-col items-end gap-2.5 md:flex-row md:items-center md:justify-end",
+            )}
+          >
+            <div
+              className={cn(
+                "flex items-center gap-3",
+                step <= 1 && "w-full justify-between",
+              )}
+            >
               {step === 0 ? (
                 <>
                   <Button
                     type="button"
                     variant="ghost"
                     onClick={handleSkipSpecialty}
-                    className="h-9 border border-transparent px-3.5 text-[13px] font-semibold text-[hsl(214,18%,44%)] hover:bg-[hsl(214,20%,98%)] hover:text-[hsl(219,36%,18%)]"
+                    className="h-11 self-start border border-transparent px-0 text-[15px] font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
                   >
                     Izlaist
                   </Button>
@@ -1214,10 +1236,10 @@ export default function RegistrationPage() {
                     type="button"
                     onClick={handleNext}
                     disabled={!form.specialty}
-                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
+                    className="h-12 min-w-[168px] self-end rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-[15px] font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
                   >
                     Turpināt
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-5 w-5" />
                   </Button>
                 </>
               ) : (
@@ -1226,7 +1248,7 @@ export default function RegistrationPage() {
                     type="button"
                     variant="ghost"
                     onClick={handleBack}
-                    className="h-9 border border-transparent px-3.5 text-[13px] font-semibold text-[hsl(214,18%,44%)] hover:bg-[hsl(214,20%,98%)] hover:text-[hsl(219,36%,18%)]"
+                    className="h-11 border border-transparent px-0 text-[15px] font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Atpakaļ
@@ -1234,10 +1256,10 @@ export default function RegistrationPage() {
                   <Button
                     type="button"
                     onClick={handleSubmit}
-                    className="h-9 rounded-[9px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-4 text-[13px] font-semibold text-white transition hover:opacity-95"
+                    className="h-12 min-w-[168px] rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-[15px] font-semibold text-white transition hover:opacity-95"
                   >
                     Sākt darbu
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-5 w-5" />
                   </Button>
                 </>
               )}

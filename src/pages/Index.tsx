@@ -55,7 +55,7 @@ function formatRefreshDate(date: Date) {
 }
 
 const InfoDivider = () => (
-  <span className="mx-1 text-[hsl(210,18%,70%)]">|</span>
+  <span className="mx-2.5 text-[hsl(210,18%,70%)]">|</span>
 );
 
 const Index = () => {
@@ -186,7 +186,7 @@ const Index = () => {
 
               {!isScrolled && (
                 <div className="mt-3 flex flex-wrap items-center text-[14px]">
-                  <span className="text-[hsl(214,18%,55%)]">
+                  <span className="font-normal text-[hsl(214,18%,55%)]">
                     Personas kods
                   </span>
 
@@ -196,7 +196,7 @@ const Index = () => {
 
                   <InfoDivider />
 
-                  <span className="text-[hsl(214,18%,55%)]">Vecums</span>
+                  <span className="font-normal text-[hsl(214,18%,55%)]">Vecums</span>
 
                   <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
                     {patient.age} gadi
@@ -208,7 +208,7 @@ const Index = () => {
 
                       <Phone className="ml-1 h-3.5 w-3.5 text-[hsl(214,18%,55%)]" />
 
-                      <span className="ml-1 text-[hsl(214,18%,55%)]">
+                      <span className="ml-1 font-normal text-[hsl(214,18%,55%)]">
                         Telefona nr.
                       </span>
 
@@ -224,7 +224,7 @@ const Index = () => {
 
                       <Mail className="ml-1 h-3.5 w-3.5 text-[hsl(214,18%,55%)]" />
 
-                      <span className="ml-1 text-[hsl(214,18%,55%)]">
+                      <span className="ml-1 font-normal text-[hsl(214,18%,55%)]">
                         E-pasts
                       </span>
 
@@ -237,24 +237,24 @@ const Index = () => {
               )}
             </div>
 
-            <div
-              className={`flex items-center gap-3 transition-all ${
+            <button
+              type="button"
+              onClick={() => !isRefreshing && setIsRefreshing(true)}
+              className={`flex items-center gap-2.5 text-left transition-all ${
                 isScrolled
                   ? ""
-                  : "rounded-[6px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-4 py-3"
+                  : "rounded-[6px] border border-[hsl(214,22%,88%)] bg-white px-3 py-3"
               }`}
             >
-              <button
-                type="button"
-                onClick={() => !isRefreshing && setIsRefreshing(true)}
-                className="relative flex h-10 w-10 items-center justify-center rounded-[5px] border border-[hsl(214,22%,86%)] bg-[hsl(214,22%,97%)] text-[hsl(214,32%,24%)] transition hover:bg-white"
-                aria-label="Atjaunot datus"
+              <div
+                className="relative flex h-10 w-10 items-center justify-center rounded-[5px] text-[hsl(214,32%,24%)]"
+                aria-hidden="true"
               >
                 <RefreshCw
                   className={isRefreshing ? "animate-spin" : ""}
                   size={18}
                 />
-              </button>
+              </div>
 
               {!isScrolled && (
                 <div>
@@ -267,7 +267,7 @@ const Index = () => {
                   </div>
                 </div>
               )}
-            </div>
+            </button>
           </div>
         </header>
 
