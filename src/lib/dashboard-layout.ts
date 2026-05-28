@@ -1,13 +1,18 @@
+import {
+  isFamilyMedicineSpecialty,
+  type SpecialtyId,
+} from "@/lib/specialties";
+
 export type DashboardComponentKey =
   | "patientCard"
+  | "preventionCard"
   | "healthTrends"
   | "medicalImagingViewer"
   | "medicationTable"
   | "alertsCard"
   | "eventTimeline"
   | "humanBodyModel"
-  | "referralHistory"
-  | "patientSummaryCard";
+  | "referralHistory";
 
 export const defaultDashboardLayoutOrder: DashboardComponentKey[] = [
   "patientCard",
@@ -18,20 +23,47 @@ export const defaultDashboardLayoutOrder: DashboardComponentKey[] = [
   "medicationTable",
   "referralHistory",
   "eventTimeline",
-  "patientSummaryCard",
 ];
+
+export const familyMedicineDashboardLayoutOrder: DashboardComponentKey[] = [
+  "patientCard",
+  "preventionCard",
+  ...defaultDashboardLayoutOrder,
+];
+
+const validDashboardComponentKeys = new Set<DashboardComponentKey>([
+  ...familyMedicineDashboardLayoutOrder,
+]);
 
 export const dashboardLayoutStorageKey = "omnis-dashboard-layout";
 
 export function normalizeDashboardLayoutOrder(
   layoutOrder?: readonly string[],
 ): DashboardComponentKey[] {
-  const validKeys = new Set<DashboardComponentKey>(defaultDashboardLayoutOrder);
   const orderedKeys = (layoutOrder ?? []).filter((key): key is DashboardComponentKey =>
-    validKeys.has(key as DashboardComponentKey),
+    validDashboardComponentKeys.has(key as DashboardComponentKey),
   );
 
   return [...new Set<DashboardComponentKey>([...orderedKeys, ...defaultDashboardLayoutOrder])];
+}
+
+export function filterDashboardLayoutOrderBySpecialty(
+  layoutOrder: readonly DashboardComponentKey[],
+  specialtyId: SpecialtyId | null | undefined,
+) {
+  if (isFamilyMedicineSpecialty(specialtyId)) {
+    return [...layoutOrder];
+  }
+
+  return layoutOrder.filter((key) => key !== "preventionCard");
+}
+
+export function getDefaultDashboardLayoutOrderForSpecialty(
+  specialtyId: SpecialtyId | null | undefined,
+) {
+  return isFamilyMedicineSpecialty(specialtyId)
+    ? [...familyMedicineDashboardLayoutOrder]
+    : [...defaultDashboardLayoutOrder];
 }
 
 export function readStoredDashboardLayoutOrder(): DashboardComponentKey[] {

@@ -14,16 +14,22 @@ import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { patients } from "@/data/patients";
 import {
+  filterDashboardLayoutOrderBySpecialty,
   normalizeDashboardLayoutOrder,
   readStoredDashboardLayoutOrder,
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
+import {
+  readStoredDashboardSpecialty,
+  type SpecialtyId,
+} from "@/lib/specialties";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
 
 type DayListLocationState = {
   patient?: Patient;
   layoutOrder?: DashboardComponentKey[];
+  specialtyId?: SpecialtyId;
 };
 
 type QueueStatus = "ready" | "loading" | "waiting" | "error";
@@ -183,13 +189,17 @@ export default function DayListPage() {
   const location = useLocation();
   const navigate = useNavigate();
   const routeState = location.state as DayListLocationState | undefined;
+  const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
   const activePatient = routeState?.patient ?? patients[0];
 
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
-      normalizeDashboardLayoutOrder(
-        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(
+          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+        ),
+        specialtyId,
       ),
   );
 
@@ -232,11 +242,14 @@ export default function DayListPage() {
 
   React.useEffect(() => {
     setLayoutOrder(
-      normalizeDashboardLayoutOrder(
-        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(
+          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+        ),
+        specialtyId,
       ),
     );
-  }, [routeState?.layoutOrder]);
+  }, [routeState?.layoutOrder, specialtyId]);
 
   const updateQueryFromDigits = React.useCallback(
     (nextDigits: string[]) => {
@@ -404,6 +417,7 @@ export default function DayListPage() {
         currentView="day-list"
         dayListCount={entries.length}
         layoutOrder={layoutOrder}
+        specialtyId={specialtyId}
         onSaveLayoutOrder={setLayoutOrder}
       />
 
@@ -680,11 +694,11 @@ export default function DayListPage() {
                       return (
                         <div
                           key={entry.patientId}
-                          onClick={() =>
-                            navigate("/components", {
-                              state: { patient, layoutOrder },
-                            })
-                          }
+                              onClick={() =>
+                                navigate("/components", {
+                                  state: { patient, layoutOrder, specialtyId },
+                                })
+                              }
                           className={cn(
                             tableGridClass,
                             "cursor-pointer px-6 py-2.5 text-[13px] transition hover:bg-[hsl(214,36%,98%)] xl:px-7",

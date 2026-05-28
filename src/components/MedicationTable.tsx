@@ -142,7 +142,7 @@ const fullTableGridClass =
   "md:grid-cols-[minmax(0,1.8fr)_0.85fr_0.9fr_1fr_1fr_1fr_1.15fr]";
 
 const sectionIconClass =
-  "flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const interactionBadgeClass =
   "inline-flex items-center gap-1.5 rounded-full border border-[rgba(236,221,197,0.96)] bg-[hsl(40,56%,97%)] px-2.5 py-1 text-[10px] font-medium text-[hsl(34,52%,42%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.72)]";
@@ -239,7 +239,7 @@ function MedicationRow({
 
   return (
     <div
-      className={`grid w-full gap-x-2.5 gap-y-1.5 px-4 py-3.5 text-left transition-colors md:items-start ${hasSignals ? "cursor-help hover:bg-[hsl(214,20%,99%)]" : ""} ${tableGridClass}`}
+      className={`grid w-full gap-x-2.5 gap-y-1.5 px-4 py-3 text-left transition-colors md:items-start ${hasSignals ? "cursor-help hover:bg-[hsl(214,20%,99%)]" : ""} ${tableGridClass}`}
       onMouseEnter={(event) => {
         if (!hasSignals) return;
         onActivate(medication.id, event.currentTarget);
@@ -256,13 +256,13 @@ function MedicationRow({
       <div className="min-w-0">
         <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.name}</p>
         <div className="min-w-0">
-          <p className="truncate text-[11px] font-semibold leading-tight text-[hsl(222,28%,20%)]">
+          <p className="truncate text-[11px] font-semibold leading-[1.05] text-[hsl(222,28%,20%)]">
             {medication.name}
           </p>
 
           {hasSignals && (
             <div
-              className={`mt-2.5 flex items-center gap-2 ${
+              className={`mt-1.5 flex items-center gap-2 ${
                 isFullMode ? "flex-nowrap whitespace-nowrap" : "flex-nowrap whitespace-nowrap"
               }`}
             >
@@ -488,6 +488,8 @@ function MedicationTableContent({
 
 const MedicationTable = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const visibleMedicationCount = medications.length;
+  const totalMedicationCount = medications.length;
 
   return (
     <>
@@ -498,10 +500,10 @@ const MedicationTable = () => {
           </div>
 
           <div className="flex flex-col justify-center">
-            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
               Medikamenti
             </p>
-            <p className="text-xs text-[hsl(214,14%,50%)]">
+            <p className="text-xs text-text-dark">
               Aktuālie medikamenti, devas un mijiedarbības
             </p>
           </div>
@@ -511,11 +513,14 @@ const MedicationTable = () => {
           <MedicationTableContent mode="compact" />
         </div>
 
-        <div className="mt-auto border-t border-[hsl(214,22%,88%)] pt-3 text-center">
+        <div className="mt-auto flex items-center justify-between pt-4">
+          <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
+            {visibleMedicationCount} no {totalMedicationCount}
+          </p>
           <button
             type="button"
             onClick={() => setIsOpen(true)}
-            className="inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
+            className="ml-auto inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus medikamentus →
           </button>

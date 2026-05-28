@@ -10,34 +10,95 @@ import HumanBodyModel from "@/components/HumanBodyModel";
 import MedicalImagingViewer from "@/components/MedicalImagingViewer";
 import MedicationTable from "@/components/MedicationTable";
 import PatientCard from "@/components/PatientCard";
-import PatientSummaryCard from "@/components/PatientSummaryCard";
+import PreventionCard from "@/components/PreventionCard";
 import ReferralHistory from "@/components/ReferralHistory";
 import { patients } from "@/data/patients";
 import {
+  filterDashboardLayoutOrderBySpecialty,
   normalizeDashboardLayoutOrder,
   readStoredDashboardLayoutOrder,
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
+import {
+  readStoredDashboardSpecialty,
+  type SpecialtyId,
+} from "@/lib/specialties";
 import { Patient } from "@/types/patient";
 
 type DashboardLocationState = {
   patient?: Patient;
   layoutOrder?: DashboardComponentKey[];
+  specialtyId?: SpecialtyId;
 };
 
 const dashboardCardHeight = "min-h-[420px]";
 
-const layoutClasses: Record<DashboardComponentKey, string> = {
+const layoutBaseClasses: Record<DashboardComponentKey, string> = {
   patientCard: "lg:col-span-3",
+  preventionCard: dashboardCardHeight,
   healthTrends: `lg:col-span-2 ${dashboardCardHeight}`,
   medicalImagingViewer: dashboardCardHeight,
   medicationTable: dashboardCardHeight,
   alertsCard: dashboardCardHeight,
-  patientSummaryCard: "lg:col-span-2 lg:aspect-[2/1]",
   eventTimeline: `lg:col-span-2 ${dashboardCardHeight}`,
   humanBodyModel: dashboardCardHeight,
   referralHistory: dashboardCardHeight,
 };
+
+const layoutColumnSpans: Record<DashboardComponentKey, number> = {
+  patientCard: 3,
+  preventionCard: 1,
+  healthTrends: 2,
+  medicalImagingViewer: 1,
+  medicationTable: 1,
+  alertsCard: 1,
+  eventTimeline: 2,
+  humanBodyModel: 1,
+  referralHistory: 1,
+};
+
+function getExpandedLayoutClasses(
+  visibleKeys: readonly DashboardComponentKey[],
+): Record<DashboardComponentKey, string> {
+  const rowItems = new Map<number, DashboardComponentKey[]>();
+  const rowStartColumn = new Map<DashboardComponentKey, number>();
+  let currentRow = 0;
+  let currentColumn = 0;
+
+  for (const key of visibleKeys) {
+    const span = layoutColumnSpans[key];
+
+    if (currentColumn + span > 3) {
+      currentRow += 1;
+      currentColumn = 0;
+    }
+
+    rowStartColumn.set(key, currentColumn);
+
+    const items = rowItems.get(currentRow) ?? [];
+    items.push(key);
+    rowItems.set(currentRow, items);
+
+    currentColumn += span;
+
+    if (currentColumn >= 3) {
+      currentRow += 1;
+      currentColumn = 0;
+    }
+  }
+
+  const nextClasses = { ...layoutBaseClasses };
+
+  for (const [, keys] of rowItems) {
+    if (keys.length !== 1 || keys[0] !== "eventTimeline") continue;
+    if (rowStartColumn.get("eventTimeline") !== 0) continue;
+
+    nextClasses.eventTimeline = `lg:col-span-3 ${dashboardCardHeight}`;
+    break;
+  }
+
+  return nextClasses;
+}
 
 function formatRefreshTime(date: Date) {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -55,7 +116,7 @@ function formatRefreshDate(date: Date) {
 }
 
 const InfoDivider = () => (
-  <span className="mx-2.5 text-[hsl(210,18%,70%)]">|</span>
+  <span className="mx-2.5 text-[hsl(220,9%,72%)]">|</span>
 );
 
 const Index = () => {
@@ -64,13 +125,17 @@ const Index = () => {
 
   const routeState = location.state as DashboardLocationState | undefined;
   const patient = routeState?.patient;
+  const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
   const routeLayoutOrder = React.useMemo(
     () =>
-      normalizeDashboardLayoutOrder(
-        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(
+          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+        ),
+        specialtyId,
       ),
-    [routeState?.layoutOrder],
+    [routeState?.layoutOrder, specialtyId],
   );
 
   const [order, setOrder] =
@@ -127,6 +192,10 @@ const Index = () => {
       element: <PatientCard patient={{ ...patient, updatedAt: refreshedDateLabel }} />,
     },
     {
+      key: "preventionCard" as const,
+      element: <PreventionCard patient={patient} />,
+    },
+    {
       key: "healthTrends" as const,
       element: <HealthTrends updatedAt={refreshedDateLabel} />,
     },
@@ -160,6 +229,12 @@ const Index = () => {
     .map((key) => componentItems.find((item) => item.key === key))
     .filter(Boolean) as typeof componentItems;
 
+  const visibleKeys = visibleItems.map((item) => item.key);
+  const resolvedLayoutClasses = React.useMemo(
+    () => getExpandedLayoutClasses(visibleKeys),
+    [visibleKeys],
+  );
+
   return (
     <div className="min-h-screen bg-[#F5F7FA]">
       <DashboardSidebar
@@ -169,6 +244,7 @@ const Index = () => {
         currentView="dashboard"
         dayListCount={patients.length}
         layoutOrder={order}
+        specialtyId={specialtyId}
         onSaveLayoutOrder={setOrder}
       />
 
@@ -177,7 +253,7 @@ const Index = () => {
           <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 py-4 md:px-6">
             <div className="min-w-0">
               <h1
-                className={`font-bold text-[hsl(214,42%,17%)] transition-all ${
+                className={`font-bold tracking-[-0.03em] text-heading transition-all ${
                   isScrolled ? "text-[24px]" : "text-[42px]"
                 }`}
               >
@@ -186,19 +262,19 @@ const Index = () => {
 
               {!isScrolled && (
                 <div className="mt-3 flex flex-wrap items-center text-[14px]">
-                  <span className="font-normal text-[hsl(214,18%,55%)]">
+                  <span className="font-normal text-muted-foreground">
                     Personas kods
                   </span>
 
-                  <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                  <span className="ml-1 font-semibold text-text-dark">
                     {patient.personalCode}
                   </span>
 
                   <InfoDivider />
 
-                  <span className="font-normal text-[hsl(214,18%,55%)]">Vecums</span>
+                  <span className="font-normal text-muted-foreground">Vecums</span>
 
-                  <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                  <span className="ml-1 font-semibold text-text-dark">
                     {patient.age} gadi
                   </span>
 
@@ -206,13 +282,13 @@ const Index = () => {
                     <>
                       <InfoDivider />
 
-                      <Phone className="ml-1 h-3.5 w-3.5 text-[hsl(214,18%,55%)]" />
+                      <Phone className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
 
-                      <span className="ml-1 font-normal text-[hsl(214,18%,55%)]">
+                      <span className="ml-1 font-normal text-muted-foreground">
                         Telefona nr.
                       </span>
 
-                      <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                      <span className="ml-1 font-semibold text-text-dark">
                         {phone}
                       </span>
                     </>
@@ -222,13 +298,13 @@ const Index = () => {
                     <>
                       <InfoDivider />
 
-                      <Mail className="ml-1 h-3.5 w-3.5 text-[hsl(214,18%,55%)]" />
+                      <Mail className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
 
-                      <span className="ml-1 font-normal text-[hsl(214,18%,55%)]">
+                      <span className="ml-1 font-normal text-muted-foreground">
                         E-pasts
                       </span>
 
-                      <span className="ml-1 font-semibold text-[hsl(214,36%,24%)]">
+                      <span className="ml-1 font-semibold text-text-dark">
                         {email}
                       </span>
                     </>
@@ -243,11 +319,11 @@ const Index = () => {
               className={`flex items-center gap-2.5 text-left transition-all ${
                 isScrolled
                   ? ""
-                  : "rounded-[6px] border border-[hsl(214,22%,88%)] bg-white px-3 py-3"
+                  : "rounded-[6px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-3 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
               }`}
             >
               <div
-                className="relative flex h-10 w-10 items-center justify-center rounded-[5px] text-[hsl(214,32%,24%)]"
+                className="relative flex h-10 w-10 items-center justify-center rounded-[5px] text-heading"
                 aria-hidden="true"
               >
                 <RefreshCw
@@ -258,11 +334,11 @@ const Index = () => {
 
               {!isScrolled && (
                 <div>
-                  <div className="text-sm font-semibold text-[hsl(214,36%,20%)]">
+                  <div className="text-sm font-semibold text-heading">
                     {isRefreshing ? "Notiek atjaunošana..." : "Atjaunot datus"}
                   </div>
 
-                  <div className="text-xs text-gray-500">
+                  <div className="text-xs text-muted-foreground">
                     Pēdējo reizi: {formatRefreshTime(lastRefreshedAt)}
                   </div>
                 </div>
@@ -276,7 +352,7 @@ const Index = () => {
             {visibleItems.map((item) => (
               <div
                 key={item.key}
-                className={`relative min-w-0 ${layoutClasses[item.key]}`}
+                className={`relative min-w-0 ${resolvedLayoutClasses[item.key]}`}
               >
                 <div className="h-full">{item.element}</div>
               </div>

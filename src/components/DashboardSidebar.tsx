@@ -16,11 +16,14 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import {
+  filterDashboardLayoutOrderBySpecialty,
   defaultDashboardLayoutOrder,
+  getDefaultDashboardLayoutOrderForSpecialty,
   normalizeDashboardLayoutOrder,
   writeStoredDashboardLayoutOrder,
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
+import { type SpecialtyId } from "@/lib/specialties";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
 
@@ -31,6 +34,7 @@ type DashboardSidebarProps = {
   currentView: "dashboard" | "day-list" | "search";
   dayListCount?: number;
   layoutOrder?: DashboardComponentKey[];
+  specialtyId?: SpecialtyId | null;
   onSaveLayoutOrder?: (layoutOrder: DashboardComponentKey[]) => void;
   loadingPatientId?: string | null;
   loadingPatientComplete?: boolean;
@@ -40,6 +44,7 @@ type SettingsModuleKey = DashboardComponentKey;
 
 type SettingsPreviewPattern =
   | "profile"
+  | "prevention"
   | "trend"
   | "alerts"
   | "imaging"
@@ -68,6 +73,14 @@ function getInitials(name: string) {
     .join("");
 }
 
+function getSettingsModuleDescription(module: (typeof settingsModules)[number]) {
+  if (module.key === "preventionCard") {
+    return "SCORE2 risks, skrīningi un vakcinācijas progress";
+  }
+
+  return module.description;
+}
+
 const profileMenuItems = [
   {
     title: "Uzzināt vairāk",
@@ -88,6 +101,13 @@ const settingsModules = [
     key: "patientCard",
     title: "Pacienta klīniskais profils",
     description: "Galvenie pacienta dati un kontaktinformacija",
+    sizeLabel: "Plats",
+    previewColumns: 2,
+  },
+  {
+    key: "preventionCard",
+    title: "Profilakse",
+    description: "SCORE2 risks, skrÄ«ningi un vakcinÄciju progress",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
@@ -156,6 +176,13 @@ const settingsPreviewDefinitions: Record<
     surfaceClassName:
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
+  preventionCard: {
+    note: "Profilakse",
+    pattern: "prevention",
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
   healthTrends: {
     note: "Klīniskie rādītāji",
     pattern: "trend",
@@ -201,13 +228,6 @@ const settingsPreviewDefinitions: Record<
   eventTimeline: {
     note: "Notikumu laika līnija",
     pattern: "timeline",
-    previewClassName: "col-span-2",
-    surfaceClassName:
-      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
-  },
-  patientSummaryCard: {
-    note: "Pacienta kopsavilkums",
-    pattern: "summary",
     previewClassName: "col-span-2",
     surfaceClassName:
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
@@ -274,6 +294,46 @@ function SettingsPreviewCard({
               <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
               <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
               <div className="h-8 rounded-[10px] bg-[hsl(214,20%,95%)]" />
+            </div>
+          </div>
+        )}
+
+        {preview.pattern === "prevention" && (
+          <div className="space-y-2">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1">
+                <div className="h-2 w-[30%] bg-[hsl(214,18%,88%)]" />
+                <div className="h-4 w-[24%] rounded-full bg-[hsl(122,46%,86%)]" />
+              </div>
+              <div className="h-8 w-8 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(231,248,226,0.98),rgba(212,242,206,0.98))]" />
+            </div>
+            <div className="grid grid-cols-[0.9fr_1.1fr] gap-1.5">
+              <div className="rounded-[10px] bg-[hsl(214,20%,97%)] p-1.5">
+                <div className="h-2 w-[48%] bg-[hsl(214,18%,86%)]" />
+                <div className="mt-1.5 h-4 w-[52%] bg-[hsl(222,54%,74%)]" />
+                <div className="mt-1.5 h-2 w-[76%] bg-[hsl(214,18%,90%)]" />
+              </div>
+              <div className="space-y-1.5">
+                {[0, 1].map((rowIndex) => (
+                  <div
+                    key={rowIndex}
+                    className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-1.5"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-3.5 w-3.5 rounded-full bg-[hsl(214,20%,92%)]" />
+                      <div className="h-2 w-[42%] bg-[hsl(214,18%,88%)]" />
+                    </div>
+                    <div className="mt-1.5 h-1.5 rounded-full bg-[hsl(214,18%,90%)]">
+                      <div
+                        className={cn(
+                          "h-full rounded-full bg-[hsl(216,84%,54%)]",
+                          rowIndex === 0 ? "w-[74%]" : "w-[58%]",
+                        )}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -409,6 +469,7 @@ export default function DashboardSidebar({
   currentView,
   dayListCount = 0,
   layoutOrder,
+  specialtyId = null,
   onSaveLayoutOrder,
   loadingPatientId = null,
   loadingPatientComplete = false,
@@ -435,7 +496,11 @@ export default function DashboardSidebar({
     DashboardComponentKey | null
   >(null);
   const [settingsOrder, setSettingsOrder] = React.useState<DashboardComponentKey[]>(
-    () => normalizeDashboardLayoutOrder(layoutOrder ?? defaultSettingsOrder),
+    () =>
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(layoutOrder ?? defaultSettingsOrder),
+        specialtyId,
+      ),
   );
   const [supportMessage, setSupportMessage] = React.useState("");
   const [reportMessage, setReportMessage] = React.useState("");
@@ -468,8 +533,13 @@ export default function DashboardSidebar({
       return;
     }
 
-    setSettingsOrder(normalizeDashboardLayoutOrder(layoutOrder));
-  }, [layoutOrder]);
+    setSettingsOrder(
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(layoutOrder),
+        specialtyId,
+      ),
+    );
+  }, [layoutOrder, specialtyId]);
 
   React.useEffect(() => {
     window.localStorage.setItem(storageKey, String(isCollapsed));
@@ -566,7 +636,7 @@ export default function DashboardSidebar({
   };
 
   const handleResetSettings = () => {
-    setSettingsOrder(defaultSettingsOrder);
+    setSettingsOrder(getDefaultDashboardLayoutOrderForSpecialty(specialtyId));
   };
 
   const handleSaveSettings = () => {
@@ -595,7 +665,7 @@ export default function DashboardSidebar({
                 type="button"
                 onClick={() =>
                   navigate("/search", {
-                    state: { patient: activePatient, layoutOrder },
+                    state: { patient: activePatient, layoutOrder, specialtyId },
                   })
                 }
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px]"
@@ -624,7 +694,7 @@ export default function DashboardSidebar({
         <div className="px-3 py-4">
           <Link
             to="/search"
-            state={{ patient: activePatient, layoutOrder }}
+            state={{ patient: activePatient, layoutOrder, specialtyId }}
             title={isCollapsed ? "Jauna meklēšana" : undefined}
             className={cn(
               "flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
@@ -646,7 +716,7 @@ export default function DashboardSidebar({
 
           <Link
             to="/day-list"
-            state={{ patient: activePatient, layoutOrder }}
+            state={{ patient: activePatient, layoutOrder, specialtyId }}
             title={isCollapsed ? "Dienas saraksts" : undefined}
             className={cn(
               "mt-3 flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
@@ -690,7 +760,7 @@ export default function DashboardSidebar({
                   return (
                     <div
                       key={patient.id}
-                      className="group relative overflow-hidden rounded-[12px] border border-[rgba(204,216,234,0.96)] bg-white px-4 py-3 text-left shadow-[0_10px_22px_rgba(29,53,87,0.08)] transition"
+                      className="group relative overflow-hidden rounded-[8px] border border-[rgba(204,216,234,0.96)] bg-white px-4 py-3 text-left shadow-[0_10px_22px_rgba(29,53,87,0.08)] transition"
                     >
                       <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-[hsl(220,36%,18%)]" />
 
@@ -729,10 +799,10 @@ export default function DashboardSidebar({
                   <Link
                     key={patient.id}
                     to="/components"
-                    state={{ patient, layoutOrder }}
+                    state={{ patient, layoutOrder, specialtyId }}
                     aria-current={isActivePatient ? "page" : undefined}
                     className={cn(
-                      "block rounded-[12px] px-3 py-1.5 text-left transition",
+                      "block rounded-[8px] px-3 py-1.5 text-left transition",
                       isActivePatient
                         ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
                         : "text-[hsl(220,36%,18%)] hover:bg-[hsl(214,22%,98%)]",
@@ -1143,7 +1213,7 @@ export default function DashboardSidebar({
                     <Link
                       key={patient.id}
                       to="/components"
-                      state={{ patient, layoutOrder }}
+                      state={{ patient, layoutOrder, specialtyId }}
                       onClick={() => setIsAllPatientsOpen(false)}
                       aria-current={isActivePatient ? "page" : undefined}
                       className={cn(
@@ -1271,19 +1341,27 @@ export default function DashboardSidebar({
                           {module.title}
                         </p>
                         <p className="mt-1 max-w-[310px] text-[10px] leading-4.5 text-[hsl(214,16%,52%)]">
-                          {module.description}
+                          {getSettingsModuleDescription(module)}
                         </p>
                       </div>
 
                       <span
                         className={cn(
                           "mt-0.5 inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]",
-                          module.sizeLabel === "Plats"
+                          (module.key === "patientCard"
+                            ? "Plats"
+                            : module.key === "preventionCard"
+                              ? "šaurs"
+                              : module.sizeLabel) === "Plats"
                               ? "border-[rgba(203,216,243,0.96)] bg-[hsl(221,70%,97%)] text-[hsl(220,48%,52%)]"
                               : "border-[rgba(234,223,205,0.96)] bg-[hsl(38,52%,97%)] text-[hsl(34,32%,48%)]",
                         )}
                       >
-                        {module.sizeLabel}
+                        {module.key === "patientCard"
+                          ? "Plats"
+                          : module.key === "preventionCard"
+                            ? "šaurs"
+                            : module.sizeLabel}
                       </span>
                     </button>
                   ))}

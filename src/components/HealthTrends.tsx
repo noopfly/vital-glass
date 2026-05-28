@@ -829,6 +829,7 @@ function HealthTrendsContent({
   onVisibleCountChange,
   showOpenAll,
   compact,
+  totalResults,
   updatedAt,
 }: {
   results: LabResult[];
@@ -838,6 +839,7 @@ function HealthTrendsContent({
   onVisibleCountChange?: (count: number) => void;
   showOpenAll?: boolean;
   compact?: boolean;
+  totalResults?: number;
   updatedAt: string;
 }) {
   const compactListRef = useRef<HTMLDivElement | null>(null);
@@ -884,7 +886,7 @@ function HealthTrendsContent({
           : "flex flex-col"
       }
     >
-      <div className={compact ? "mb-4 flex shrink-0 items-center gap-3" : "mb-6 flex items-center gap-3"}>
+      <div className={compact ? "mb-5 flex shrink-0 items-center gap-3" : "mb-8 flex items-center gap-3"}>
         <div className={sectionIconClass}>
           <TrendingUp size={18} className="text-current" />
         </div>
@@ -906,24 +908,24 @@ function HealthTrendsContent({
             : "mb-2 flex items-center justify-between gap-3"
         }
       >
-        <div className="ml-1 flex min-w-0 gap-2.5 text-[9px] font-medium uppercase tracking-wider text-heading">
-          <span className="flex items-center gap-1">
+        <div className="ml-1 flex min-w-0 gap-3.5 text-[10px] font-semibold text-heading">
+          <span className="flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${statusDotClass.normal}`} />
             <span>Norma</span>
           </span>
 
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${statusDotClass.warning}`} />
             <span>Ārpus normas</span>
           </span>
 
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-1.5">
             <span className={`h-2 w-2 rounded-full ${statusDotClass.critical}`} />
             <span>Kritisks</span>
           </span>
         </div>
 
-        <p className="mr-1 hidden shrink-0 text-[9px] italic text-heading md:block">
+        <p className="mr-1 hidden shrink-0 text-[9px] italic text-[hsl(214,14%,60%)] md:block">
           Noklikšķiniet, lai skatītu sīkāk
         </p>
       </div>
@@ -940,8 +942,12 @@ function HealthTrendsContent({
         />
       </div>
 
-      <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3">
+      <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3 [&>p:first-child]:hidden">
         <p className="text-xs text-[hsl(214,18%,62%)]">Atjaunināts: {updatedAt}</p>
+
+        <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
+          {compact ? `${results.length} no ${totalResults ?? results.length}` : `Atjaunināts: ${updatedAt}`}
+        </p>
 
         {showOpenAll && onOpenAll && (
           <button
@@ -994,6 +1000,7 @@ const HealthTrends = ({ updatedAt }: { updatedAt: string }) => {
         onVisibleCountChange={setVisibleLabCount}
         showOpenAll={sortedResults.length > visibleLabCount}
         compact
+        totalResults={sortedResults.length}
         updatedAt={updatedAt}
       />
 

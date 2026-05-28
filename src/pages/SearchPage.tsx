@@ -2,20 +2,27 @@
 import { CircleX, Search, ShieldCheck } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
+import praksesAsistentsLogo from "@/assets/prakses-asistents-logo.png";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import PatientLoadingPanel from "@/components/PatientLoadingPanel";
 import { patients } from "@/data/patients";
 import {
+  filterDashboardLayoutOrderBySpecialty,
   normalizeDashboardLayoutOrder,
   readStoredDashboardLayoutOrder,
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
+import {
+  readStoredDashboardSpecialty,
+  type SpecialtyId,
+} from "@/lib/specialties";
 import { Patient } from "@/types/patient";
 
 type SearchLocationState = {
   patient?: Patient;
   layoutOrder?: DashboardComponentKey[];
   searchQuery?: string;
+  specialtyId?: SpecialtyId;
 };
 
 function normalizeText(value: string) {
@@ -57,17 +64,27 @@ function getPersonalCodeDigits(value: string) {
   return value.replace(/[^\d]/g, "").slice(0, personalCodeLength);
 }
 
-export default function SearchPage() {
+type SearchPageProps = {
+  variant?: "omnus" | "prakses-asistents";
+};
+
+export default function SearchPage({
+  variant = "omnus",
+}: SearchPageProps) {
   const location = useLocation();
   const navigate = useNavigate();
   const routeState = location.state as SearchLocationState | undefined;
+  const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
   const activePatient = routeState?.patient ?? patients[0];
 
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
-      normalizeDashboardLayoutOrder(
-        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(
+          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+        ),
+        specialtyId,
       ),
   );
 
@@ -97,11 +114,14 @@ export default function SearchPage() {
 
   React.useEffect(() => {
     setLayoutOrder(
-      normalizeDashboardLayoutOrder(
-        routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+      filterDashboardLayoutOrderBySpecialty(
+        normalizeDashboardLayoutOrder(
+          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
+        ),
+        specialtyId,
       ),
     );
-  }, [routeState?.layoutOrder]);
+  }, [routeState?.layoutOrder, specialtyId]);
 
   React.useEffect(() => {
     setQuery(formatPersonalCode(routeState?.searchQuery ?? ""));
@@ -174,6 +194,7 @@ export default function SearchPage() {
         currentView="search"
         dayListCount={patients.length}
         layoutOrder={layoutOrder}
+        specialtyId={specialtyId}
         onSaveLayoutOrder={setLayoutOrder}
         loadingPatientId={loadingPatient?.id ?? null}
         loadingPatientComplete={loadingPatientComplete}
@@ -187,26 +208,48 @@ export default function SearchPage() {
         }}
       >
         {/* STATUS */}
-        <div className="absolute right-8 top-6 flex items-center gap-2 text-[13px] font-medium text-[hsl(214,18%,52%)]">
+        <div
+          className={`absolute right-8 flex items-center gap-2 text-[13px] font-medium text-[hsl(214,18%,52%)] ${
+            variant === "prakses-asistents" ? "top-6" : "top-6"
+          }`}
+        >
           <span className="h-2.5 w-2.5 rounded-full bg-[hsl(136,36%,34%)]" />
           E-veselība pieslēgta
         </div>
 
         <div className="flex w-full max-w-5xl flex-col items-center px-6 text-center">
-          <div className="flex items-center justify-center gap-3">
-            <img
-              src={`${import.meta.env.BASE_URL}omnus-icon-logo.svg`}
-              alt=""
-              aria-hidden="true"
-              className="h-14 w-14 rounded-[14px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:h-16 md:w-16"
-            />
+          {variant === "prakses-asistents" ? (
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src={praksesAsistentsLogo}
+                alt="Prakses asistents"
+                className="h-auto w-full max-w-[190px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:max-w-[220px]"
+              />
+              <div className="flex shrink-0 items-center gap-2 text-[12px] font-semibold text-[hsl(214,18%,48%)]">
+                <span aria-hidden="true">x</span>
+                <img
+                  src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
+                  alt="Omnus"
+                  className="h-auto w-[86px] max-w-full opacity-90"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center justify-center gap-3">
+              <img
+                src={`${import.meta.env.BASE_URL}omnus-icon-logo.svg`}
+                alt=""
+                aria-hidden="true"
+                className="h-14 w-14 rounded-[14px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:h-16 md:w-16"
+              />
 
-            <img
-              src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
-              alt="Omnus"
-              className="h-auto w-[190px] max-w-full [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:w-[210px]"
-            />
-          </div>
+              <img
+                src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
+                alt="Omnus"
+                className="h-auto w-[190px] max-w-full [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:w-[210px]"
+              />
+            </div>
+          )}
 
           <form
             className="mt-6 w-full"
@@ -273,7 +316,7 @@ export default function SearchPage() {
             onContinue={() => {
               setLoadingPatientComplete(false);
               navigate("/components", {
-                state: { patient: loadingPatient, layoutOrder },
+                state: { patient: loadingPatient, layoutOrder, specialtyId },
               });
             }}
           />

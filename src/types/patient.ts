@@ -3,6 +3,7 @@ export interface Patient {
   name: string;
   personalCode: string;
   age: number;
+  gender: "female" | "male";
   phone: string;
   email: string;
   summary: string;

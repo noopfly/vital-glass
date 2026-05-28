@@ -395,7 +395,7 @@ const AllReferralsOverlay = ({
           </button>
 
           <div className="flex items-center gap-3 pr-12">
-            <div className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+            <div className="flex h-10 w-10 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
               <FileText size={18} />
             </div>
 
@@ -426,16 +426,16 @@ const ReferralHistory = () => {
   return (
     <>
       <section className="flex h-full w-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="flex items-center gap-3 border-b border-[hsl(214,22%,88%)] pb-3.5">
-          <div className="flex h-10 w-10 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+        <div className="flex items-center gap-3 pb-3.5">
+          <div className="flex h-10 w-10 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
             <FileText size={18} />
           </div>
 
           <div>
-            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+            <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
               E-nosūtījumi
             </p>
-            <p className="text-xs text-heading">
+            <p className="text-xs text-text-dark">
               Aktīvie un vēsturiskie nosūtījumi
             </p>
           </div>
@@ -449,11 +449,14 @@ const ReferralHistory = () => {
           />
         </div>
 
-        <div className="mt-3 border-t border-[hsl(214,22%,88%)] pt-3 text-center">
+        <div className="mt-3 flex items-center justify-between pt-4">
+          <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
+            {visibleReferrals.length} no {referrals.length}
+          </p>
           <button
             type="button"
             onClick={() => setShowAll(true)}
-            className="inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
+            className="ml-auto inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus e-nosūtījumus →
           </button>

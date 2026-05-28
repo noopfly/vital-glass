@@ -977,11 +977,11 @@ export default function HumanBodyModel() {
       <div className="relative flex h-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
         <div className="flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
               <ScanSearch className="h-[18px] w-[18px]" />
             </div>
 
-            <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+            <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
               Ķermeņa pārskats
             </h2>
           </div>

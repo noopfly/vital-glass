@@ -1,4 +1,4 @@
-import * as React from "react";
+﻿import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -23,6 +23,7 @@ import {
   Radiation,
   ScanLine,
   Search,
+  Shield,
   Stethoscope,
   UserRound,
   Wind,
@@ -33,6 +34,11 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { writeStoredDashboardLayoutOrder } from "@/lib/dashboard-layout";
+import {
+  type SpecialtyId,
+  writeStoredDashboardSpecialty,
+} from "@/lib/specialties";
 import { cn } from "@/lib/utils";
 
 type StepDefinition = {
@@ -42,6 +48,7 @@ type StepDefinition = {
 
 type ModuleId =
   | "patient-card"
+  | "prevention"
   | "health-trends"
   | "imaging"
   | "medications"
@@ -52,27 +59,14 @@ type ModuleId =
 
 type DashboardComponentKey =
   | "patientCard"
+  | "preventionCard"
   | "healthTrends"
   | "medicalImagingViewer"
   | "medicationTable"
   | "alertsCard"
   | "eventTimeline"
   | "humanBodyModel"
-  | "referralHistory"
-
-type SpecialtyId =
-  | "family-medicine"
-  | "cardiology"
-  | "endocrinology"
-  | "vascular-surgery"
-  | "neurology"
-  | "oncology"
-  | "pulmonology"
-  | "gastroenterology"
-  | "dermatology"
-  | "orthopedics"
-  | "psychiatry"
-  | "pediatrics";
+  | "referralHistory";
 
 type ModuleOption = {
   id: ModuleId;
@@ -96,6 +90,7 @@ type RegistrationForm = {
 
 type PreviewPattern =
   | "profile"
+  | "prevention"
   | "trend"
   | "imaging"
   | "table"
@@ -115,57 +110,63 @@ type ModulePreviewDefinition = {
 };
 
 const steps: StepDefinition[] = [
-  { title: "01", subtitle: "Specialitāte" },
+  { title: "01", subtitle: "SpecialitÄte" },
   { title: "02", subtitle: "Darba panelis" },
 ];
 
 const moduleOptions: ModuleOption[] = [
   {
     id: "patient-card",
-    title: "Pacienta klīniskais profils",
-    description: "Pamatinformācija, diagnozes un primārie riski",
+    title: "Pacienta klÄ«niskais profils",
+    description: "PamatinformÄcija, diagnozes un primÄrie riski",
     icon: UserRound,
   },
   {
+    id: "prevention",
+    title: "Profilakse",
+    description: "Preventīvā aprūpe, SCORE2 risks un vakcinācijas progress",
+    icon: Shield,
+  },
+  {
     id: "health-trends",
-    title: "Klīniskie rādītāji",
-    description: "Laboratorijas rezultātu un mērījumu dinamika",
+    title: "KlÄ«niskie rÄdÄ«tÄji",
+    description: "Laboratorijas rezultÄtu un mÄ“rÄ«jumu dinamika",
     icon: Activity,
   },
   {
     id: "imaging",
-    title: "Attēldiagnostika",
-    description: "RTG, CT un citu izmeklējumu pārskats",
+    title: "AttÄ“ldiagnostika",
+    description: "RTG, CT un citu izmeklÄ“jumu pÄrskats",
     icon: ImageIcon,
   },
   {
     id: "medications",
     title: "Medikamenti",
-    description: "Aktuālie medikamenti, devas un mijiedarbības",
+    description: "AktuÄlie medikamenti, devas un mijiedarbÄ«bas",
     icon: Pill,
   },
   {
     id: "alerts",
-    title: "Brīdinājumi",
-    description: "Izmaiņas, kavējumi un kritiskie signāli",
+    title: "BrÄ«dinÄjumi",
+    description: "IzmaiÅ†as, kavÄ“jumi un kritiskie signÄli",
     icon: AlertTriangle,
   },
   {
     id: "timeline",
-    title: "Notikumu laika līnija",
-    description: "Hronoloģisks pacienta notikumu pārskats",
+    title: "Notikumu laika lÄ«nija",
+    description: "HronoloÄ£isks pacienta notikumu pÄrskats",
     icon: CalendarClock,
   },
   {
     id: "body-model",
-    title: "Ķermeņa pārskats",
-    description: "Anatomiskais skats ar atradnēm un reģioniem",
+    title: "Ä¶ermeÅ†a pÄrskats",
+    description: "Anatomiskais skats ar atradnÄ“m un reÄ£ioniem",
     icon: UserRound,
   },
   {
     id: "referrals",
-    title: "E-nosūtījumi",
-    description: "Aktīvie un vēsturiskie nosūtījumi",
+    title: "E-nosÅ«tÄ«jumi",
+    description: "AktÄ«vie un vÄ“sturiskie nosÅ«tÄ«jumi",
     icon: FileText,
   },
 
@@ -182,12 +183,24 @@ const sharedRegistrationModules: ModuleId[] = [
   "timeline",
 ];
 
+const familyRegistrationModules: ModuleId[] = [
+  "patient-card",
+  "prevention",
+  "health-trends",
+  "alerts",
+  "imaging",
+  "body-model",
+  "medications",
+  "referrals",
+  "timeline",
+];
+
 const specialtyOptions: SpecialtyOption[] = [
   {
     id: "family-medicine",
-    title: "Ģimenes ārsts",
+    title: "Ä¢imenes Ärsts",
     icon: Stethoscope,
-    modules: sharedRegistrationModules,
+    modules: familyRegistrationModules,
   },
   {
     id: "cardiology",
@@ -203,7 +216,7 @@ const specialtyOptions: SpecialtyOption[] = [
   },
   {
     id: "vascular-surgery",
-    title: "Asinsvadu ķirurgs",
+    title: "Asinsvadu Ä·irurgs",
     icon: HeartPulse,
     modules: sharedRegistrationModules,
   },
@@ -239,7 +252,7 @@ const specialtyOptions: SpecialtyOption[] = [
   },
   {
     id: "orthopedics",
-    title: "Ortopēds",
+    title: "OrtopÄ“ds",
     icon: Bone,
     modules: sharedRegistrationModules,
   },
@@ -268,8 +281,15 @@ const defaultLayoutOrder: ModuleId[] = [
   "timeline",
 ];
 
+const familyRegistrationLayoutOrder: ModuleId[] = [
+  "patient-card",
+  "prevention",
+  ...defaultLayoutOrder,
+];
+
 const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> = {
   "patient-card": "patientCard",
+  prevention: "preventionCard",
   "health-trends": "healthTrends",
   alerts: "alertsCard",
   imaging: "medicalImagingViewer",
@@ -279,45 +299,71 @@ const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> =
   timeline: "eventTimeline",
 };
 
+/*
 const previewCardInfo: Record<ModuleId, { note: string; summary: string }> = {
   "patient-card": {
-    note: "Pacienta klīniskais profils",
-    summary: "Personas dati, diagnozes un primārie riski.",
+    note: "Pacienta klÄ«niskais profils",
+    summary: "Personas dati, diagnozes un primÄrie riski.",
+  },
+  prevention: {
+    note: "Profilakse",
+    summary: "SCORE2 risks, skrÃ„Â«ningi un vakcinÃ„Âciju progress.",
+  },
+  prevention: {
+    note: "Profilakse",
+    summary: "SCORE2 risks, skrīningi un vakcinācijas progress.",
+    pattern: "prevention",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "health-trends": {
-    note: "Klīniskie rādītāji",
-    summary: "Pulss, glikoze un asinsspiediens 30 dienu griezumā.",
+    note: "KlÄ«niskie rÄdÄ«tÄji",
+    summary: "Pulss, glikoze un asinsspiediens 30 dienu griezumÄ.",
   },
   imaging: {
-    note: "Attēli",
-    summary: "RTG un CT atradnes ar jaunāko aprakstu.",
+    note: "AttÄ“li",
+    summary: "RTG un CT atradnes ar jaunÄko aprakstu.",
   },
   medications: {
     note: "Medikamenti",
-    summary: "Aktuālie medikamenti, devas un mijiedarbību signāli.",
+    summary: "AktuÄlie medikamenti, devas un mijiedarbÄ«bu signÄli.",
   },
   alerts: {
-    note: "Brīdinājumi",
-    summary: "Nokavētas vizītes un izmainīti laboratorijas rezultāti.",
+    note: "BrÄ«dinÄjumi",
+    summary: "NokavÄ“tas vizÄ«tes un izmainÄ«ti laboratorijas rezultÄti.",
   },
   timeline: {
-    note: "Notikumu laika līnija",
-    summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
+    note: "Notikumu laika lÄ«nija",
+    summary: "VizÄ«Å¡u, analÄ«Å¾u un procedÅ«ru hronoloÄ£iskÄ secÄ«ba.",
   },
   "body-model": {
-    note: "Ķermeņa pārskats",
-    summary: "Anatomiskais skats ar atradnēm un saistītajiem reģioniem.",
+    note: "Ä¶ermeÅ†a pÄrskats",
+    summary: "Anatomiskais skats ar atradnÄ“m un saistÄ«tajiem reÄ£ioniem.",
   },
   referrals: {
-    note: "E-nosūtījumi",
-    summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
+    note: "E-nosÅ«tÄ«jumi",
+    summary: "NosÅ«tÄ«jumi un iepriekÅ¡Ä“jÄs speciÄlistu konsultÄcijas.",
   },
 };
 
+*/
 const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
+  prevention: {
+    note: "Profilakse",
+    summary: "SCORE2 risks, skrīningi un vakcinācijas progress.",
+    pattern: "prevention",
+    colSpan: 1,
+    rowSpan: 1,
+    previewClassName: "",
+    surfaceClassName:
+      "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
+  },
   "patient-card": {
-    note: "Pacienta klīniskais profils",
-    summary: "Personas dati, diagnozes un primārie riski.",
+    note: "Pacienta klÄ«niskais profils",
+    summary: "Personas dati, diagnozes un primÄrie riski.",
     pattern: "profile",
     colSpan: 3,
     rowSpan: 1,
@@ -326,8 +372,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "health-trends": {
-    note: "Klīniskie rādītāji",
-    summary: "Pulss, glikoze un asinsspiediens un citi rādītāji dinamikā.",
+    note: "KlÄ«niskie rÄdÄ«tÄji",
+    summary: "Pulss, glikoze un asinsspiediens un citi rÄdÄ«tÄji dinamikÄ.",
     pattern: "trend",
     colSpan: 2,
     rowSpan: 1,
@@ -336,8 +382,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   imaging: {
-    note: "Attēldiagnostika",
-    summary: "RTG un CT atradnes ar jaunāko aprakstu.",
+    note: "AttÄ“ldiagnostika",
+    summary: "RTG un CT atradnes ar jaunÄko aprakstu.",
     pattern: "imaging",
     colSpan: 1,
     rowSpan: 1,
@@ -347,7 +393,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   },
   medications: {
     note: "Medikamenti",
-    summary: "Aktuālie medikamenti, devas un mijiedarbību signāli.",
+    summary: "AktuÄlie medikamenti, devas un mijiedarbÄ«bu signÄli.",
     pattern: "table",
     colSpan: 1,
     rowSpan: 1,
@@ -356,8 +402,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   alerts: {
-    note: "Brīdinājumi",
-    summary: "Nokavētas vizītes un izmainīti laboratorijas rezultāti.",
+    note: "BrÄ«dinÄjumi",
+    summary: "NokavÄ“tas vizÄ«tes un izmainÄ«ti laboratorijas rezultÄti.",
     pattern: "alerts",
     colSpan: 1,
     rowSpan: 1,
@@ -366,8 +412,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   timeline: {
-    note: "Notikumu laika līnija",
-    summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
+    note: "Notikumu laika lÄ«nija",
+    summary: "VizÄ«Å¡u, analÄ«Å¾u un procedÅ«ru hronoloÄ£iskÄ secÄ«ba.",
     pattern: "timeline",
     colSpan: 2,
     rowSpan: 1,
@@ -376,8 +422,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "body-model": {
-    note: "Ķermeņa pārskats",
-    summary: "Anatomiskais skats ar atradnēm un saistītajiem reģioniem.",
+    note: "Ä¶ermeÅ†a pÄrskats",
+    summary: "Anatomiskais skats ar atradnÄ“m un saistÄ«tajiem reÄ£ioniem.",
     pattern: "body",
     colSpan: 1,
     rowSpan: 1,
@@ -386,8 +432,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   referrals: {
-    note: "E-nosūtījumi",
-    summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
+    note: "E-nosÅ«tÄ«jumi",
+    summary: "NosÅ«tÄ«jumi un iepriekÅ¡Ä“jÄs speciÄlistu konsultÄcijas.",
     pattern: "table",
     colSpan: 1,
     rowSpan: 1,
@@ -517,6 +563,46 @@ function PreviewCard({
           </div>
         )}
 
+        {preview.pattern === "prevention" && (
+          <div className="space-y-2.5">
+            <div className="flex items-start justify-between gap-2">
+              <div className="space-y-1.5">
+                <div className="h-2.5 w-[34%] rounded-full bg-[hsl(214,18%,88%)]" />
+                <div className="h-5 w-[28%] rounded-full bg-[hsl(122,46%,86%)]" />
+              </div>
+              <div className="h-10 w-10 rounded-full bg-[radial-gradient(circle_at_30%_30%,rgba(231,248,226,0.98),rgba(212,242,206,0.98))]" />
+            </div>
+            <div className="grid grid-cols-[0.9fr_1.1fr] gap-2">
+              <div className="rounded-[10px] bg-[hsl(214,20%,97%)] p-2">
+                <div className="h-2 w-[44%] bg-[hsl(214,18%,86%)]" />
+                <div className="mt-2 h-5 w-[52%] bg-[hsl(222,54%,74%)]" />
+                <div className="mt-2 h-2 w-[72%] bg-[hsl(214,18%,90%)]" />
+              </div>
+              <div className="space-y-1.5">
+                {[0, 1].map((rowIndex) => (
+                  <div
+                    key={rowIndex}
+                    className="rounded-[10px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-2"
+                  >
+                    <div className="flex items-center gap-1.5">
+                      <div className="h-4 w-4 rounded-full bg-[hsl(214,20%,92%)]" />
+                      <div className="h-2 w-[38%] bg-[hsl(214,18%,88%)]" />
+                    </div>
+                    <div className="mt-2 h-1.5 rounded-full bg-[hsl(214,18%,90%)]">
+                      <div
+                        className={cn(
+                          "h-full rounded-full bg-[hsl(216,84%,54%)]",
+                          rowIndex === 0 ? "w-[76%]" : "w-[58%]",
+                        )}
+                      />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {preview.pattern === "trend" && (
           <div className="space-y-2">
             <div className="grid grid-cols-3 gap-1.5">
@@ -634,6 +720,14 @@ function normalizeText(value: string) {
     .toLowerCase();
 }
 
+function getRegistrationModuleDescription(item: ModuleOption) {
+  if (item.id === "prevention") {
+    return "Preventīvā aprūpe, SCORE2 risks un vakcinācijas progress";
+  }
+
+  return item.description;
+}
+
 export default function RegistrationPage() {
   const navigate = useNavigate();
   const [step, setStep] = React.useState(0);
@@ -689,6 +783,10 @@ export default function RegistrationPage() {
 
   const applySpecialtyPreset = (specialtyId: SpecialtyId) => {
     const specialty = specialtyMap[specialtyId];
+    const specialtyLayoutOrder =
+      specialtyId === "family-medicine"
+        ? familyRegistrationLayoutOrder
+        : defaultLayoutOrder;
 
     setForm((current) => ({
       specialty: current.specialty === specialtyId ? null : specialtyId,
@@ -697,9 +795,11 @@ export default function RegistrationPage() {
         current.specialty === specialtyId
           ? defaultLayoutOrder
           : [
-              ...current.layoutOrder,
-              ...defaultLayoutOrder.filter(
-                (item) => !current.layoutOrder.includes(item),
+              ...specialtyLayoutOrder,
+              ...current.layoutOrder.filter(
+                (item) =>
+                  specialty.modules.includes(item) &&
+                  !specialtyLayoutOrder.includes(item),
               ),
             ],
     }));
@@ -775,7 +875,7 @@ export default function RegistrationPage() {
     const nextErrors: Record<string, string> = {};
 
     if (step === 0 && !form.specialty) {
-      nextErrors.specialty = "Izvēlieties specialitāti, lai turpinātu.";
+      nextErrors.specialty = "IzvÄ“lieties specialitÄti, lai turpinÄtu.";
     }
 
     setErrors(nextErrors);
@@ -808,14 +908,19 @@ export default function RegistrationPage() {
       return;
     }
 
+    const selectedLayoutOrder = form.layoutOrder
+      .filter((item) => form.modules.includes(item))
+      .map((item) => moduleIdToDashboardComponentKey[item]);
+
     toast.success("Profils sagatavots", {
-      description: `Sākuma panelis ir pielāgots specialitātei “${selectedSpecialty.title}”.`,
+      description: `SÄkuma panelis ir pielÄgots specialitÄtei â€œ${selectedSpecialty.title}â€.`,
     });
+    writeStoredDashboardSpecialty(selectedSpecialty.id);
+    writeStoredDashboardLayoutOrder(selectedLayoutOrder);
     navigate("/search", {
       state: {
-        layoutOrder: form.layoutOrder
-          .filter((item) => form.modules.includes(item))
-          .map((item) => moduleIdToDashboardComponentKey[item]),
+        layoutOrder: selectedLayoutOrder,
+        specialtyId: selectedSpecialty.id,
       },
     });
   };
@@ -893,7 +998,7 @@ export default function RegistrationPage() {
                 <UserRound className="h-3.5 w-3.5" />
               </div>
               <span className="text-[11px] font-medium text-[hsl(219,30%,22%)]">
-                Dr. A. Liepiņa
+                Dr. A. LiepiÅ†a
               </span>
             </div>
           </div>
@@ -908,12 +1013,12 @@ export default function RegistrationPage() {
                 </p>
 
                 <h1 className="mt-4 text-[40px] font-semibold leading-[0.98] tracking-[-0.06em] text-[hsl(219,40%,16%)] md:text-[56px]">
-                  Izvēlieties savu specialitāti
+                  IzvÄ“lieties savu specialitÄti
                 </h1>
 
                 <p className="mt-5 max-w-[820px] whitespace-nowrap text-[16px] leading-7 text-[hsl(214,16%,46%)]">
-                  Mēs pielāgosim pacienta pārskatu jūsu darba prioritātēm. Šos
-                  iestatījumus varēsiet mainīt jebkurā brīdī.
+                  MÄ“s pielÄgosim pacienta pÄrskatu jÅ«su darba prioritÄtÄ“m. Å os
+                  iestatÄ«jumus varÄ“siet mainÄ«t jebkurÄ brÄ«dÄ«.
                 </p>
               </div>
 
@@ -923,7 +1028,7 @@ export default function RegistrationPage() {
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Meklēt specialitāti..."
+                    placeholder="MeklÄ“t specialitÄti..."
                     className="h-14 rounded-[10px] border-[rgba(214,222,230,0.96)] bg-white pl-14 pr-4 text-[16px] shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
                   />
                 </div>
@@ -974,7 +1079,7 @@ export default function RegistrationPage() {
 
               {!filteredSpecialties.length && (
                 <div className="mt-8 rounded-[14px] border border-dashed border-[rgba(214,222,230,0.96)] bg-white px-5 py-8 text-[14px] text-[hsl(214,16%,50%)]">
-                  Neatradām nevienu specialitāti pēc ievadītā meklējuma.
+                  NeatradÄm nevienu specialitÄti pÄ“c ievadÄ«tÄ meklÄ“juma.
                 </div>
               )}
 
@@ -994,20 +1099,20 @@ export default function RegistrationPage() {
                 </p>
 
                 <h1 className="mt-4 text-[40px] font-semibold leading-[0.98] tracking-[-0.06em] text-[hsl(219,40%,16%)] md:text-[56px]">
-                  Iekārtojiet savu darba paneli
+                  IekÄrtojiet savu darba paneli
                 </h1>
 
                 <p className="mt-5 max-w-[820px] whitespace-nowrap text-[16px] leading-7 text-[hsl(214,16%,46%)]">
                   {selectedSpecialty ? (
                     <>
-                      Sākuma saturs ir pielāgots specialitātei {" "}
+                      SÄkuma saturs ir pielÄgots specialitÄtei {" "}
                       <strong className="font-semibold text-[hsl(219,30%,22%)]">
                         {selectedSpecialty.title}
                       </strong>
-                      . Sakārtojiet komponentes sev ērtākajā secībā un izkārtojumā.
+                      . SakÄrtojiet komponentes sev Ä“rtÄkajÄ secÄ«bÄ un izkÄrtojumÄ.
                     </>
                   ) : (
-                    "Sakārtojiet moduļus sev ērtākajā secībā."
+                    "SakÄrtojiet moduÄ¼us sev Ä“rtÄkajÄ secÄ«bÄ."
                   )}
                 </p>
               </div>
@@ -1016,11 +1121,11 @@ export default function RegistrationPage() {
                 <div className="rounded-[20px] border border-[rgba(219,226,235,0.96)] bg-white p-5 shadow-[0_18px_42px_rgba(29,53,87,0.06)]">
                   <div>
                     <p className="text-[15px] font-semibold text-[hsl(219,30%,22%)]">
-                      Sakārtojiet pārskatu pēc nozīmīguma
+                      SakÄrtojiet pÄrskatu pÄ“c nozÄ«mÄ«guma
                     </p>
 
                     <p className="mt-2 text-[13px] leading-5 text-[hsl(214,16%,48%)]">
-                      Velciet komponentus uz sev atbilstošo izkārtojumu.
+                      Velciet komponentus uz sev atbilstoÅ¡o izkÄrtojumu.
                     </p>
                   </div>
 
@@ -1060,7 +1165,7 @@ export default function RegistrationPage() {
                             {item.title}
                           </p>
                           <p className="mt-1 text-[12px] leading-5 text-[hsl(214,16%,48%)]">
-                            {item.description}
+                            {getRegistrationModuleDescription(item)}
                           </p>
                         </div>
                         <div className="flex shrink-0 items-center gap-1">
@@ -1074,7 +1179,7 @@ export default function RegistrationPage() {
                                 ? "cursor-not-allowed text-[hsl(214,14%,76%)]"
                                 : "text-[hsl(214,16%,54%)] hover:bg-[hsl(214,22%,97%)] hover:text-[hsl(219,30%,22%)]",
                             )}
-                            aria-label={`${item.title} uz augšu`}
+                            aria-label={`${item.title} uz augÅ¡u`}
                           >
                             <ChevronUp className="h-4 w-4" />
                           </button>
@@ -1133,7 +1238,7 @@ export default function RegistrationPage() {
                                 {item.title}
                               </p>
                               <p className="mt-0.5 line-clamp-1 text-[10px] leading-3.5 text-[hsl(214,16%,48%)]">
-                                {item.description}
+                                {getRegistrationModuleDescription(item)}
                               </p>
                             </div>
                             <div className="flex items-center gap-1">
@@ -1141,7 +1246,7 @@ export default function RegistrationPage() {
                                 type="button"
                                 onClick={() => moveModuleByOffset(item.id, -1)}
                                 className="flex h-7 w-7 items-center justify-center border border-transparent text-[hsl(214,16%,54%)] transition hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,20%,98%)]"
-                                aria-label={`${item.title} uz augšu`}
+                                aria-label={`${item.title} uz augÅ¡u`}
                               >
                                 <ChevronUp className="h-4 w-4" />
                               </button>
@@ -1163,7 +1268,7 @@ export default function RegistrationPage() {
                   <div className="mt-4 flex items-start gap-2.5 rounded-[10px] border border-[rgba(223,230,238,0.96)] bg-[hsl(214,22%,98.5%)] px-3 py-3 text-[12px] leading-5 text-[hsl(214,16%,48%)]">
                     <Info className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(214,24%,50%)]" />
                     <p>
-                      Prioritātes un izkārtojumu varēsiet mainīt arī vēlāk savos iestatījumos.
+                      PrioritÄtes un izkÄrtojumu varÄ“siet mainÄ«t arÄ« vÄ“lÄk savos iestatÄ«jumos.
                     </p>
                   </div>
                 </div>
@@ -1177,7 +1282,7 @@ export default function RegistrationPage() {
                         <span className="h-2.5 w-2.5 rounded-full bg-[hsl(214,14%,76%)]" />
                       </div>
                       <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,16%,62%)]">
-                        Priekšskatījums
+                        PriekÅ¡skatÄ«jums
                       </span>
                     </div>
                   </div>
@@ -1187,10 +1292,10 @@ export default function RegistrationPage() {
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                           <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
-                            Vārds Uzvārds
+                            VÄrds UzvÄrds
                           </p>
                           <p className="text-[10px] text-[hsl(214,14%,58%)]">
-                            Kontakinformācija
+                            KontakinformÄcija
                           </p>
                         </div>
                         <div className="h-9 w-9 rounded-[12px] bg-[hsl(214,20%,94%)]" />
@@ -1238,7 +1343,7 @@ export default function RegistrationPage() {
                     disabled={!form.specialty}
                     className="h-12 min-w-[168px] self-end rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-[15px] font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
                   >
-                    Turpināt
+                    TurpinÄt
                     <ArrowRight className="h-5 w-5" />
                   </Button>
                 </>
@@ -1251,14 +1356,14 @@ export default function RegistrationPage() {
                     className="h-11 border border-transparent px-0 text-[15px] font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    Atpakaļ
+                    AtpakaÄ¼
                   </Button>
                   <Button
                     type="button"
                     onClick={handleSubmit}
                     className="h-12 min-w-[168px] rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-[15px] font-semibold text-white transition hover:opacity-95"
                   >
-                    Sākt darbu
+                    SÄkt darbu
                     <ArrowRight className="h-5 w-5" />
                   </Button>
                 </>
@@ -1270,3 +1375,4 @@ export default function RegistrationPage() {
     </div>
   );
 }
+

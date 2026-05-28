@@ -35,7 +35,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
                 Pacienta klīniskais profils
               </p>
 
-              <p className="mt-1 text-[14px] leading-6 text-[hsl(222,28%,20%)]">
+              <p className="mt-1 text-[14px] leading-6 text-text-dark">
                 {patient.summary}
               </p>
             </div>
@@ -87,7 +87,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
                   <strong>{diag.code}</strong> - {diag.description}
 
                   {diag.diagnosedAt && (
-                    <span className="whitespace-nowrap text-[hsl(214,14%,62%)]">
+                    <span className="whitespace-nowrap text-[12px] text-[hsl(214,14%,62%)]">
                       {" "}
                       ({diag.diagnosedAt})
                     </span>
@@ -131,7 +131,7 @@ const PatientCard = ({ patient }: PatientCardProps) => {
                   <strong>{disease.code}</strong> - {disease.description}
 
                   {disease.diagnosedAt && (
-                    <span className="whitespace-nowrap text-[hsl(214,14%,62%)]">
+                    <span className="whitespace-nowrap text-[12px] text-[hsl(214,14%,62%)]">
                       {" "}
                       ({disease.diagnosedAt})
                     </span>

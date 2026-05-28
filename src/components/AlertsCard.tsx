@@ -195,7 +195,7 @@ const iconMap: Record<AlertType, typeof ShieldAlert> = {
 };
 
 const alertSectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(239,208,208,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,243,243,0.96))] text-[hsl(0,54%,52%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(239,208,208,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,243,243,0.96))] text-[hsl(0,54%,52%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const tabButtonBaseClass =
   "inline-flex items-center justify-center rounded-[10px] px-3 py-2 text-sm font-medium transition";
@@ -407,18 +407,18 @@ const AlertsCard = () => {
   return (
     <>
       <section className="flex h-full w-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="flex items-center justify-between border-b border-[hsl(214,22%,88%)] pb-4">
+        <div className="flex items-center justify-between pb-4">
           <div className="flex items-center gap-3">
             <div className={alertSectionIconClass}>
               <AlertTriangle size={20} />
             </div>
 
             <div>
-              <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(0,54%,52%)]">
+              <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
                 Brīdinājumi
               </p>
 
-              <p className="text-xs text-[hsl(214,14%,50%)]">
+              <p className="text-xs text-text-dark">
                 Medikamentu, analīžu, kontroles un nākamo devu atgādinājumi
               </p>
             </div>
@@ -429,7 +429,10 @@ const AlertsCard = () => {
           </div>
         </div>
 
-        <div ref={listContainerRef} className="mt-4 min-h-0 flex-1">
+        <div
+          ref={listContainerRef}
+          className="-mt-3 flex min-h-0 flex-1 flex-col justify-center"
+        >
           {visibleAlerts.length === 0 ? (
             <div className="rounded-[10px] border border-dashed border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] px-4 py-5 text-center">
               <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
@@ -457,11 +460,14 @@ const AlertsCard = () => {
           )}
         </div>
 
-        <div className="mt-3 border-t border-[hsl(214,22%,88%)] pt-3 text-center">
+        <div className="mt-3 flex items-center justify-between border-t border-[hsl(214,22%,88%)] pt-3">
+          <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
+            {visibleAlerts.length} no {sortedAlerts.length}
+          </p>
           <button
             type="button"
             onClick={openAllAlerts}
-            className="inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
+            className="ml-auto inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
           >
             Skatīt visus brīdinājumus →
           </button>

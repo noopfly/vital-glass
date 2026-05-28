@@ -6,13 +6,14 @@ export const patients: Patient[] = [
     name: "Jānis Bērziņš",
     personalCode: "010185-12345",
     age: 39,
+    gender: "male",
     phone: "+371 20 123 456",
     email: "janis.berzins@inbox.lv",
     summary:
       "Pacientam konstatēta akūta augšējo elpceļu infekcija ar iekaisuma aktivitātes pazīmēm laboratoriskajos rādītājos. Ordinēta antibakteriāla terapija un kontroles vizīte pēc piecām dienām.",
     updatedAt: "15.04.2026, 08:15",
     diagnoses: [
-      { code: "J06.9", description: "Akūta augšējo elpceļu infekcija", diagnosedAt: "12.04.2026" },
+      { code: "I50.9", description: "Sirds mazspēja", diagnosedAt: "12.04.2026" },
       { code: "M54.5", description: "Muguras sāpes", diagnosedAt: "03.09.2021" },
       { code: "J30.4", description: "Alerģisks rinīts", diagnosedAt: "18.05.2023" },
       { code: "E66.9", description: "Aptaukošanās", diagnosedAt: "27.01.2020" },
@@ -26,6 +27,7 @@ export const patients: Patient[] = [
     name: "Anna Kalniņa",
     personalCode: "240792-21034",
     age: 34,
+    gender: "female",
     phone: "+371 25 678 901",
     email: "anna.kalnina@gmail.com",
     summary:
@@ -41,6 +43,7 @@ export const patients: Patient[] = [
     name: "Pēteris Ozoliņš",
     personalCode: "150368-19876",
     age: 58,
+    gender: "male",
     phone: "+371 26 111 458",
     email: "peteris.ozolins@apollo.lv",
     summary:
@@ -59,6 +62,7 @@ export const patients: Patient[] = [
     name: "Līga Vītola",
     personalCode: "030580-23451",
     age: 45,
+    gender: "female",
     phone: "+371 27 555 310",
     email: "liga.vitola@inbox.lv",
     summary:
@@ -74,6 +78,7 @@ export const patients: Patient[] = [
     name: "Mārtiņš Krūmiņš",
     personalCode: "110472-19543",
     age: 53,
+    gender: "male",
     phone: "+371 29 441 205",
     email: "martins.krumins@inbox.lv",
     summary:
@@ -89,6 +94,7 @@ export const patients: Patient[] = [
     name: "Ilze Roze",
     personalCode: "220589-21876",
     age: 36,
+    gender: "female",
     phone: "+371 22 315 004",
     email: "ilze.roze@gmail.com",
     summary:
@@ -104,6 +110,7 @@ export const patients: Patient[] = [
     name: "Edgars Liepa",
     personalCode: "050377-19234",
     age: 49,
+    gender: "male",
     phone: "+371 23 811 990",
     email: "edgars.liepa@inbox.lv",
     summary:
@@ -119,6 +126,7 @@ export const patients: Patient[] = [
     name: "Sandra Eglīte",
     personalCode: "170681-22109",
     age: 44,
+    gender: "female",
     phone: "+371 28 007 144",
     email: "sandra.eglite@apollo.lv",
     summary:
@@ -134,6 +142,7 @@ export const patients: Patient[] = [
     name: "Andris Zariņš",
     personalCode: "290374-19432",
     age: 52,
+    gender: "male",
     phone: "+371 24 604 233",
     email: "andris.zarins@inbox.lv",
     summary:

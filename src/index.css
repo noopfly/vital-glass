@@ -22,7 +22,7 @@
     --secondary-foreground: 220 20% 20%;
 
     --muted: 210 20% 92%;
-    --muted-foreground: 215 14% 50%;
+    --muted-foreground: 220 9% 45%;
 
     --accent: 180 45% 50%;
     --accent-foreground: 0 0% 100%;
@@ -46,8 +46,8 @@
     --status-warning: 40 90% 50%;
     --status-critical: 0 72% 55%;
 
-    --heading-color: 215 14% 50%;
-    --text-dark: 220 25% 12%;
+    --heading-color: 220 10% 15%;
+    --text-dark: 220 9% 28%;
 
     --icon-bg-red: 0 85% 95%;
     --icon-bg-blue: 200 80% 93%;

@@ -131,7 +131,7 @@ const events: TimelineEvent[] = [
 ];
 
 const sectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-sm";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 const typeConfig: Record<
   EventType,
@@ -369,11 +369,11 @@ function TimelineContent({
               event.stopPropagation();
               onOpenExpanded();
             }}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border border-[hsl(214,22%,88%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-sm transition hover:bg-white"
+            className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-[hsl(220,36%,18%)] transition hover:opacity-70"
             aria-label="Izvērst pilnskatā"
             title="Izvērst pilnskatā"
           >
-            <Maximize2 size={18} />
+            <Maximize2 size={15} />
           </button>
         ) : null}
       </div>
@@ -724,13 +724,13 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
             <button
               type="button"
               onClick={closeExpanded}
-              className="absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-[10px] border border-[hsl(214,22%,88%)] bg-white/95 text-[hsl(215,14%,55%)] shadow-sm transition hover:text-[hsl(215,22%,28%)]"
+              className="absolute right-5 top-5 z-20 flex h-6 w-6 items-center justify-center text-[hsl(215,14%,55%)] transition hover:opacity-70 hover:text-[hsl(215,22%,28%)]"
               aria-label="Aizvērt pilnskatu"
             >
               <X className="h-4 w-4" />
             </button>
 
-            <div className="max-h-[84vh] overflow-y-auto">
+            <div className="overflow-hidden">
               <TimelineContent
                 updatedAt={updatedAt}
                 selectedTypes={selectedTypes}
