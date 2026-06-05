@@ -322,7 +322,7 @@ function TimelineContent({
           <History size={18} />
         </div>
 
-        <p className="shrink-0 whitespace-nowrap text-[14px] font-semibold uppercase leading-[1.12] tracking-[0.12em] text-heading">
+        <p className="shrink-0 whitespace-nowrap text-[13px] font-semibold uppercase leading-[1.12] tracking-[0.08em] text-heading md:text-[14px]">
           Notikumu laika līnija
         </p>
 

@@ -10,6 +10,7 @@ import WaitingScreen from "./pages/WaitingScreen.tsx";
 import DayListPage from "./pages/DayListPage.tsx";
 import SearchPage from "./pages/SearchPage.tsx";
 import WelcomePage from "./pages/WelcomePage.tsx";
+import DocumentDraftsPage from "./pages/DocumentDraftsPage.tsx";
 
 const queryClient = new QueryClient();
 const Router =
@@ -30,6 +31,11 @@ const App = () => (
           <Route path="/components" element={<Index />} />
           <Route path="/day-list" element={<DayListPage />} />
           <Route path="/search" element={<SearchPage />} />
+          <Route
+            path="/document-templates"
+            element={<DocumentDraftsPage />}
+          />
+          <Route path="/document-drafts" element={<DocumentDraftsPage />} />
           <Route
             path="/search-PA"
             element={<SearchPage variant="prakses-asistents" />}

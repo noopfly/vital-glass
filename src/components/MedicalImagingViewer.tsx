@@ -1,16 +1,16 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import {
   ActivitySquare,
   CalendarDays,
-  ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ExternalLink,
   FileText,
   ImageOff,
   MapPin,
   UserRound,
+  Maximize2,
+  X,
 } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
@@ -28,7 +28,7 @@ interface ImagingStudy {
   doctor: string;
   hospitalLocation: string;
   conclusion: string;
-  conclusionDetails?: string[];
+  pdfUrl?: string;
   imageSrc?: string;
   datamedUrl?: string;
 }
@@ -44,11 +44,8 @@ const studies: ImagingStudy[] = [
     doctor: "Dr. Krūmiņa",
     hospitalLocation: "Paula Stradiņa klīniskā universitātes slimnīca",
     conclusion:
-      "Konstatētas strukturālas izmaiņas, kas jāvērtē klīniskā kontekstā.",
-    conclusionDetails: [
-      "Aprakstītas strukturālas izmaiņas bez akūtu komplikāciju pazīmēm.",
-      "Ieteicama korelācija ar klīnisko ainu un salīdzinājums ar iepriekšējiem izmeklējumiem.",
-    ],
+      "Konstatētas strukturālas izmaiņas, kas jāvērtē klīniskā kontekstā. Ieteicams salīdzināt ar iepriekšējiem izmeklējumiem un izvērtēt kopā ar pacienta simptomiem.",
+    pdfUrl: "/documents/mri-galvas-zona-2026-03-04.pdf",
     datamedUrl: "https://www.datamed.lv",
   },
   {
@@ -61,11 +58,8 @@ const studies: ImagingStudy[] = [
     doctor: "Dr. Kalniņš",
     hospitalLocation: "Rīgas Austrumu klīniskā universitātes slimnīca",
     conclusion:
-      "Rentgenoloģiski redzamas patoloģiskas izmaiņas plaušu parenhīmā.",
-    conclusionDetails: [
-      "Redzamas perēkļveida infiltratīvas ēnas labās plaušas augšdaļā.",
-      "Ieteicama dinamiska kontrole un salīdzinājums ar iepriekšējiem attēliem.",
-    ],
+      "Rentgenoloģiski redzamas patoloģiskas izmaiņas plaušu parenhīmā. Nepieciešama dinamiska kontrole un klīniska izvērtēšana.",
+    pdfUrl: "/documents/rt-kruskurvis-2026-04-14.pdf",
     datamedUrl: "https://www.datamed.lv",
   },
   {
@@ -78,9 +72,7 @@ const studies: ImagingStudy[] = [
     doctor: "Dr. Ozoliņš",
     hospitalLocation: "Ziemeļkurzemes reģionālā slimnīca",
     conclusion: "Attēldiagnostiskā aina bez būtiskām novirzēm no normas.",
-    conclusionDetails: [
-      "Kaulu struktūras un locītavas sprauga saglabāta, svaigas traumatiskas pārmaiņas netiek konstatētas.",
-    ],
+    pdfUrl: "/documents/ct-kreisais-celis-2026-02-19.pdf",
     datamedUrl: "https://www.datamed.lv",
   },
   {
@@ -93,9 +85,7 @@ const studies: ImagingStudy[] = [
     doctor: "Dr. Lācis",
     hospitalLocation: "Daugavpils reģionālā slimnīca",
     conclusion: "Ultrasonogrāfiski patoloģiskas izmaiņas nav aprakstītas.",
-    conclusionDetails: [
-      "Brīvs šķidrums vēdera dobumā netiek vizualizēts, orgāni bez būtiskām fokālām atradnēm.",
-    ],
+    pdfUrl: "/documents/usg-vedera-dobums-2026-01-27.pdf",
     datamedUrl: "https://www.datamed.lv",
   },
 ];
@@ -128,12 +118,6 @@ const conclusionPanelStyles: Record<ImagingStatus, string> = {
     "border-[hsl(38,58%,78%)] bg-[linear-gradient(180deg,hsl(40,76%,97%),hsl(40,64%,95%))]",
   "Patoloģiskas izmaiņas":
     "border-[hsl(0,58%,84%)] bg-[linear-gradient(180deg,hsl(0,72%,98%),hsl(0,58%,96%))]",
-};
-
-const conclusionBulletStyles: Record<ImagingStatus, string> = {
-  Norma: "bg-[hsl(152,42%,34%)]",
-  Izmaiņas: "bg-[hsl(34,58%,38%)]",
-  "Patoloģiskas izmaiņas": "bg-[hsl(0,54%,52%)]",
 };
 
 function formatLatvianDate(isoDate: string) {
@@ -178,13 +162,9 @@ const MedicalImagingViewer = () => {
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [isConclusionExpanded, setIsConclusionExpanded] = useState(false);
+  const [isPdfOpen, setIsPdfOpen] = useState(false);
 
   const activeStudy = orderedStudies[activeIndex];
-
-  useEffect(() => {
-    setIsConclusionExpanded(false);
-  }, [activeIndex]);
 
   const goNext = () => {
     setActiveIndex((prev) =>
@@ -196,6 +176,12 @@ const MedicalImagingViewer = () => {
     setActiveIndex((prev) =>
       prev <= 0 ? orderedStudies.length - 1 : prev - 1,
     );
+  };
+
+  const openPdf = () => {
+    if (activeStudy.pdfUrl) {
+      setIsPdfOpen(true);
+    }
   };
 
   return (
@@ -231,66 +217,45 @@ const MedicalImagingViewer = () => {
           </div>
 
           <div
-            className={`mx-4 mt-4 rounded-[5px] border px-3 py-2.5 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] ${
-              conclusionPanelStyles[activeStudy.status]
-            }`}
+            className={`mx-4 mt-4 rounded-[5px] border px-3 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.84)] ${conclusionPanelStyles[activeStudy.status]
+              }`}
           >
-            <button
-              type="button"
-              onClick={() => setIsConclusionExpanded((current) => !current)}
-              className="flex w-full items-center gap-2 text-left"
-              aria-expanded={isConclusionExpanded}
-              aria-label="Pārslēgt slēdziena detaļas"
-            >
-              <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-[3px] border border-[hsl(214,26%,86%)] bg-white text-[hsl(218,30%,34%)]">
-                <FileText size={12} strokeWidth={1.8} />
+            <div className="flex items-start gap-2.5">
+              <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[3px] border border-[hsl(214,26%,86%)] bg-white text-[hsl(218,30%,34%)]">
+                <FileText size={13} strokeWidth={1.8} />
               </div>
 
-              <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-heading">
-                Slēdziens
-              </p>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex min-w-0 items-center gap-2">
+                    <p className="text-[8px] font-semibold uppercase tracking-[0.18em] text-heading">
+                      Slēdziens
+                    </p>
 
-              <span
-                className={`ml-1 inline-flex shrink-0 items-center justify-center rounded-full border px-2 py-1 text-center text-[8.5px] font-semibold leading-none ${statusStyles[activeStudy.status]}`}
-              >
-                {activeStudy.status}
-              </span>
-
-              <span className="ml-auto inline-flex h-7 w-7 items-center justify-center rounded-[4px] text-[hsl(218,30%,34%)] transition hover:bg-white/60">
-                {isConclusionExpanded ? (
-                  <ChevronUp size={14} strokeWidth={2} />
-                ) : (
-                  <ChevronDown size={14} strokeWidth={2} />
-                )}
-              </span>
-            </button>
-
-            <p className="mt-3 text-[11px] leading-[1.45] tracking-[-0.02em] text-text-dark">
-              {activeStudy.conclusion}
-            </p>
-
-            <div
-              className={`overflow-hidden transition-all duration-300 ease-out ${
-                isConclusionExpanded
-                  ? "mt-3 max-h-[180px] border-t border-white/60 pt-3 opacity-100"
-                  : "mt-0 max-h-0 border-t-0 pt-0 opacity-0"
-              }`}
-            >
-              {activeStudy.conclusionDetails?.length ? (
-                <ul className="space-y-1.5">
-                  {activeStudy.conclusionDetails.map((detail, index) => (
-                    <li
-                      key={`${activeStudy.id}-conclusion-${index}`}
-                      className="flex items-start gap-2 text-[10px] leading-[1.45] text-[hsl(216,20%,34%)]"
+                    <span
+                      className={`inline-flex shrink-0 items-center justify-center rounded-full border px-2 py-1 text-center text-[8.5px] font-semibold leading-none ${statusStyles[activeStudy.status]
+                        }`}
                     >
-                      <span
-                        className={`mt-[5px] h-1.5 w-1.5 shrink-0 rounded-full ${conclusionBulletStyles[activeStudy.status]}`}
-                      />
-                      <span>{detail}</span>
-                    </li>
-                  ))}
-                </ul>
-              ) : null}
+                      {activeStudy.status}
+                    </span>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={openPdf}
+                    disabled={!activeStudy.pdfUrl}
+                    className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-[4px] text-[hsl(219,42%,24%)] transition hover:bg-[rgba(255,255,255,0.45)] disabled:cursor-not-allowed disabled:opacity-50"
+                    aria-label="Atvērt pilnu dokumentu"
+                    title="Atvērt pilnu dokumentu"
+                  >
+                    <Maximize2 size={13} strokeWidth={2} />
+                  </button>
+                </div>
+
+                <p className="mt-2 text-[11px] leading-[1.4] tracking-[-0.02em] text-text-dark">
+                  {activeStudy.conclusion}
+                </p>
+              </div>
             </div>
           </div>
 
@@ -316,11 +281,10 @@ const MedicalImagingViewer = () => {
             </div>
 
             <div
-              className={`relative shrink-0 overflow-hidden p-3 ${
-                activeStudy.imageSrc
+              className={`relative shrink-0 overflow-hidden p-3 ${activeStudy.imageSrc
                   ? "flex h-[155px] items-center justify-center"
                   : "flex h-[102px] items-center justify-center"
-              }`}
+                }`}
             >
               {activeStudy.imageSrc ? (
                 <button
@@ -367,7 +331,7 @@ const MedicalImagingViewer = () => {
                   <ChevronLeft size={15} strokeWidth={2.15} />
                 </span>
 
-                <span className="hidden min-[430px]:inline truncate">
+                <span className="hidden truncate min-[430px]:inline">
                   Iepriekšējais
                 </span>
               </button>
@@ -382,7 +346,7 @@ const MedicalImagingViewer = () => {
                 className={`${navButtonClass} justify-end`}
                 aria-label="Nākamais izmeklējums"
               >
-                <span className="hidden min-[430px]:inline truncate">
+                <span className="hidden truncate min-[430px]:inline">
                   Nākamais
                 </span>
 
@@ -394,6 +358,62 @@ const MedicalImagingViewer = () => {
           </div>
         </div>
       </section>
+
+      {isPdfOpen && activeStudy.pdfUrl && (
+        <CenteredOverlay
+          onClose={() => setIsPdfOpen(false)}
+          overlayClassName="bg-[hsla(218,30%,12%,0.72)] backdrop-blur-md"
+        >
+          <div className="relative mx-auto flex h-[92vh] w-full max-w-[96vw] flex-col rounded-[8px] border border-[hsl(214,24%,86%)] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.22)]">
+            <div className="flex shrink-0 items-start justify-between gap-5 border-b border-[hsl(214,24%,86%)] px-6 py-4 md:px-7">
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-heading">
+                  Pilns slēdziena dokuments
+                </p>
+
+                <h3 className="mt-1 truncate text-lg font-semibold tracking-[-0.03em] text-text-dark">
+                  {activeStudy.title}
+                </h3>
+
+                <p className="mt-1 text-xs text-heading">
+                  {formatLatvianDate(activeStudy.date)} · {activeStudy.doctor}
+                </p>
+              </div>
+
+              <div className="flex shrink-0 items-center gap-2">
+                <a
+                  href={activeStudy.pdfUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex h-9 items-center justify-center gap-2 rounded-[4px] border border-[hsl(216,34%,66%)] bg-white px-4 text-xs font-semibold text-[hsl(219,42%,24%)] shadow-[0_5px_12px_rgba(29,53,87,0.06)] transition hover:bg-[hsl(214,30%,98%)]"
+                >
+                  <ExternalLink size={14} strokeWidth={1.9} />
+                  Atvērt jaunā cilnē
+                </a>
+
+                <button
+                  type="button"
+                  onClick={() => setIsPdfOpen(false)}
+                  className="inline-flex h-9 w-9 items-center justify-center rounded-[4px] border border-[hsl(214,24%,86%)] bg-white text-[hsl(219,42%,20%)] transition hover:bg-[hsl(214,30%,98%)]"
+                  aria-label="Aizvērt dokumentu"
+                >
+                  <X size={16} strokeWidth={2} />
+                </button>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 bg-[hsl(214,35%,98%)] p-3 md:p-4">
+              <div className="h-full overflow-hidden rounded-[6px] border border-[hsl(214,24%,86%)] bg-white">
+                <iframe
+                  src={activeStudy.pdfUrl}
+                  title={`Pilns slēdziens - ${activeStudy.title}`}
+                  className="h-full w-full"
+                />
+              </div>
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
 
       {isFullscreen && (
         <CenteredOverlay

@@ -1,7 +1,6 @@
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
-  CalendarDays,
   CircleAlert,
   ClipboardCheck,
   Clock3,
@@ -13,6 +12,7 @@ import {
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { patients } from "@/data/patients";
+import { registeredDoctorAccount } from "@/lib/doctor-account";
 import {
   filterDashboardLayoutOrderBySpecialty,
   normalizeDashboardLayoutOrder,
@@ -23,6 +23,10 @@ import {
   readStoredDashboardSpecialty,
   type SpecialtyId,
 } from "@/lib/specialties";
+import {
+  readStoredLastViewedPatient,
+  writeStoredLastViewedPatientId,
+} from "@/lib/last-viewed-patient";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
 
@@ -56,9 +60,6 @@ const panelClass =
 const sectionLabelClass =
   "text-[11px] font-semibold uppercase tracking-[0.15em] text-[hsl(218,22%,42%)]";
 
-const mutedLabelClass =
-  "text-[10px] font-semibold uppercase tracking-[0.16em] text-[hsl(218,18%,56%)]";
-
 const tableGridClass =
   "grid min-w-[860px] grid-cols-[1.55fr_1.15fr_0.9fr_1.45fr_0.8fr_0.85fr] items-center gap-4";
 
@@ -66,14 +67,6 @@ function formatClock(date: Date) {
   return new Intl.DateTimeFormat("lv-LV", {
     hour: "2-digit",
     minute: "2-digit",
-  }).format(date);
-}
-
-function formatDay(date: Date) {
-  return new Intl.DateTimeFormat("lv-LV", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
   }).format(date);
 }
 
@@ -191,7 +184,8 @@ export default function DayListPage() {
   const routeState = location.state as DayListLocationState | undefined;
   const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
-  const activePatient = routeState?.patient ?? patients[0];
+  const activePatient =
+    routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
 
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
@@ -222,6 +216,10 @@ export default function DayListPage() {
       (_, index) => digits[index] ?? "",
     );
   }, [query]);
+
+  React.useEffect(() => {
+    writeStoredLastViewedPatientId(activePatient.id);
+  }, [activePatient]);
 
   const patientMap = React.useMemo(
     () =>
@@ -423,32 +421,19 @@ export default function DayListPage() {
 
       <main className="min-h-screen px-4 py-3 sm:px-5 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+24px)] lg:pr-6 lg:pt-5">
         <section className="mx-auto flex w-full max-w-[1240px] flex-col gap-4">
-          <div className={panelClass}>
-            <div className="relative flex flex-col gap-5 px-5 py-4 sm:px-6 lg:flex-row lg:items-center lg:justify-between xl:px-7">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2.5">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-[6px] text-[hsl(219,44%,19%)]">
-                    <CalendarDays className="h-5 w-5" strokeWidth={2.3} />
-                  </span>
+          <section className="px-1 py-1">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <div className="min-w-0">
+                  <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[hsl(217,40%,18%)]">
+                    {registeredDoctorAccount.name} dienas saraksts
+                  </h1>
 
-                  <p className={mutedLabelClass}>
-                    Dienas sagatavošana
-                    <span className="mx-2 text-[hsl(218,14%,64%)]">·</span>
-                    {formatDay(new Date())}
+                  <p className="mt-3 text-[14px] leading-6 text-[hsl(214,18%,44%)]">
+                    {"Pievienojiet \u0161\u012bs dienas pacientus, lai dati b\u016btu gatavi pirms viz\u012btes."}
                   </p>
                 </div>
 
-                <h1 className="mt-3 max-w-[520px] text-[24px] font-medium leading-[1.15] tracking-[-0.04em] text-[hsl(220,44%,18%)] sm:text-[29px] lg:text-[31px]">
-                  Dr. A. Liepiņas dienas saraksts
-                </h1>
-
-                <p className="mt-2.5 max-w-[520px] text-[13px] leading-5 text-[hsl(218,17%,48%)]">
-                  Pievienojiet šīs dienas pacientus, lai dati būtu gatavi pirms
-                  vizītes.
-                </p>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[430px]">
+                <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[430px]">
                 {[
                   {
                     icon: ClipboardCheck,
@@ -474,7 +459,7 @@ export default function DayListPage() {
                 ].map(({ icon: Icon, label, value, valueClass }) => (
                   <div
                     key={label}
-                    className="rounded-[8px] border border-[hsl(214,24%,88%)] bg-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]"
+                    className="rounded-[8px] border border-[rgba(214,223,231,0.8)] bg-transparent px-4 py-3"
                   >
                     <div className="flex items-center gap-1.5 text-[hsl(218,17%,48%)]">
                       <Icon className="h-3 w-3" strokeWidth={2} />
@@ -493,9 +478,9 @@ export default function DayListPage() {
                     </p>
                   </div>
                 ))}
+                </div>
               </div>
-            </div>
-          </div>
+          </section>
 
           <div className={panelClass}>
             <form

@@ -23,6 +23,10 @@ import {
   readStoredDashboardSpecialty,
   type SpecialtyId,
 } from "@/lib/specialties";
+import {
+  readStoredLastViewedPatient,
+  writeStoredLastViewedPatientId,
+} from "@/lib/last-viewed-patient";
 import { Patient } from "@/types/patient";
 
 type DashboardLocationState = {
@@ -32,6 +36,8 @@ type DashboardLocationState = {
 };
 
 const dashboardCardHeight = "min-h-[420px]";
+const HEADER_COMPACT_ENTER_SCROLL_Y = 96;
+const HEADER_COMPACT_EXIT_SCROLL_Y = 24;
 
 const layoutBaseClasses: Record<DashboardComponentKey, string> = {
   patientCard: "lg:col-span-3",
@@ -90,11 +96,18 @@ function getExpandedLayoutClasses(
   const nextClasses = { ...layoutBaseClasses };
 
   for (const [, keys] of rowItems) {
+    if (
+      keys.length === 2 &&
+      keys[0] === "medicationTable" &&
+      rowStartColumn.get("medicationTable") === 0
+    ) {
+      nextClasses.medicationTable = `lg:col-span-2 ${dashboardCardHeight}`;
+    }
+
     if (keys.length !== 1 || keys[0] !== "eventTimeline") continue;
     if (rowStartColumn.get("eventTimeline") !== 0) continue;
 
     nextClasses.eventTimeline = `lg:col-span-3 ${dashboardCardHeight}`;
-    break;
   }
 
   return nextClasses;
@@ -116,7 +129,7 @@ function formatRefreshDate(date: Date) {
 }
 
 const InfoDivider = () => (
-  <span className="mx-2.5 text-[hsl(220,9%,72%)]">|</span>
+  <span className="mx-2.5 text-[hsl(220,16%,80%)] md:mx-3">|</span>
 );
 
 const Index = () => {
@@ -124,7 +137,7 @@ const Index = () => {
   const navigate = useNavigate();
 
   const routeState = location.state as DashboardLocationState | undefined;
-  const patient = routeState?.patient;
+  const patient = routeState?.patient ?? readStoredLastViewedPatient(patients);
   const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
   const routeLayoutOrder = React.useMemo(
@@ -152,11 +165,40 @@ const Index = () => {
   }, [patient]);
 
   React.useEffect(() => {
-    const onScroll = () => setIsScrolled(window.scrollY > 32);
+    let frameId: number | null = null;
+
+    const updateScrolledState = () => {
+      const currentScrollY = window.scrollY;
+
+      setIsScrolled((previous) => {
+        if (previous) {
+          return currentScrollY > HEADER_COMPACT_EXIT_SCROLL_Y;
+        }
+
+        return currentScrollY > HEADER_COMPACT_ENTER_SCROLL_Y;
+      });
+    };
+
+    const onScroll = () => {
+      if (frameId !== null) return;
+
+      frameId = window.requestAnimationFrame(() => {
+        frameId = null;
+        updateScrolledState();
+      });
+    };
+
+    updateScrolledState();
 
     window.addEventListener("scroll", onScroll, { passive: true });
 
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
+    };
   }, []);
 
   React.useEffect(() => {
@@ -164,6 +206,14 @@ const Index = () => {
       navigate("/", { replace: true });
     }
   }, [navigate, patient]);
+
+  React.useEffect(() => {
+    if (!patient) {
+      return;
+    }
+
+    writeStoredLastViewedPatientId(patient.id);
+  }, [patient]);
 
   React.useEffect(() => {
     setOrder(routeLayoutOrder);
@@ -249,32 +299,76 @@ const Index = () => {
       />
 
       <div className="transition-[padding-left] duration-300 lg:pl-[var(--dashboard-sidebar-width,280px)]">
-        <header className="sticky top-0 z-40 border-b border-[hsl(214,22%,88%)] bg-white/95 backdrop-blur">
-          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 py-4 md:px-6">
-            <div className="min-w-0">
-              <h1
-                className={`font-bold tracking-[-0.03em] text-heading transition-all ${
-                  isScrolled ? "text-[24px]" : "text-[42px]"
-                }`}
-              >
-                {patient.name}
-              </h1>
+        <header className="sticky top-0 z-40 border-b border-[rgba(224,231,243,0.9)] bg-[radial-gradient(circle_at_top_left,rgba(247,250,255,0.95),rgba(255,255,255,0.98)_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,255,0.96))] shadow-[0_10px_28px_rgba(148,163,184,0.08)] backdrop-blur-xl">
+          <div className="mx-auto w-full max-w-[1280px] px-5 py-6 md:px-8 md:py-7">
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
+                <h1
+                  className={`min-w-0 pt-1 md:pt-2 font-bold tracking-[-0.045em] text-[hsl(222,28%,16%)] transition-all ${
+                    isScrolled ? "text-[30px] leading-[1.02]" : "text-[38px] leading-[0.96] md:text-[48px]"
+                  }`}
+                >
+                  {patient.name}
+                </h1>
 
-              {!isScrolled && (
-                <div className="mt-3 flex flex-wrap items-center text-[14px]">
-                  <span className="font-normal text-muted-foreground">
+                <div className="flex shrink-0 flex-wrap items-stretch justify-end gap-3">
+                  <button
+                    type="button"
+                    onClick={() => !isRefreshing && setIsRefreshing(true)}
+                    className={`inline-flex items-center rounded-[8px] border border-[rgba(214,223,237,0.95)] bg-white text-left font-semibold text-[hsl(222,24%,22%)] transition-colors hover:border-[rgba(194,206,226,1)] hover:bg-[hsl(210,40%,99%)] focus:outline-none focus:ring-2 focus:ring-[hsl(214,36%,78%)] ${
+                      isScrolled
+                        ? "h-11 w-11 justify-center p-0"
+                        : "min-h-[56px] min-w-[158px] gap-2 px-3 py-2.5 text-[12px] md:min-w-[166px] md:text-[13px]"
+                    }`}
+                    aria-label="Atjaunot datus"
+                  >
+                    <span
+                      className={`flex shrink-0 items-center justify-center rounded-[7px] border border-[rgba(223,229,240,0.95)] bg-[hsl(210,40%,99%)] text-[hsl(221,22%,24%)] ${
+                        isScrolled ? "h-8 w-8 border-0 bg-transparent" : "h-8 w-8"
+                      }`}
+                    >
+                      <RefreshCw
+                        className={isRefreshing ? "animate-spin" : ""}
+                        size={18}
+                        strokeWidth={1.9}
+                      />
+                    </span>
+                    <span
+                      className={`leading-[1.12] ${isScrolled ? "hidden" : "block"}`}
+                    >
+                      <span className="block text-[13px] font-semibold tracking-[-0.02em] text-[hsl(222,24%,22%)] md:text-[14px]">
+                        {isRefreshing ? "Atjauno datus..." : "Atjaunot datus"}
+                      </span>
+                      <span className="mt-0.5 block text-[10px] font-medium text-[hsl(220,16%,52%)] md:text-[11px]">
+                        Pēdējo reizi: {formatRefreshTime(lastRefreshedAt)}
+                      </span>
+                    </span>
+                  </button>
+                </div>
+              </div>
+
+              <div
+                className={`overflow-hidden transition-[max-height,opacity,margin] duration-200 ease-out ${
+                  isScrolled
+                    ? "mt-0 max-h-0 opacity-0 pointer-events-none"
+                    : "mt-4 max-h-20 opacity-100"
+                }`}
+                aria-hidden={isScrolled}
+              >
+                <div className="flex flex-wrap items-center text-[12px] leading-6 text-[hsl(220,16%,52%)] md:text-[13px]">
+                  <span className="font-medium text-[hsl(220,16%,52%)]">
                     Personas kods
                   </span>
 
-                  <span className="ml-1 font-semibold text-text-dark">
+                  <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
                     {patient.personalCode}
                   </span>
 
                   <InfoDivider />
 
-                  <span className="font-normal text-muted-foreground">Vecums</span>
+                  <span className="font-medium text-[hsl(220,16%,52%)]">Vecums</span>
 
-                  <span className="ml-1 font-semibold text-text-dark">
+                  <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
                     {patient.age} gadi
                   </span>
 
@@ -282,13 +376,13 @@ const Index = () => {
                     <>
                       <InfoDivider />
 
-                      <Phone className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+                      <Phone className="ml-0.5 h-3.5 w-3.5 text-[hsl(220,18%,56%)]" />
 
-                      <span className="ml-1 font-normal text-muted-foreground">
+                      <span className="ml-1.5 font-medium text-[hsl(220,16%,52%)]">
                         Telefona nr.
                       </span>
 
-                      <span className="ml-1 font-semibold text-text-dark">
+                      <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
                         {phone}
                       </span>
                     </>
@@ -298,52 +392,20 @@ const Index = () => {
                     <>
                       <InfoDivider />
 
-                      <Mail className="ml-1 h-3.5 w-3.5 text-muted-foreground" />
+                      <Mail className="ml-0.5 h-3.5 w-3.5 text-[hsl(220,18%,56%)]" />
 
-                      <span className="ml-1 font-normal text-muted-foreground">
+                      <span className="ml-1.5 font-medium text-[hsl(220,16%,52%)]">
                         E-pasts
                       </span>
 
-                      <span className="ml-1 font-semibold text-text-dark">
+                      <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
                         {email}
                       </span>
                     </>
                   )}
                 </div>
-              )}
-            </div>
-
-            <button
-              type="button"
-              onClick={() => !isRefreshing && setIsRefreshing(true)}
-              className={`flex items-center gap-2.5 text-left transition-all ${
-                isScrolled
-                  ? ""
-                  : "rounded-[6px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-3 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
-              }`}
-            >
-              <div
-                className="relative flex h-10 w-10 items-center justify-center rounded-[5px] text-heading"
-                aria-hidden="true"
-              >
-                <RefreshCw
-                  className={isRefreshing ? "animate-spin" : ""}
-                  size={18}
-                />
               </div>
-
-              {!isScrolled && (
-                <div>
-                  <div className="text-sm font-semibold text-heading">
-                    {isRefreshing ? "Notiek atjaunošana..." : "Atjaunot datus"}
-                  </div>
-
-                  <div className="text-xs text-muted-foreground">
-                    Pēdējo reizi: {formatRefreshTime(lastRefreshedAt)}
-                  </div>
-                </div>
-              )}
-            </button>
+            </div>
           </div>
         </header>
 

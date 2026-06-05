@@ -16,6 +16,10 @@ import {
   readStoredDashboardSpecialty,
   type SpecialtyId,
 } from "@/lib/specialties";
+import {
+  readStoredLastViewedPatient,
+  writeStoredLastViewedPatientId,
+} from "@/lib/last-viewed-patient";
 import { Patient } from "@/types/patient";
 
 type SearchLocationState = {
@@ -76,7 +80,8 @@ export default function SearchPage({
   const routeState = location.state as SearchLocationState | undefined;
   const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
-  const activePatient = routeState?.patient ?? patients[0];
+  const activePatient =
+    routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
 
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
@@ -126,6 +131,10 @@ export default function SearchPage({
   React.useEffect(() => {
     setQuery(formatPersonalCode(routeState?.searchQuery ?? ""));
   }, [routeState?.searchQuery]);
+
+  React.useEffect(() => {
+    writeStoredLastViewedPatientId(activePatient.id);
+  }, [activePatient]);
 
   const handleQueryChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const isDeleting = event.target.value.length < query.length;

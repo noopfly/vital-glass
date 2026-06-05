@@ -5,6 +5,7 @@ import {
   ChevronDown,
   ChevronUp,
   Columns2,
+  FileText,
   GripVertical,
   Info,
   Loader2,
@@ -15,6 +16,7 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+import { registeredDoctorAccount } from "@/lib/doctor-account";
 import {
   filterDashboardLayoutOrderBySpecialty,
   defaultDashboardLayoutOrder,
@@ -31,7 +33,7 @@ type DashboardSidebarProps = {
   activePatient: Patient;
   recentPatients: Patient[];
   allPatients: Patient[];
-  currentView: "dashboard" | "day-list" | "search";
+  currentView: "dashboard" | "day-list" | "search" | "documents";
   dayListCount?: number;
   layoutOrder?: DashboardComponentKey[];
   specialtyId?: SpecialtyId | null;
@@ -68,6 +70,10 @@ function getInitials(name: string) {
   return name
     .split(" ")
     .filter(Boolean)
+    .filter((part) => {
+      const normalized = part.replace(/\./g, "").toLowerCase();
+      return normalized !== "dr";
+    })
     .slice(0, 2)
     .map((part) => part[0]?.toUpperCase() ?? "")
     .join("");
@@ -741,6 +747,29 @@ export default function DashboardSidebar({
               </>
             )}
           </Link>
+
+          <Link
+            to="/document-templates"
+            state={{ patient: activePatient, layoutOrder, specialtyId }}
+            title={isCollapsed ? "Dokumentu sagataves" : undefined}
+            className={cn(
+              "mt-3 flex w-full items-center rounded-[9px] px-3 py-3 text-left transition",
+              currentView === "documents"
+                ? "bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] text-white"
+                : "border border-[rgba(216,225,233,0.96)] bg-white text-[hsl(214,30%,28%)] hover:border-[rgba(196,210,223,0.96)]",
+              isCollapsed ? "mx-auto h-11 w-11 justify-center rounded-[8px] px-0" : "gap-3",
+            )}
+          >
+            <div className="flex h-5 w-5 shrink-0 items-center justify-center">
+              <FileText className="h-4 w-4" />
+            </div>
+
+            {!isCollapsed && (
+              <span className="min-w-0 flex-1 text-[13px] font-semibold">
+                Dokumentu sagataves
+              </span>
+            )}
+          </Link>
         </div>
 
         {!isCollapsed && (
@@ -912,15 +941,15 @@ export default function DashboardSidebar({
             aria-haspopup={!isCollapsed ? "menu" : undefined}
           >
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,38%,22%),hsl(217,40%,30%))] text-[11px] font-semibold text-white shadow-none">
-              {getInitials("Dr. A. Liepiņa")}
+              {getInitials(registeredDoctorAccount.name)}
             </div>
 
             {!isCollapsed && (
               <>
                 <div className="min-w-0 flex-1 text-left">
-                  <p className="text-[13px] font-semibold">Dr. A. Liepiņa</p>
+                  <p className="text-[13px] font-semibold">{registeredDoctorAccount.name}</p>
                   <p className="text-[11px] text-[hsl(214,16%,62%)]">
-                    Ģimenes ārsts
+                    {registeredDoctorAccount.role}
                   </p>
                 </div>
                 {isProfileMenuOpen ? (

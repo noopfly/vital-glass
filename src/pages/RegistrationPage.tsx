@@ -34,6 +34,7 @@ import { toast } from "sonner";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { registeredDoctorAccount } from "@/lib/doctor-account";
 import { writeStoredDashboardLayoutOrder } from "@/lib/dashboard-layout";
 import {
   type SpecialtyId,
@@ -947,7 +948,7 @@ export default function RegistrationPage() {
                 <UserRound className="h-3.5 w-3.5" />
               </div>
               <span className="text-[11px] font-medium text-[hsl(219,30%,22%)]">
-                Dr. A. Liepiņa
+                {registeredDoctorAccount.name}
               </span>
             </div>
           </div>

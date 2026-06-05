@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { AlertTriangle, Clock3, Pill, X } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
@@ -154,6 +154,7 @@ const compactSignalBadgeClass = "shrink-0 gap-1 px-1.5 py-0.5 text-[8px] [&>svg]
 const fullSignalBadgeClass = "shrink-0 gap-1 px-1.5 py-0.5 text-[8px] [&>svg]:h-[10px] [&>svg]:w-[10px]";
 const interactionOverlayOffsetX = -8;
 const interactionOverlayOffsetY = 18;
+const wideMedicationTableBreakpoint = 760;
 
 function MedicationSignalOverlay({
   medication,
@@ -487,14 +488,40 @@ function MedicationTableContent({
 }
 
 const MedicationTable = () => {
+  const sectionRef = useRef<HTMLElement | null>(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [isWideCard, setIsWideCard] = useState(false);
   const visibleMedicationCount = medications.length;
   const totalMedicationCount = medications.length;
 
+  useLayoutEffect(() => {
+    const element = sectionRef.current;
+    if (!element) return;
+
+    const updateIsWideCard = () => {
+      setIsWideCard(element.clientWidth >= wideMedicationTableBreakpoint);
+    };
+
+    updateIsWideCard();
+
+    if (typeof ResizeObserver === "undefined") return;
+
+    const observer = new ResizeObserver(() => {
+      updateIsWideCard();
+    });
+
+    observer.observe(element);
+
+    return () => observer.disconnect();
+  }, []);
+
   return (
     <>
-      <section className="flex h-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="mb-3.5 flex items-center gap-3">
+      <section
+        ref={sectionRef}
+        className="flex h-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-4 shadow-[0_8px_18px_rgba(29,53,87,0.05)]"
+      >
+        <div className="mb-5 flex items-center gap-3">
           <div className={sectionIconClass}>
             <Pill size={18} className="text-current" />
           </div>
@@ -509,8 +536,8 @@ const MedicationTable = () => {
           </div>
         </div>
 
-        <div className="flex-1">
-          <MedicationTableContent mode="compact" />
+        <div className="mt-1 flex-1">
+          <MedicationTableContent mode={isWideCard ? "full" : "compact"} />
         </div>
 
         <div className="mt-auto flex items-center justify-between pt-4">
