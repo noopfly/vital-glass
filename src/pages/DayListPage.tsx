@@ -1,6 +1,9 @@
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
+  CalendarDays,
+  ChevronLeft,
+  ChevronRight,
   CircleAlert,
   ClipboardCheck,
   Clock3,
@@ -12,6 +15,13 @@ import {
 import DashboardSidebar from "@/components/DashboardSidebar";
 import { Button } from "@/components/ui/button";
 import { patients } from "@/data/patients";
+import {
+  type DayListEntry,
+  type DayListEntriesByDate,
+  formatDayListDateKey,
+  readStoredDayLists,
+  writeStoredDayLists,
+} from "@/lib/day-list";
 import { registeredDoctorAccount } from "@/lib/doctor-account";
 import {
   filterDashboardLayoutOrderBySpecialty,
@@ -20,13 +30,13 @@ import {
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
 import {
-  readStoredDashboardSpecialty,
-  type SpecialtyId,
-} from "@/lib/specialties";
-import {
   readStoredLastViewedPatient,
   writeStoredLastViewedPatientId,
 } from "@/lib/last-viewed-patient";
+import {
+  readStoredDashboardSpecialty,
+  type SpecialtyId,
+} from "@/lib/specialties";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
 
@@ -34,16 +44,6 @@ type DayListLocationState = {
   patient?: Patient;
   layoutOrder?: DashboardComponentKey[];
   specialtyId?: SpecialtyId;
-};
-
-type QueueStatus = "ready" | "loading" | "waiting" | "error";
-
-type DayListEntry = {
-  patientId: string;
-  status: QueueStatus;
-  progress: number;
-  updatedAt: string | null;
-  attempts: number;
 };
 
 const maxParallelPreloads = 2;
@@ -55,13 +55,13 @@ const personalCodeLength =
 const pageBg = "bg-[hsl(214,34%,97%)]";
 
 const panelClass =
-  "relative overflow-hidden rounded-[8px] border border-[hsl(214,28%,88%)] bg-white";
+  "relative overflow-hidden rounded-[18px] border border-[hsl(214,28%,88%)] bg-white shadow-[0_18px_42px_rgba(29,53,87,0.05)]";
 
 const sectionLabelClass =
   "text-[11px] font-semibold uppercase tracking-[0.15em] text-[hsl(218,22%,42%)]";
 
 const tableGridClass =
-  "grid min-w-[860px] grid-cols-[1.55fr_1.15fr_0.9fr_1.45fr_0.8fr_0.85fr] items-center gap-4";
+  "grid min-w-[920px] grid-cols-[1.55fr_1.15fr_0.9fr_1.45fr_0.8fr_0.85fr] items-center gap-4";
 
 function formatClock(date: Date) {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -70,100 +70,100 @@ function formatClock(date: Date) {
   }).format(date);
 }
 
-function normalizeText(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase();
-}
-
 function formatPersonalCode(raw: string) {
   const digits = raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
 
-  if (digits.length <= personalCodeGroupSizes[0]) return digits;
+  if (digits.length <= personalCodeGroupSizes[0]) {
+    return digits;
+  }
 
   return `${digits.slice(0, personalCodeGroupSizes[0])}-${digits.slice(
     personalCodeGroupSizes[0],
   )}`;
 }
 
-function createInitialEntries(): DayListEntry[] {
-  return [
-    {
-      patientId: "2",
-      status: "ready",
-      progress: 100,
-      updatedAt: "07:42",
-      attempts: 1,
-    },
-    {
-      patientId: "3",
-      status: "ready",
-      progress: 100,
-      updatedAt: "07:48",
-      attempts: 1,
-    },
-    {
-      patientId: "1",
-      status: "ready",
-      progress: 100,
-      updatedAt: "10:22",
-      attempts: 1,
-    },
-    {
-      patientId: "4",
-      status: "ready",
-      progress: 100,
-      updatedAt: "10:22",
-      attempts: 1,
-    },
-    {
-      patientId: "5",
-      status: "ready",
-      progress: 100,
-      updatedAt: "10:22",
-      attempts: 1,
-    },
-    {
-      patientId: "6",
-      status: "error",
-      progress: 0,
-      updatedAt: "07:51",
-      attempts: 1,
-    },
-    {
-      patientId: "7",
-      status: "ready",
-      progress: 100,
-      updatedAt: "10:22",
-      attempts: 1,
-    },
-  ];
+function getPersonalCodeDigits(raw: string) {
+  return raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
 }
 
-function getStatusMeta(status: QueueStatus) {
+function parseDateKey(dateKey: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function addCalendarDays(date: Date, days: number) {
+  const nextDate = new Date(date);
+  nextDate.setDate(nextDate.getDate() + days);
+  return nextDate;
+}
+
+function capitalize(value: string) {
+  return value.charAt(0).toUpperCase() + value.slice(1);
+}
+
+function getDayNumber(dateKey: string) {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  return Math.floor(Date.UTC(year, month - 1, day) / 86400000);
+}
+
+function formatNumericDate(date: Date) {
+  return new Intl.DateTimeFormat("lv-LV", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
+}
+
+function formatMonthDate(date: Date) {
+  return capitalize(
+    new Intl.DateTimeFormat("lv-LV", {
+      day: "numeric",
+      month: "long",
+    }).format(date),
+  );
+}
+
+function formatWeekday(date: Date) {
+  return capitalize(
+    new Intl.DateTimeFormat("lv-LV", {
+      weekday: "long",
+    }).format(date),
+  );
+}
+
+function getRelativeDayLabel(dateKey: string, todayKey: string) {
+  const difference = getDayNumber(dateKey) - getDayNumber(todayKey);
+
+  if (difference === -1) return "Vakar";
+  if (difference === 0) return "Šodiena";
+  if (difference === 1) return "Rīt";
+
+  return formatWeekday(parseDateKey(dateKey));
+}
+
+function getStatusMeta(status: DayListEntry["status"]) {
   switch (status) {
     case "ready":
       return {
         label: "Gatavs",
         badgeClass:
-          "bg-[hsl(151,42%,94%)] text-[hsl(154,44%,31%)] border-[hsl(151,35%,88%)]",
+          "border-[hsl(151,35%,88%)] bg-[hsl(151,42%,94%)] text-[hsl(154,44%,31%)]",
         dotClass: "bg-[hsl(154,48%,40%)]",
-        progressClass: "bg-[hsl(216,48%,58%)]",
+        progressClass: "bg-[hsl(216,62%,56%)]",
       };
     case "loading":
       return {
         label: "Notiek",
         badgeClass:
-          "bg-[hsl(216,48%,95%)] text-[hsl(217,42%,38%)] border-[hsl(216,42%,88%)]",
+          "border-[hsl(216,42%,88%)] bg-[hsl(216,48%,95%)] text-[hsl(217,42%,38%)]",
         dotClass: "bg-[hsl(216,48%,50%)]",
-        progressClass: "bg-[hsl(216,48%,58%)]",
+        progressClass: "bg-[hsl(216,62%,56%)]",
       };
     case "waiting":
       return {
         label: "Rindā",
         badgeClass:
-          "bg-[hsl(42,62%,95%)] text-[hsl(36,48%,36%)] border-[hsl(42,44%,86%)]",
+          "border-[hsl(42,44%,86%)] bg-[hsl(42,62%,95%)] text-[hsl(36,48%,36%)]",
         dotClass: "bg-[hsl(38,62%,48%)]",
         progressClass: "bg-[hsl(38,62%,50%)]",
       };
@@ -171,11 +171,21 @@ function getStatusMeta(status: QueueStatus) {
       return {
         label: "Kļūda",
         badgeClass:
-          "bg-[hsl(0,68%,97%)] text-[hsl(0,58%,48%)] border-[hsl(0,54%,89%)]",
+          "border-[hsl(0,54%,89%)] bg-[hsl(0,68%,97%)] text-[hsl(0,58%,48%)]",
         dotClass: "bg-[hsl(0,58%,50%)]",
         progressClass: "bg-[hsl(0,58%,50%)]",
       };
   }
+}
+
+function createQueuedEntry(patientId: string): DayListEntry {
+  return {
+    patientId,
+    status: "waiting",
+    progress: 0,
+    updatedAt: null,
+    attempts: 0,
+  };
 }
 
 export default function DayListPage() {
@@ -187,6 +197,9 @@ export default function DayListPage() {
   const activePatient =
     routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
 
+  const todayKey = React.useMemo(() => formatDayListDateKey(new Date()), []);
+  const [selectedDateKey, setSelectedDateKey] = React.useState(todayKey);
+
   const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
     () =>
       filterDashboardLayoutOrderBySpecialty(
@@ -197,29 +210,32 @@ export default function DayListPage() {
       ),
   );
 
-  const [query, setQuery] = React.useState("");
+  const [codeQuery, setCodeQuery] = React.useState("");
   const [error, setError] = React.useState("");
-  const [entries, setEntries] = React.useState<DayListEntry[]>(
-    () => createInitialEntries(),
-  );
+  const [dayListsByDate, setDayListsByDate] =
+    React.useState<DayListEntriesByDate>(() => readStoredDayLists(todayKey));
 
   const inputRefs = React.useRef<Array<HTMLInputElement | null>>([]);
 
-  const personalCodeDigits = React.useMemo(() => {
-    const digits = query
-      .replace(/[^\d]/g, "")
-      .slice(0, personalCodeLength)
-      .split("");
+  const selectedDate = React.useMemo(
+    () => parseDateKey(selectedDateKey),
+    [selectedDateKey],
+  );
 
-    return Array.from(
-      { length: personalCodeLength },
-      (_, index) => digits[index] ?? "",
-    );
-  }, [query]);
+  const previousDate = React.useMemo(
+    () => addCalendarDays(selectedDate, -1),
+    [selectedDate],
+  );
 
-  React.useEffect(() => {
-    writeStoredLastViewedPatientId(activePatient.id);
-  }, [activePatient]);
+  const nextDate = React.useMemo(
+    () => addCalendarDays(selectedDate, 1),
+    [selectedDate],
+  );
+
+  const entries = React.useMemo(
+    () => dayListsByDate[selectedDateKey] ?? [],
+    [dayListsByDate, selectedDateKey],
+  );
 
   const patientMap = React.useMemo(
     () =>
@@ -229,14 +245,36 @@ export default function DayListPage() {
     [],
   );
 
+  const queuedPatientIds = React.useMemo(
+    () => new Set(entries.map((entry) => entry.patientId)),
+    [entries],
+  );
+
   const recentPatients = React.useMemo(
     () =>
       [
         activePatient,
         ...patients.filter((patient) => patient.id !== activePatient.id),
-      ].slice(0, 5),
+      ]
+        .filter((patient, index, array) => {
+          return array.findIndex((item) => item.id === patient.id) === index;
+        })
+        .slice(0, 5),
     [activePatient],
   );
+
+  const personalCodeDigits = React.useMemo(() => {
+    const digits = getPersonalCodeDigits(codeQuery).split("");
+
+    return Array.from(
+      { length: personalCodeLength },
+      (_, index) => digits[index] ?? "",
+    );
+  }, [codeQuery]);
+
+  React.useEffect(() => {
+    writeStoredLastViewedPatientId(activePatient.id);
+  }, [activePatient]);
 
   React.useEffect(() => {
     setLayoutOrder(
@@ -249,28 +287,33 @@ export default function DayListPage() {
     );
   }, [routeState?.layoutOrder, specialtyId]);
 
-  const updateQueryFromDigits = React.useCallback(
-    (nextDigits: string[]) => {
-      setQuery(formatPersonalCode(nextDigits.join("")));
-      if (error) setError("");
-    },
-    [error],
-  );
+  React.useEffect(() => {
+    setError("");
+  }, [selectedDateKey]);
 
   React.useEffect(() => {
-    setEntries((current) => {
-      const loadingCount = current.filter(
+    writeStoredDayLists(dayListsByDate);
+  }, [dayListsByDate]);
+
+  React.useEffect(() => {
+    setDayListsByDate((current) => {
+      const currentEntries = current[selectedDateKey] ?? [];
+      const loadingCount = currentEntries.filter(
         (entry) => entry.status === "loading",
       ).length;
 
       let freeSlots = maxParallelPreloads - loadingCount;
 
-      if (freeSlots <= 0) return current;
+      if (freeSlots <= 0) {
+        return current;
+      }
 
       let changed = false;
 
-      const next = current.map((entry) => {
-        if (entry.status !== "waiting" || freeSlots <= 0) return entry;
+      const nextEntries = currentEntries.map((entry) => {
+        if (entry.status !== "waiting" || freeSlots <= 0) {
+          return entry;
+        }
 
         freeSlots -= 1;
         changed = true;
@@ -283,9 +326,16 @@ export default function DayListPage() {
         };
       });
 
-      return changed ? next : current;
+      if (!changed) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [selectedDateKey]: nextEntries,
+      };
     });
-  }, [entries]);
+  }, [entries, selectedDateKey]);
 
   React.useEffect(() => {
     if (!entries.some((entry) => entry.status === "loading")) {
@@ -293,19 +343,25 @@ export default function DayListPage() {
     }
 
     const intervalId = window.setInterval(() => {
-      setEntries((current) =>
-        current.map((entry) => {
-          if (entry.status !== "loading") return entry;
+      setDayListsByDate((current) => {
+        const currentEntries = current[selectedDateKey] ?? [];
+        let changed = false;
+
+        const nextEntries = currentEntries.map((entry) => {
+          if (entry.status !== "loading") {
+            return entry;
+          }
 
           const increment =
             8 + ((Number(entry.patientId) * 3 + entry.progress) % 11);
-
           const nextProgress = Math.min(100, entry.progress + increment);
+
+          changed = true;
 
           if (nextProgress >= 100) {
             return {
               ...entry,
-              status: "ready",
+              status: "ready" as const,
               progress: 100,
               updatedAt: formatClock(new Date()),
             };
@@ -315,78 +371,113 @@ export default function DayListPage() {
             ...entry,
             progress: nextProgress,
           };
-        }),
-      );
+        });
+
+        if (!changed) {
+          return current;
+        }
+
+        return {
+          ...current,
+          [selectedDateKey]: nextEntries,
+        };
+      });
     }, 900);
 
     return () => window.clearInterval(intervalId);
-  }, [entries]);
+  }, [entries, selectedDateKey]);
 
   const stats = React.useMemo(() => {
     const ready = entries.filter((entry) => entry.status === "ready").length;
-    const loading = entries.filter((entry) => entry.status === "loading").length;
-    const waiting = entries.filter((entry) => entry.status === "waiting").length;
+    const loading = entries.filter(
+      (entry) => entry.status === "loading",
+    ).length;
+    const waiting = entries.filter(
+      (entry) => entry.status === "waiting",
+    ).length;
     const errorCount = entries.filter(
       (entry) => entry.status === "error",
     ).length;
-
     const remaining = loading + waiting;
-
-    const estimatedMinutes =
-      remaining === 0
-        ? 5
-        : Math.ceil(remaining / maxParallelPreloads) *
-          estimatedMinutesPerPatient;
 
     return {
       ready,
       remaining,
-      estimatedMinutes,
+      estimatedMinutes:
+        remaining === 0
+          ? 0
+          : Math.ceil(remaining / maxParallelPreloads) *
+            estimatedMinutesPerPatient,
       errorCount,
     };
   }, [entries]);
 
-  const handleAddPatient = () => {
-    const trimmedQuery = query.trim();
-    const normalizedQuery = normalizeText(trimmedQuery);
+  const updateCodeQueryFromDigits = React.useCallback(
+    (nextDigits: string[]) => {
+      setCodeQuery(formatPersonalCode(nextDigits.join("")));
+      if (error) {
+        setError("");
+      }
+    },
+    [error],
+  );
+
+  const updateEntriesForSelectedDate = React.useCallback(
+    (updater: (entries: DayListEntry[]) => DayListEntry[]) => {
+      setDayListsByDate((current) => ({
+        ...current,
+        [selectedDateKey]: updater(current[selectedDateKey] ?? []),
+      }));
+    },
+    [selectedDateKey],
+  );
+
+  const addPatientToSelectedDate = React.useCallback(
+    (patient: Patient) => {
+      if (queuedPatientIds.has(patient.id)) {
+        setError("Šis pacients jau ir pievienots šīs dienas sarakstam.");
+        return;
+      }
+
+      updateEntriesForSelectedDate((current) => [
+        createQueuedEntry(patient.id),
+        ...current,
+      ]);
+
+      setCodeQuery("");
+      setError("");
+    },
+    [queuedPatientIds, updateEntriesForSelectedDate],
+  );
+
+  const handleAddPatientByCode = () => {
+    const trimmedQuery = codeQuery.trim();
+    const queryDigits = getPersonalCodeDigits(trimmedQuery);
 
     if (!trimmedQuery) {
-      setError("Ievadiet personas kodu");
+      setError("Ievadiet personas kodu.");
       return;
     }
 
-    const patient = patients.find((item) => {
-      if (item.personalCode === trimmedQuery) return true;
-      return normalizeText(item.name).includes(normalizedQuery);
-    });
+    if (queryDigits.length < personalCodeLength) {
+      setError("Ievadiet pilnu pacienta personas kodu.");
+      return;
+    }
+
+    const patient = patients.find(
+      (item) => getPersonalCodeDigits(item.personalCode) === queryDigits,
+    );
 
     if (!patient) {
       setError("Pacients netika atrasts.");
       return;
     }
 
-    if (entries.some((entry) => entry.patientId === patient.id)) {
-      setError("Šis pacients jau ir pievienots dienas sarakstam.");
-      return;
-    }
-
-    setEntries((current) => [
-      {
-        patientId: patient.id,
-        status: "waiting",
-        progress: 0,
-        updatedAt: null,
-        attempts: 0,
-      },
-      ...current,
-    ]);
-
-    setQuery("");
-    setError("");
+    addPatientToSelectedDate(patient);
   };
 
   const handleRetry = (patientId: string) => {
-    setEntries((current) =>
+    updateEntriesForSelectedDate((current) =>
       current.map((entry) =>
         entry.patientId === patientId
           ? {
@@ -401,10 +492,12 @@ export default function DayListPage() {
   };
 
   const handleRemove = (patientId: string) => {
-    setEntries((current) =>
+    updateEntriesForSelectedDate((current) =>
       current.filter((entry) => entry.patientId !== patientId),
     );
   };
+
+  const headerDayLabel = getRelativeDayLabel(selectedDateKey, todayKey);
 
   return (
     <div className={cn("min-h-screen overflow-y-auto", pageBg)}>
@@ -419,21 +512,29 @@ export default function DayListPage() {
         onSaveLayoutOrder={setLayoutOrder}
       />
 
-      <main className="min-h-screen px-4 py-3 sm:px-5 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+24px)] lg:pr-6 lg:pt-5">
-        <section className="mx-auto flex w-full max-w-[1240px] flex-col gap-4">
-          <section className="px-1 py-1">
-            <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <div className="min-w-0">
-                  <h1 className="text-[32px] font-semibold tracking-[-0.04em] text-[hsl(217,40%,18%)]">
-                    {registeredDoctorAccount.name} dienas saraksts
-                  </h1>
+      <main className="min-h-screen px-4 py-4 sm:px-5 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+24px)] lg:pr-6 lg:pt-6">
+        <section className="mx-auto flex w-full max-w-[1280px] flex-col gap-4">
+          <header className="px-1 pb-2 pt-1 sm:px-0">
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(500px,600px)] lg:items-start">
+              <div className="flex min-w-0 flex-col justify-center">
+                <h1 className="max-w-[700px] text-[28px] font-semibold leading-[1.05] tracking-[-0.05em] text-[hsl(217,40%,18%)] sm:text-[34px] xl:text-[38px]">
+                  {registeredDoctorAccount.name} dienas saraksts
+                </h1>
 
-                  <p className="mt-3 text-[14px] leading-6 text-[hsl(214,18%,44%)]">
-                    {"Pievienojiet \u0161\u012bs dienas pacientus, lai dati b\u016btu gatavi pirms viz\u012btes."}
-                  </p>
+                <div className="mt-4 flex flex-wrap items-center gap-2 text-[15px] font-semibold text-[hsl(220,58%,52%)] md:text-[16px]">
+                  <span>{headerDayLabel}</span>
+                  <span className="text-[hsl(217,18%,64%)]">·</span>
+                  <span>{formatNumericDate(selectedDate)}</span>
+                  <CalendarDays className="h-4 w-4 text-[hsl(217,18%,64%)]" />
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3 lg:min-w-[430px]">
+                <p className="mt-3 max-w-[620px] text-[14px] leading-6 text-[hsl(214,18%,44%)] md:text-[15px]">
+                  Pievienojiet šīs dienas pacientus, lai dati būtu gatavi pirms
+                  vizītes.
+                </p>
+              </div>
+
+              <div className="grid gap-2.5 sm:grid-cols-3 lg:self-start">
                 {[
                   {
                     icon: ClipboardCheck,
@@ -459,35 +560,162 @@ export default function DayListPage() {
                 ].map(({ icon: Icon, label, value, valueClass }) => (
                   <div
                     key={label}
-                    className="rounded-[8px] border border-[rgba(214,223,231,0.8)] bg-transparent px-4 py-3"
+                    className="flex min-h-[72px] flex-col justify-between rounded-[14px] border border-[rgba(214,223,231,0.82)] px-3.5 py-3"
                   >
-                    <div className="flex items-center gap-1.5 text-[hsl(218,17%,48%)]">
-                      <Icon className="h-3 w-3" strokeWidth={2} />
-                      <span className="text-[9px] font-semibold uppercase tracking-[0.14em]">
+                    <div className="flex items-center gap-2 text-[hsl(218,17%,48%)]">
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(220,46%,96%)]">
+                        <Icon className="h-[15px] w-[15px]" strokeWidth={2} />
+                      </span>
+                      <span className="text-[10px] font-semibold uppercase leading-tight tracking-[0.14em]">
                         {label}
                       </span>
                     </div>
 
-                    <p
-                      className={cn(
-                        "mt-1.5 text-[21px] font-medium leading-none tracking-[-0.03em]",
-                        valueClass,
-                      )}
-                    >
-                      {value}
-                    </p>
+                    <div className="mt-2">
+                      <p
+                        className={cn(
+                          "text-[20px] font-semibold leading-none tracking-[-0.04em]",
+                          valueClass,
+                        )}
+                      >
+                        {value}
+                      </p>
+                    </div>
                   </div>
                 ))}
-                </div>
               </div>
-          </section>
+            </div>
+          </header>
 
-          <div className={panelClass}>
+          <div className={cn(panelClass, "overflow-hidden")}>
+            <section className="px-5 py-5 sm:px-6 xl:px-7">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <p className={sectionLabelClass}>Dienas izvēle</p>
+                <span className="rounded-full bg-[hsl(220,46%,96%)] px-3 py-1 text-[12px] font-medium text-[hsl(220,48%,46%)]">
+                  Saraksts: {formatMonthDate(selectedDate)}
+                </span>
+              </div>
+              <div className="grid gap-3 md:grid-cols-[1fr_1.08fr_1fr]">
+                {[
+                  {
+                    date: previousDate,
+                    label: getRelativeDayLabel(
+                      formatDayListDateKey(previousDate),
+                      todayKey,
+                    ),
+                    icon: ChevronLeft,
+                    iconPlacement: "left" as const,
+                    action: () =>
+                      setSelectedDateKey(formatDayListDateKey(previousDate)),
+                    active: false,
+                  },
+                  {
+                    date: selectedDate,
+                    label: headerDayLabel,
+                    icon: CalendarDays,
+                    iconPlacement: "left" as const,
+                    action: () =>
+                      setSelectedDateKey(formatDayListDateKey(selectedDate)),
+                    active: true,
+                  },
+                  {
+                    date: nextDate,
+                    label: getRelativeDayLabel(
+                      formatDayListDateKey(nextDate),
+                      todayKey,
+                    ),
+                    icon: ChevronRight,
+                    iconPlacement: "right" as const,
+                    action: () =>
+                      setSelectedDateKey(formatDayListDateKey(nextDate)),
+                    active: false,
+                  },
+                ].map(
+                  ({
+                    date,
+                    label,
+                    icon: Icon,
+                    action,
+                    active,
+                    iconPlacement,
+                  }) => {
+                    const dateKey = formatDayListDateKey(date);
+                    const dayEntryCount = dayListsByDate[dateKey]?.length ?? 0;
+                   
+                    return (
+                      <button
+                        key={`${label}-${dateKey}`}
+                        type="button"
+                        onClick={action}
+                        className={cn(
+                          "flex min-h-[86px] items-center justify-between gap-3 rounded-[14px] border px-4 py-3 text-left transition",
+                          active
+                            ? "border-[hsl(220,36%,18%)] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white shadow-[0_16px_30px_rgba(29,53,87,0.18)]"
+                            : "border-[rgba(214,223,231,0.82)] bg-white text-[hsl(218,30%,24%)] hover:border-[rgba(189,202,215,0.96)] hover:bg-[hsl(214,28%,98%)]",
+                        )}
+                      >
+                        {iconPlacement !== "right" && (
+                          <div
+                            className={cn(
+                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]",
+                              active
+                                ? "bg-[rgba(255,255,255,0.1)]"
+                                : "bg-[hsl(214,24%,96%)] text-[hsl(217,22%,42%)]",
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                        )}
+
+                        <div className="min-w-0 flex-1">
+                          <p
+                            className={cn(
+                              "text-[11px] font-semibold uppercase tracking-[0.08em]",
+                              active
+                                ? "text-[rgba(255,255,255,0.88)]"
+                                : "text-[hsl(214,14%,44%)]",
+                            )}
+                          >
+                            {label}
+                          </p>
+                          <p className="mt-0.5 text-[16px] font-semibold tracking-[-0.03em] md:text-[18px]">
+                            {formatNumericDate(date)}
+                          </p>
+                          <p
+                            className={cn(
+                              "mt-1 text-[12px] font-medium",
+                              active
+                                ? "text-[rgba(255,255,255,0.7)]"
+                                : "text-[hsl(214,15%,52%)]",
+                            )}
+                          >
+                          </p>
+                        </div>
+
+                        {iconPlacement === "right" && (
+                          <div
+                            className={cn(
+                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]",
+                              active
+                                ? "bg-[rgba(255,255,255,0.1)]"
+                                : "bg-[hsl(214,24%,96%)] text-[hsl(217,22%,42%)]",
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                        )}
+                      </button>
+                    );
+                  },
+                )}
+              </div>
+            </section>
+
             <form
-              className="relative flex flex-col gap-5 px-5 py-5 sm:px-6 xl:px-7"
+              className="relative flex flex-col gap-5 border-t border-[hsl(214,26%,90%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.55))] px-5 py-5 sm:px-6 xl:px-7"
               onSubmit={(event) => {
                 event.preventDefault();
-                handleAddPatient();
+                handleAddPatientByCode();
               }}
             >
               <div className="min-w-0">
@@ -518,7 +746,7 @@ export default function DayListPage() {
 
                                 const nextDigits = [...personalCodeDigits];
                                 nextDigits[index] = nextValue;
-                                updateQueryFromDigits(nextDigits);
+                                updateCodeQueryFromDigits(nextDigits);
 
                                 if (
                                   nextValue &&
@@ -536,13 +764,13 @@ export default function DayListPage() {
 
                                   if (nextDigits[index]) {
                                     nextDigits[index] = "";
-                                    updateQueryFromDigits(nextDigits);
+                                    updateCodeQueryFromDigits(nextDigits);
                                     return;
                                   }
 
                                   if (index > 0) {
                                     nextDigits[index - 1] = "";
-                                    updateQueryFromDigits(nextDigits);
+                                    updateCodeQueryFromDigits(nextDigits);
                                     inputRefs.current[index - 1]?.focus();
                                   }
 
@@ -590,7 +818,7 @@ export default function DayListPage() {
                                   nextDigits[index + offset] = value;
                                 });
 
-                                updateQueryFromDigits(nextDigits);
+                                updateCodeQueryFromDigits(nextDigits);
 
                                 const nextFocusIndex = Math.min(
                                   index + pastedDigits.length,
@@ -635,26 +863,26 @@ export default function DayListPage() {
                 </div>
               </div>
             </form>
-          </div>
 
-          <div className={panelClass}>
-            <div className="relative">
-              <div className="flex items-center border-b border-[hsl(214,26%,90%)] px-5 py-3.5 sm:px-6 xl:px-7">
+            <section className="relative border-t border-[hsl(214,26%,90%)] bg-white">
+              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(214,26%,90%)] px-5 py-4 sm:px-6 xl:px-7">
                 <div className="flex items-center gap-3">
-                  <p className={sectionLabelClass}>Šodienas pacienti</p>
+                  <p className="text-[13px] font-semibold uppercase tracking-[0.14em] text-[hsl(218,18%,36%)]">
+                    Pacienti {formatMonthDate(selectedDate)}
+                  </p>
 
-                  <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[hsl(220,46%,96%)] px-1.5 text-[12px] font-semibold text-[hsl(220,48%,46%)]">
+                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[hsl(220,46%,96%)] px-2 text-[12px] font-semibold text-[hsl(220,48%,46%)]">
                     {entries.length}
                   </span>
                 </div>
               </div>
 
               <div className="overflow-x-auto">
-                <div className="min-w-[860px]">
+                <div className="min-w-[920px]">
                   <div
                     className={cn(
                       tableGridClass,
-                      "border-b border-[hsl(214,26%,90%)] bg-[hsl(214,34%,98%)] px-6 py-2.5 text-[9.5px] font-semibold uppercase tracking-[0.14em] text-[hsl(218,16%,46%)] xl:px-7",
+                      "border-b border-[hsl(214,26%,90%)] bg-[hsl(214,34%,98%)] px-6 py-3 text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(218,16%,46%)] xl:px-7",
                     )}
                   >
                     <span>Pacients</span>
@@ -666,118 +894,131 @@ export default function DayListPage() {
                   </div>
 
                   <div className="bg-white">
-                    {entries.map((entry, index) => {
-                      const patient = patientMap[entry.patientId];
+                    {entries.length === 0 ? (
+                      <div className="px-6 py-12 text-center xl:px-7">
+                        <div className="mx-auto max-w-[520px]">
+                          <p className="text-[20px] font-semibold tracking-[-0.03em] text-[hsl(219,30%,22%)]">
+                            Šī diena pagaidām ir tukša
+                          </p>
+                          <p className="mt-3 text-[14px] leading-6 text-[hsl(214,16%,48%)]">
+                            Pievienojiet pacientus ar personas kodu.
+                          </p>
+                        </div>
+                      </div>
+                    ) : (
+                      entries.map((entry, index) => {
+                        const patient = patientMap[entry.patientId];
 
-                      if (!patient) return null;
+                        if (!patient) {
+                          return null;
+                        }
 
-                      const statusMeta = getStatusMeta(entry.status);
+                        const statusMeta = getStatusMeta(entry.status);
+                        const progressValue =
+                          entry.status === "error" ? 0 : entry.progress;
 
-                      const progressValue =
-                        entry.status === "error" ? 0 : entry.progress;
-
-                      return (
-                        <div
-                          key={entry.patientId}
-                              onClick={() =>
-                                navigate("/components", {
-                                  state: { patient, layoutOrder, specialtyId },
-                                })
-                              }
-                          className={cn(
-                            tableGridClass,
-                            "cursor-pointer px-6 py-2.5 text-[13px] transition hover:bg-[hsl(214,36%,98%)] xl:px-7",
-                            index > 0 &&
-                              "border-t border-[hsl(214,26%,91%)]",
-                            entry.status === "error" &&
-                              "bg-[linear-gradient(90deg,rgba(254,242,242,0.62),white_32%)]",
-                          )}
-                        >
-                          <div className="min-w-0">
-                            <p className="truncate text-[14px] font-medium tracking-[-0.015em] text-[hsl(220,38%,20%)]">
-                              {patient.name}
-                            </p>
-                          </div>
-
-                          <span className="font-medium text-[hsl(218,15%,47%)]">
-                            {patient.personalCode}
-                          </span>
-
-                          <span
+                        return (
+                          <div
+                            key={`${selectedDateKey}-${entry.patientId}`}
+                            onClick={() =>
+                              navigate("/components", {
+                                state: { patient, layoutOrder, specialtyId },
+                              })
+                            }
                             className={cn(
-                              "inline-flex w-fit items-center gap-1.5 rounded-[4px] border px-2 py-0.5 text-[11px] font-medium",
-                              statusMeta.badgeClass,
+                              tableGridClass,
+                              "cursor-pointer px-6 py-3 text-[13px] transition hover:bg-[hsl(214,36%,98%)] xl:px-7",
+                              index > 0 && "border-t border-[hsl(214,26%,91%)]",
+                              entry.status === "error" &&
+                                "bg-[linear-gradient(90deg,rgba(254,242,242,0.62),white_32%)]",
                             )}
                           >
-                            <span
-                              className={cn(
-                                "h-1.5 w-1.5 rounded-full",
-                                statusMeta.dotClass,
-                              )}
-                            />
-                            {statusMeta.label}
-                          </span>
-
-                          <div className="flex items-center gap-3 pr-2">
-                            <div className="h-1 flex-1 overflow-hidden rounded-full bg-[hsl(216,28%,92%)]">
-                              <div
-                                className={cn(
-                                  "h-full rounded-full transition-[width]",
-                                  statusMeta.progressClass,
-                                )}
-                                style={{ width: `${progressValue}%` }}
-                              />
+                            <div className="min-w-0">
+                              <p className="truncate text-[14px] font-medium tracking-[-0.015em] text-[hsl(220,38%,20%)]">
+                                {patient.name}
+                              </p>
                             </div>
 
-                            <span className="w-10 text-right text-[12px] font-medium text-[hsl(218,15%,47%)]">
-                              {entry.status === "error"
-                                ? "-"
-                                : `${progressValue}%`}
+                            <span className="font-medium text-[hsl(218,15%,47%)]">
+                              {patient.personalCode}
                             </span>
-                          </div>
 
-                          <span className="text-center font-medium text-[hsl(218,15%,47%)]">
-                            {entry.updatedAt ?? "-"}
-                          </span>
-
-                          <div className="flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleRetry(entry.patientId);
-                              }}
-                              aria-label={`Atkārtot ${patient.name}`}
-                              className="inline-flex h-7 w-7 items-center justify-center text-[hsl(216,44%,48%)] transition hover:opacity-75"
+                            <span
+                              className={cn(
+                                "inline-flex w-fit items-center gap-1.5 rounded-[6px] border px-2.5 py-1 text-[11px] font-medium",
+                                statusMeta.badgeClass,
+                              )}
                             >
-                              <RefreshCcw
-                                className="h-[13px] w-[13px]"
-                                strokeWidth={2}
+                              <span
+                                className={cn(
+                                  "h-1.5 w-1.5 rounded-full",
+                                  statusMeta.dotClass,
+                                )}
                               />
-                            </button>
+                              {statusMeta.label}
+                            </span>
 
-                            <button
-                              type="button"
-                              onClick={(event) => {
-                                event.stopPropagation();
-                                handleRemove(entry.patientId);
-                              }}
-                              aria-label={`Noņemt ${patient.name}`}
-                              className="inline-flex h-7 w-7 items-center justify-center text-[hsl(0,56%,50%)] transition hover:opacity-75"
-                            >
-                              <Trash2
-                                className="h-[13px] w-[13px]"
-                                strokeWidth={2}
-                              />
-                            </button>
+                            <div className="flex items-center gap-3 pr-2">
+                              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[hsl(216,28%,92%)]">
+                                <div
+                                  className={cn(
+                                    "h-full rounded-full transition-[width]",
+                                    statusMeta.progressClass,
+                                  )}
+                                  style={{ width: `${progressValue}%` }}
+                                />
+                              </div>
+
+                              <span className="w-10 text-right text-[12px] font-medium text-[hsl(218,15%,47%)]">
+                                {entry.status === "error"
+                                  ? "-"
+                                  : `${progressValue}%`}
+                              </span>
+                            </div>
+
+                            <span className="text-center font-medium text-[hsl(218,15%,47%)]">
+                              {entry.updatedAt ?? "-"}
+                            </span>
+
+                            <div className="flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleRetry(entry.patientId);
+                                }}
+                                aria-label={`Atkārtot ${patient.name}`}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[hsl(216,44%,48%)] transition hover:bg-[hsl(214,28%,96%)]"
+                              >
+                                <RefreshCcw
+                                  className="h-[14px] w-[14px]"
+                                  strokeWidth={2}
+                                />
+                              </button>
+
+                              <button
+                                type="button"
+                                onClick={(event) => {
+                                  event.stopPropagation();
+                                  handleRemove(entry.patientId);
+                                }}
+                                aria-label={`Noņemt ${patient.name}`}
+                                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-[hsl(0,56%,50%)] transition hover:bg-[hsl(0,72%,98%)]"
+                              >
+                                <Trash2
+                                  className="h-[14px] w-[14px]"
+                                  strokeWidth={2}
+                                />
+                              </button>
+                            </div>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })
+                    )}
                   </div>
                 </div>
               </div>
-            </div>
+            </section>
           </div>
         </section>
       </main>

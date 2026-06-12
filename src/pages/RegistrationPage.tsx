@@ -285,7 +285,7 @@ const defaultLayoutOrder: ModuleId[] = [
 const familyRegistrationLayoutOrder: ModuleId[] = [
   "patient-card",
   "prevention",
-  ...defaultLayoutOrder,
+  ...defaultLayoutOrder.filter((item) => item !== "patient-card"),
 ];
 
 const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> = {
