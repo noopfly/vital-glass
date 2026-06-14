@@ -401,10 +401,10 @@ const AllReferralsOverlay = ({
 
             <div>
               <h3 className="text-base font-semibold text-[hsl(222,28%,20%)]">
-                Visi e-nosūtījumi
+                E-nosūtījumi
               </h3>
               <p className="text-[12px] text-[hsl(214,14%,42%)]">
-                Pilns nosūtījumu saraksts ar detalizētu informāciju.
+                Aktīvie un vēsturiskie e-nosūtījumi
               </p>
             </div>
           </div>
@@ -436,7 +436,7 @@ const ReferralHistory = () => {
               E-nosūtījumi
             </p>
             <p className="text-xs text-text-dark">
-              Aktīvie un vēsturiskie nosūtījumi
+              Aktīvie un vēsturiskie e-nosūtījumi
             </p>
           </div>
         </div>

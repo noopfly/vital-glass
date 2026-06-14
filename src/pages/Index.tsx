@@ -128,6 +128,10 @@ function formatRefreshDate(date: Date) {
   }).format(date)}.`;
 }
 
+function formatRefreshTimestamp(date: Date) {
+  return `${formatRefreshDate(date)} ${formatRefreshTime(date)}`;
+}
+
 const InfoDivider = () => (
   <span className="mx-2.5 text-[hsl(220,16%,80%)] md:mx-3">|</span>
 );
@@ -340,7 +344,7 @@ const Index = () => {
                         {isRefreshing ? "Atjauno datus..." : "Atjaunot datus"}
                       </span>
                       <span className="mt-0.5 block text-[10px] font-medium text-[hsl(220,16%,52%)] md:text-[11px]">
-                        Pēdējo reizi: {formatRefreshTime(lastRefreshedAt)}
+                        Pēdējo reizi: {formatRefreshTimestamp(lastRefreshedAt)}
                       </span>
                     </span>
                   </button>

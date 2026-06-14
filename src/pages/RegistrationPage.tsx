@@ -125,7 +125,7 @@ const moduleOptions: ModuleOption[] = [
   {
     id: "prevention",
     title: "Profilakse",
-    description: "Preventīvā aprūpe, SCORE2 risks un vakcinācijas progress",
+    description: "SCORE2 risks, skrīningi un vakcinācijas progress",
     icon: Shield,
   },
   {
@@ -167,7 +167,7 @@ const moduleOptions: ModuleOption[] = [
   {
     id: "referrals",
     title: "E-nosūtījumi",
-    description: "Aktīvie un vēsturiskie nosūtījumi",
+    description: "Aktīvie un vēsturiskie e-nosūtījumi",
     icon: FileText,
   },
 
@@ -672,7 +672,7 @@ function normalizeText(value: string) {
 
 function getRegistrationModuleDescription(item: ModuleOption) {
   if (item.id === "prevention") {
-    return "Preventīvā aprūpe, SCORE2 risks un vakcinācijas progress";
+    return "SCORE2 risks, skrīningi un vakcinācijas progress";
   }
 
   return item.description;

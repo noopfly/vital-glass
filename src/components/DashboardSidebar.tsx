@@ -66,6 +66,20 @@ const storageKey = "omnis-sidebar-collapsed";
 const expandedSidebarWidth = "280px";
 const collapsedSidebarWidth = "76px";
 
+const registrationStepDescriptions: Partial<
+  Record<DashboardComponentKey, string>
+> = {
+  patientCard: "Pamatinformācija, diagnozes un primārie riski",
+  preventionCard: "SCORE2 risks, skrīningi un vakcinācijas progress",
+  healthTrends: "Laboratorijas rezultātu un mērījumu dinamika",
+  alertsCard: "Izmaiņas, kavējumi un kritiskie signāli",
+  medicalImagingViewer: "RTG, CT un citu izmeklējumu pārskats",
+  humanBodyModel: "Anatomiskais skats ar atradnēm un reģioniem",
+  medicationTable: "Aktuālie medikamenti, devas un mijiedarbības",
+  referralHistory: "Aktīvie un vēsturiskie e-nosūtījumi",
+  eventTimeline: "Hronoloģisks pacienta notikumu pārskats",
+};
+
 function getInitials(name: string) {
   return name
     .split(" ")
@@ -80,6 +94,13 @@ function getInitials(name: string) {
 }
 
 function getSettingsModuleDescription(module: (typeof settingsModules)[number]) {
+  const registrationStepDescription =
+    registrationStepDescriptions[module.key];
+
+  if (registrationStepDescription) {
+    return registrationStepDescription;
+  }
+
   if (module.key === "preventionCard") {
     return "SCORE2 risks, skrīningi un vakcinācijas progress";
   }
@@ -113,7 +134,7 @@ const settingsModules = [
   {
     key: "preventionCard",
     title: "Profilakse",
-    description: "SCORE2 risks, skrÄ«ningi un vakcinÄciju progress",
+    description: "SCORE2 risks, skrīningi un vakcinācijas progress",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
@@ -1290,9 +1311,9 @@ export default function DashboardSidebar({
         <CenteredOverlay
           onClose={() => setIsSettingsOpen(false)}
           overlayClassName="bg-[rgba(16,24,40,0.14)] backdrop-blur-[6px]"
-          contentClassName="max-w-[1180px]"
+          contentClassName="max-w-[1060px]"
         >
-          <div className="mx-auto flex h-[min(82vh,760px)] w-[min(1180px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+          <div className="mx-auto flex h-[min(86vh,820px)] w-[min(1060px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex shrink-0 items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-5 py-4">
               <div>
                 <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
@@ -1324,7 +1345,7 @@ export default function DashboardSidebar({
               </div>
             </div>
 
-            <div className="grid min-h-0 flex-1 grid-cols-[430px_minmax(0,1fr)] overflow-hidden">
+            <div className="grid min-h-0 flex-1 grid-cols-[390px_minmax(0,1fr)] overflow-hidden">
               <div
                 ref={settingsListRef}
                 className="min-h-0 overflow-y-auto border-r border-[rgba(230,235,241,0.96)] bg-[hsl(214,22%,98%)] px-5 py-5"
@@ -1374,24 +1395,6 @@ export default function DashboardSidebar({
                         </p>
                       </div>
 
-                      <span
-                        className={cn(
-                          "mt-0.5 inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[8px] font-semibold uppercase tracking-[0.08em] shadow-[inset_0_1px_0_rgba(255,255,255,0.7)]",
-                          (module.key === "patientCard"
-                            ? "Plats"
-                            : module.key === "preventionCard"
-                              ? "šaurs"
-                              : module.sizeLabel) === "Plats"
-                              ? "border-[rgba(203,216,243,0.96)] bg-[hsl(221,70%,97%)] text-[hsl(220,48%,52%)]"
-                              : "border-[rgba(234,223,205,0.96)] bg-[hsl(38,52%,97%)] text-[hsl(34,32%,48%)]",
-                        )}
-                      >
-                        {module.key === "patientCard"
-                          ? "Plats"
-                          : module.key === "preventionCard"
-                            ? "šaurs"
-                            : module.sizeLabel}
-                      </span>
                     </button>
                   ))}
                 </div>
@@ -1440,7 +1443,6 @@ export default function DashboardSidebar({
             </div>
 
             <div className="flex shrink-0 items-center justify-between border-t border-[rgba(230,235,241,0.96)] px-5 py-4">
-              <div className="flex items-center gap-3">
                 <button
                   type="button"
                   onClick={() => setIsSettingsOpen(false)}
@@ -1451,11 +1453,10 @@ export default function DashboardSidebar({
                 <button
                   type="button"
                   onClick={handleSaveSettings}
-                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                  className="ml-auto inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >
                   Saglabāt izkārtojumu
                 </button>
-              </div>
             </div>
           </div>
         </CenteredOverlay>

@@ -578,10 +578,10 @@ const MedicationTable = () => {
 
                 <div>
                   <h3 className="text-lg font-semibold text-[hsl(222,28%,20%)]">
-                    Visi medikamenti
+                    Medikamenti
                   </h3>
                   <p className="text-sm text-[hsl(214,14%,42%)]">
-                    Pilns medikamentu saraksts ar vēsturiskajiem ierakstiem.
+                    Aktuālie medikamenti, devas un mijiedarbības
                   </p>
                 </div>
               </div>

@@ -61,7 +61,7 @@ const maleScreeningItems: PreventionGroupItem[] = [
     label: "Prostatas skrīnings",
     status: "overdue",
     dateLabel: "Nokavēts kopš 20.01.2025",
-    actionLabel: "Jāizvērtē nepieciešamība",
+    actionLabel: "Jāpiedāvā skrīninga vizīte",
   },
 ];
 
@@ -100,22 +100,7 @@ const annualCheckupItems: PreventionGroupItem[] = [
     status: "overdue",
     dateLabel: "Nokavēta kopš 01.01.2026",
     actionLabel: "Jāieplāno vizīte",
-  },
-  {
-    label: "Asinsspiediena mērījums",
-    status: "done",
-    dateLabel: "Veikts 05.02.2025",
-  },
-  {
-    label: "ĶMI izvērtējums",
-    status: "done",
-    dateLabel: "Veikts 05.02.2025",
-  },
-  {
-    label: "Smēķēšanas statuss",
-    status: "done",
-    dateLabel: "Atjaunots 05.02.2025",
-  },
+  },  
 ];
 
 const scoreInputs = [
@@ -600,7 +585,7 @@ function PreventionFullViewModal({
                 Profilakse
               </p>
               <p className="truncate text-xs text-heading">
-                Pilns pārskats pa sadaļām
+                Risks, skrīningi un vakcinācijas
               </p>
             </div>
           </div>
