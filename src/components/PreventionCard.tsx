@@ -689,7 +689,12 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
     ],
   );
 
-  const visibleSummaryGroups = getVisibleSummaryGroups(preventionGroups);
+  const displayedPreventionGroups = React.useMemo(
+    () => preventionGroups.filter((group) => group.id !== "annualCheckup"),
+    [preventionGroups],
+  );
+
+  const visibleSummaryGroups = getVisibleSummaryGroups(displayedPreventionGroups);
   const handleOpenFullView = (groupId: PreventionGroup["id"] | null = null) => {
     setInitialExpandedGroupId(groupId);
     setIsModalOpen(true);
@@ -735,7 +740,7 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
 
         <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3">
           <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
-            {visibleSummaryGroups.length} no {preventionGroups.length}
+            {visibleSummaryGroups.length} no {displayedPreventionGroups.length}
           </p>
 
           <button
@@ -751,7 +756,7 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
       <PreventionFullViewModal
         open={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        groups={preventionGroups}
+        groups={displayedPreventionGroups}
         initialExpandedGroupId={initialExpandedGroupId}
       />
     </>

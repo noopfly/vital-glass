@@ -561,7 +561,7 @@ function TimelineContent({
                                 className={`flex items-start gap-2 ${
                                   active
                                     ? "mt-2 text-[12px] leading-[20px] text-[hsl(214,18%,50%)]"
-                                    : "mt-1 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
+                                    : "mt-2 border-t border-[rgba(214,223,232,0.55)] pt-1.5 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
                                 }`}
                               >
                                 <Building2

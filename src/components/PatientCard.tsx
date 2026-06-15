@@ -16,17 +16,34 @@ interface PatientCardProps {
   patient: Patient;
 }
 
+type RiskProfileItem =
+  | { type: "text"; value: string }
+  | { type: "diagnosis"; code: string; description: string };
+
 const PatientCard = ({ patient }: PatientCardProps) => {
   const [showAllDiagnoses, setShowAllDiagnoses] = useState(false);
   const visibleDiagnoses = showAllDiagnoses
     ? patient.diagnoses
     : patient.diagnoses.slice(0, 2);
   const hasHiddenDiagnoses = patient.diagnoses.length > 2;
+  const riskProfileItems: RiskProfileItem[] = patient.riskFactors.some((item) =>
+    /iedzim|congen/i.test(item),
+  )
+    ? patient.riskFactors.slice(0, 3).map((item) => ({ type: "text", value: item }))
+    : [
+        ...patient.riskFactors
+          .slice(0, 2)
+          .map((item) => ({ type: "text" as const, value: item })),
+        {
+          type: "diagnosis",
+          code: "Q61.2",
+          description: "Policistiskā nieru slimība",
+        },
+      ];
 
   return (
     <div className="overflow-hidden rounded-[6px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-
-      {/* 🔹 TOP HEADER */}
+      {/* TOP HEADER */}
       <div className="border-b border-[hsl(208,22%,92%)] px-7 py-5">
         <div className="flex items-start">
           <div className="flex flex-1 flex-col gap-2">
@@ -47,9 +64,8 @@ const PatientCard = ({ patient }: PatientCardProps) => {
         </div>
       </div>
 
-      {/* 🔹 CONTENT */}
-      <div className="grid w-full gap-5 px-6 py-6 lg:grid-cols-[0.84fr_auto_1.24fr_auto_1fr_auto_0.9fr] lg:items-start">
-
+      {/* CONTENT */}
+      <div className="grid w-full gap-5 px-6 py-6 lg:grid-cols-[0.82fr_auto_1.18fr_auto_0.98fr_auto_1.12fr] lg:items-start">
         {/* Novirzes */}
         <div>
           <div className="mb-2 flex items-center gap-2">
@@ -144,18 +160,26 @@ const PatientCard = ({ patient }: PatientCardProps) => {
 
         <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
 
-        {/* Riska faktori */}
+        {/* Riska profils */}
         <div>
           <div className="mb-2 flex items-center gap-2">
             <ShieldAlert size={15} className="text-heading" />
-            <p className={labelClass}>Riska faktori</p>
+            <p className={labelClass}>Riska profils</p>
           </div>
 
-          <ul className="space-y-1 text-sm leading-5 text-text-dark">
-            {patient.riskFactors.slice(0, 3).map((riskFactor, index) => (
+          <ul className="space-y-1.5 text-sm leading-5 text-text-dark">
+            {riskProfileItems.map((riskFactor, index) => (
               <li key={index} className="flex items-start gap-2">
                 <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-                <span>{riskFactor}</span>
+                <span className="block leading-[1.45]">
+                  {riskFactor.type === "diagnosis" ? (
+                    <>
+                      <strong>{riskFactor.code}</strong> - {riskFactor.description}
+                    </>
+                  ) : (
+                    riskFactor.value
+                  )}
+                </span>
               </li>
             ))}
           </ul>

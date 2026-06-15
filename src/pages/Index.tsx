@@ -44,7 +44,7 @@ const layoutBaseClasses: Record<DashboardComponentKey, string> = {
   preventionCard: dashboardCardHeight,
   healthTrends: `lg:col-span-2 ${dashboardCardHeight}`,
   medicalImagingViewer: dashboardCardHeight,
-  medicationTable: dashboardCardHeight,
+  medicationTable: `lg:col-span-2 ${dashboardCardHeight}`,
   alertsCard: dashboardCardHeight,
   eventTimeline: `lg:col-span-2 ${dashboardCardHeight}`,
   humanBodyModel: dashboardCardHeight,
@@ -56,7 +56,7 @@ const layoutColumnSpans: Record<DashboardComponentKey, number> = {
   preventionCard: 1,
   healthTrends: 2,
   medicalImagingViewer: 1,
-  medicationTable: 1,
+  medicationTable: 2,
   alertsCard: 1,
   eventTimeline: 2,
   humanBodyModel: 1,
@@ -96,14 +96,6 @@ function getExpandedLayoutClasses(
   const nextClasses = { ...layoutBaseClasses };
 
   for (const [, keys] of rowItems) {
-    if (
-      keys.length === 2 &&
-      keys[0] === "medicationTable" &&
-      rowStartColumn.get("medicationTable") === 0
-    ) {
-      nextClasses.medicationTable = `lg:col-span-2 ${dashboardCardHeight}`;
-    }
-
     if (keys.length !== 1 || keys[0] !== "eventTimeline") continue;
     if (rowStartColumn.get("eventTimeline") !== 0) continue;
 

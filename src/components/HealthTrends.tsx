@@ -85,6 +85,21 @@ const statusIconBorder: Record<Status, string> = {
 const sectionIconClass =
   "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
+const monthOrder = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "Mai",
+  "Jūn",
+  "Jūl",
+  "Aug",
+  "Sep",
+  "Okt",
+  "Nov",
+  "Dec",
+];
+
 const rawLabResults: RawLabResult[] = [
   {
     id: "bp",
@@ -359,6 +374,43 @@ const labResults: LabResult[] = rawLabResults.map((result) => ({
   status: getPointStatus(result.value, result),
 }));
 
+function getDetailHistory(
+  history: LabHistoryPoint[],
+  referenceDate: Date = new Date(),
+  visibleMonthCount = 6,
+) {
+  const currentMonthIndex = referenceDate.getMonth();
+  const availableHistory = history.filter((point) => {
+    const pointMonthIndex = monthOrder.indexOf(point.month);
+    return pointMonthIndex !== -1 && pointMonthIndex <= currentMonthIndex;
+  });
+
+  const clampedHistory = availableHistory.length > 0 ? availableHistory : history;
+
+  return clampedHistory.slice(-Math.min(visibleMonthCount, clampedHistory.length));
+}
+
+function getDeviationScoreForValue(
+  value: number,
+  result: Pick<LabResult, "referenceType" | "normalMin" | "normalMax">,
+) {
+  if (isValueInRange(result, value)) return 0;
+
+  if (result.referenceType === "between") {
+    if (value < (result.normalMin ?? value)) {
+      return ((result.normalMin ?? value) - value) / (result.normalMin || 1);
+    }
+
+    return (value - (result.normalMax ?? value)) / (result.normalMax || 1);
+  }
+
+  if (result.referenceType === "max") {
+    return (value - (result.normalMax ?? value)) / (result.normalMax || 1);
+  }
+
+  return ((result.normalMin ?? value) - value) / (result.normalMin || 1);
+}
+
 function getSegmentColor(
   previousValue: number,
   nextValue: number,
@@ -524,19 +576,46 @@ const DetailPanel = ({
   result: LabResult;
   onClose: () => void;
 }) => {
+  const detailHistory = getDetailHistory(result.history);
+  const latestDetailPoint = detailHistory[detailHistory.length - 1];
+  const previousDetailPoint = detailHistory[detailHistory.length - 2];
+  const detailValue = latestDetailPoint?.value ?? result.value;
+  const detailStatus = getPointStatus(detailValue, result);
+  const detailResult: LabResult = {
+    ...result,
+    value: detailValue,
+    status: detailStatus,
+    history: detailHistory,
+  };
+  const detailChange =
+    previousDetailPoint && previousDetailPoint.value !== 0
+      ? ((detailValue - previousDetailPoint.value) / Math.abs(previousDetailPoint.value)) * 100
+      : null;
+  const detailChangePositive =
+    previousDetailPoint !== undefined
+      ? getDeviationScoreForValue(detailValue, result) <=
+        getDeviationScoreForValue(previousDetailPoint.value, result)
+      : result.changePositive;
+  const detailChangeLabel =
+    detailChange === null
+      ? result.change
+      : `${detailChange >= 0 ? "+" : ""}${formatNumber(detailChange, 1)}%`;
+  const detailDisplayValue =
+    detailValue === result.value
+      ? (result.displayValue ?? formatResultValue(result, detailValue))
+      : formatResultValue(result, detailValue);
   const statusLabel =
-    result.status === "normal"
+    detailStatus === "normal"
       ? "Norma"
-      : result.status === "warning"
+      : detailStatus === "warning"
         ? "Ārpus normas"
         : "Kritisks";
-
-  const chartBounds = getChartBounds(result);
-  const referenceArea = getReferenceAreaBounds(result, chartBounds);
-  const detailChartData = result.history.map((point, pointIndex) => ({
+  const chartBounds = getChartBounds(detailResult);
+  const referenceArea = getReferenceAreaBounds(detailResult, chartBounds);
+  const detailChartData = detailHistory.map((point, pointIndex) => ({
     ...point,
     ...Object.fromEntries(
-      result.history.map((_, segmentIndex) => {
+      detailHistory.map((_, segmentIndex) => {
         if (
           segmentIndex > 0 &&
           (segmentIndex - 1 === pointIndex || segmentIndex === pointIndex)
@@ -558,7 +637,7 @@ const DetailPanel = ({
         <div className="mb-4 flex items-start justify-between">
           <div className="flex items-center gap-3">
             <div
-              className={`flex h-10 w-10 items-center justify-center rounded-[5px] ${statusIconBg[result.status]} ${statusTextClass[result.status]}`}
+              className={`flex h-10 w-10 items-center justify-center rounded-[5px] ${statusIconBg[detailResult.status]} ${statusTextClass[detailResult.status]}`}
             >
               {result.icon}
             </div>
@@ -586,7 +665,7 @@ const DetailPanel = ({
               Pašreizējā vērtība
             </p>
             <p className="text-3xl font-bold text-text-dark">
-              {result.displayValue ?? formatResultValue(result, result.value)}{" "}
+              {detailDisplayValue}{" "}
               <span className="text-sm font-normal text-heading">{result.unit}</span>
             </p>
           </div>
@@ -597,11 +676,11 @@ const DetailPanel = ({
             </p>
             <p
               className={`flex items-center gap-1 text-lg font-bold ${
-                result.changePositive ? "text-status-normal" : "text-status-warning"
+                detailChangePositive ? "text-status-normal" : "text-status-warning"
               }`}
             >
-              {result.changePositive ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
-              {result.change}
+              {detailChangePositive ? <TrendingDown size={16} /> : <TrendingUp size={16} />}
+              {detailChangeLabel}
             </p>
           </div>
 
@@ -609,14 +688,14 @@ const DetailPanel = ({
             <p className="text-xs font-semibold uppercase tracking-wider text-heading">
               Statuss
             </p>
-            <p className={`text-lg font-bold ${statusTextClass[result.status]}`}>
+            <p className={`text-lg font-bold ${statusTextClass[detailResult.status]}`}>
               {statusLabel}
             </p>
           </div>
         </div>
 
         <p className="mb-3 text-xs font-bold uppercase tracking-wider text-heading">
-          Vēsture (pēdējie 8 mēneši)
+          Rezultātu dinamika (pēdējie 6 mēneši)
         </p>
 
         <div className="h-56">
@@ -657,12 +736,12 @@ const DetailPanel = ({
 
               <Tooltip content={<CustomTooltip result={result} />} />
 
-              {result.history.map((_, segmentIndex) => {
+              {detailHistory.map((_, segmentIndex) => {
                 if (segmentIndex === 0) return null;
 
                 const segmentColor = getSegmentColor(
-                  result.history[segmentIndex - 1].value,
-                  result.history[segmentIndex].value,
+                  detailHistory[segmentIndex - 1].value,
+                  detailHistory[segmentIndex].value,
                   result,
                 );
 
@@ -707,7 +786,7 @@ const DetailPanel = ({
         </div>
 
         <div className="mt-4 flex gap-2">
-          {result.history.map((point) => (
+          {detailHistory.map((point) => (
             <div
               key={point.month}
               className="glass-card-solid flex-1 rounded-[4px] px-1 py-2 text-center"

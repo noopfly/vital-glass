@@ -1,6 +1,7 @@
 ﻿import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ComponentType } from "react";
 import {
+  Activity,
   ChevronDown,
   ChevronRight,
   ChevronUp,
@@ -14,7 +15,12 @@ import {
 import humanBody from "@/assets/human-body.png";
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 
-type Category = "stacionars" | "radiologija" | "laboratorija" | "iedzimtas";
+type Category =
+  | "stacionars"
+  | "radiologija"
+  | "laboratorija"
+  | "iedzimtas"
+  | "hroniskas";
 
 interface OrganProblem {
   id: string;
@@ -71,8 +77,8 @@ const CATEGORY_CONFIG: Record<
     Icon: HeartPulse,
   },
   radiologija: {
-    color: "hsl(35 30% 39%)",
-    tint: "hsl(35 54% 96%)",
+    color: "hsl(271 40% 46%)",
+    tint: "hsl(272 65% 96%)",
     badge: "Radioloģiskas atradnes",
     Icon: ScanSearch,
   },
@@ -88,6 +94,12 @@ const CATEGORY_CONFIG: Record<
     badge: "Iedzimtas slimības",
     Icon: Dna,
   },
+  hroniskas: {
+    color: "hsl(37 58% 40%)",
+    tint: "hsl(42 66% 95%)",
+    badge: "Hroniskas slimības",
+    Icon: Activity,
+  },
 };
 
 const CATEGORY_PRIORITY: Record<Category, number> = {
@@ -95,6 +107,7 @@ const CATEGORY_PRIORITY: Record<Category, number> = {
   laboratorija: 1,
   radiologija: 2,
   iedzimtas: 3,
+  hroniskas: 4,
 };
 
 const ORGANS: OrganData[] = [
@@ -268,7 +281,7 @@ const ORGANS: OrganData[] = [
         id: "k2",
         title: "Hroniska nieru slimība, 2. stadija",
         shortSummary: "GFR samazinājums, nepieciešama kontrole",
-        category: "laboratorija",
+        category: "hroniskas",
         details: [
           { label: "GFR", value: "62 mL/min/1.73m²" },
           { label: "CKD stadija", value: "2. stadija" },

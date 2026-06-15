@@ -353,7 +353,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   },
   alerts: {
     note: "Brīdinājumi",
-    summary: "Nokavētas vizītes un izmainīti laboratorijas rezultāti.",
+    summary: "Medikamentu riski un kritiski analīžu rezultāti",
     pattern: "alerts",
     colSpan: 1,
     rowSpan: 1,

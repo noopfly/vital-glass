@@ -27,8 +27,14 @@ export const defaultDashboardLayoutOrder: DashboardComponentKey[] = [
 
 export const familyMedicineDashboardLayoutOrder: DashboardComponentKey[] = [
   "patientCard",
+  "healthTrends",
+  "alertsCard",
+  "medicalImagingViewer",
+  "medicationTable",
+  "humanBodyModel",
+  "referralHistory",
   "preventionCard",
-  ...defaultDashboardLayoutOrder.filter((key) => key !== "patientCard"),
+  "eventTimeline",
 ];
 
 const validDashboardComponentKeys = new Set<DashboardComponentKey>([

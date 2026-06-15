@@ -1,9 +1,12 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { AlertTriangle, Pill, X } from "lucide-react";
+import { AlertTriangle, FlaskConical, Pill, X } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 
-type AlertType = "dangerousCombination" | "duplicatePrescription";
+type AlertType =
+  | "dangerousCombination"
+  | "duplicatePrescription"
+  | "criticalLabResult";
 
 interface AlertItem {
   id: string;
@@ -13,23 +16,66 @@ interface AlertItem {
   type: AlertType;
 }
 
-const alerts: AlertItem[] = [
+interface LaboratoryReportResult {
+  id: string;
+  indicatorName: string;
+  value: number;
+  unit: string;
+  resultDate: string;
+  normalReference: string;
+  interpretationCode?: string;
+  criticalMarker?: string;
+}
+
+const medicationAlerts: AlertItem[] = [
   {
-    id: "1",
-    title: "Bīstama kombinācija: varfarīns + ibuprofēns",
+    id: "med-1",
+    title: "Bīstama mijiedarbība: varfarīns + ibuprofēns",
     description:
-      "Paaugstināts asiņošanas risks. Nepieciešama terapijas pārskatīšana.",
+      "Paaugstināts asiņošanas risks. Ieteicama terapijas pārskatīšana.",
     occurredAt: "2026-05-05T08:45:00",
     type: "dangerousCombination",
   },
   {
-    id: "2",
-    title: "Dublēta recepte: divi antikoagulanti",
-    description: "Apiksabāns un rivaroksabāns izrakstīti vienlaikus.",
+    id: "med-2",
+    title: "Iespējama dublēšanās: divi antikoagulanti",
+    description:
+      "Vienlaikus aktīvas līdzīgas darbības zāles: apiksabāns un rivaroksabāns.",
     occurredAt: "2026-05-05T08:10:00",
     type: "duplicatePrescription",
   },
 ];
+
+const laboratoryReports: LaboratoryReportResult[] = [
+  {
+    id: "lab-1",
+    indicatorName: "Kālijs",
+    value: 6.4,
+    unit: "mmol/L",
+    resultDate: "2026-06-14T09:18:00",
+    normalReference: "3,5–5,1 mmol/L",
+    interpretationCode: "HH",
+  },
+  {
+    id: "lab-2",
+    indicatorName: "Leikocīti",
+    value: 2.1,
+    unit: "× 10⁹/L",
+    resultDate: "2026-06-12T07:42:00",
+    normalReference: "4,0–10,0 × 10⁹/L",
+    criticalMarker: "LL",
+  },
+  {
+    id: "lab-3",
+    indicatorName: "ALAT",
+    value: 78,
+    unit: "U/L",
+    resultDate: "2026-06-10T11:05:00",
+    normalReference: "7-56 U/L",
+  },
+];
+
+const criticalInterpretationCodes = new Set(["LL", "HH", "AA"]);
 
 function formatAlertDate(value: string) {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -38,19 +84,53 @@ function formatAlertDate(value: string) {
   }).format(new Date(value));
 }
 
+function formatLabValue(value: number) {
+  return value.toString().replace(".", ",");
+}
+
+function getCriticalLabAlerts(reports: LaboratoryReportResult[]): AlertItem[] {
+  return reports
+    .filter((report) => {
+      const interpretationCode = report.interpretationCode?.toUpperCase();
+      const criticalMarker = report.criticalMarker?.toUpperCase();
+
+      return (
+        (interpretationCode && criticalInterpretationCodes.has(interpretationCode)) ||
+        (criticalMarker && criticalInterpretationCodes.has(criticalMarker))
+      );
+    })
+    .map((report) => {
+      const marker = report.criticalMarker?.toUpperCase() ?? report.interpretationCode?.toUpperCase() ?? "";
+      const formattedValue = `${formatLabValue(report.value)} ${report.unit}`;
+      const criticalDirection = marker === "LL" ? "Zem kritiskās robežas" : "Virs kritiskās robežas";
+      const titleIndicatorName = report.indicatorName.toLowerCase();
+
+      return {
+        id: `critical-lab-${report.id}`,
+        title: `Kritiska novirze: ${titleIndicatorName} ${formattedValue}`,
+        description: `${criticalDirection}. Norma: ${report.normalReference}.`,
+        occurredAt: report.resultDate,
+        type: "criticalLabResult",
+      };
+    });
+}
+
 const iconStyles: Record<AlertType, string> = {
   dangerousCombination: "text-[hsl(34,52%,42%)]",
   duplicatePrescription: "text-[hsl(34,52%,42%)]",
+  criticalLabResult: "text-[hsl(28,78%,46%)]",
 };
 
 const dateStyles: Record<AlertType, string> = {
   dangerousCombination: "bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
   duplicatePrescription: "bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
+  criticalLabResult: "bg-[hsl(32,72%,95%)] text-[hsl(28,78%,46%)]",
 };
 
 const iconMap: Record<AlertType, typeof AlertTriangle> = {
   dangerousCombination: AlertTriangle,
   duplicatePrescription: Pill,
+  criticalLabResult: FlaskConical,
 };
 
 const alertSectionIconClass =
@@ -133,15 +213,14 @@ const AlertsCard = () => {
   const [visibleAlertCount, setVisibleAlertCount] = useState(3);
   const listContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const sortedAlerts = useMemo(
-    () =>
-      [...alerts].sort(
-        (left, right) =>
-          new Date(right.occurredAt).getTime() -
-          new Date(left.occurredAt).getTime(),
-      ),
-    [],
-  );
+  const sortedAlerts = useMemo(() => {
+    const combinedAlerts = [...medicationAlerts, ...getCriticalLabAlerts(laboratoryReports)];
+
+    return combinedAlerts.sort(
+      (left, right) =>
+        new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime(),
+    );
+  }, []);
 
   const visibleAlerts = sortedAlerts.slice(0, visibleAlertCount);
 
@@ -192,7 +271,7 @@ const AlertsCard = () => {
               </p>
 
               <p className="text-xs text-text-dark">
-                Medikamentu, analīžu, kontroles un nākamo devu atgādinājumi
+                Medikamentu riski un kritiski analīžu rezultāti
               </p>
             </div>
           </div>
@@ -212,7 +291,8 @@ const AlertsCard = () => {
                 Nav aktīvu brīdinājumu
               </p>
               <p className="mt-1 text-xs text-[hsl(214,14%,50%)]">
-                Šobrīd nav neviena aktīva medikamentu drošības brīdinājuma.
+                Šobrīd nav neviena aktīva medikamentu drošības vai kritisku analīžu
+                brīdinājuma.
               </p>
             </div>
           ) : (
@@ -270,7 +350,7 @@ const AlertsCard = () => {
                   </h3>
 
                   <p className="text-sm text-[hsl(214,14%,42%)]">
-                    Medikamentu, analīžu, kontroles un nākamo devu atgādinājumi
+                    Medikamentu riski un kritiski analīžu rezultāti
                   </p>
                 </div>
               </div>
@@ -283,7 +363,7 @@ const AlertsCard = () => {
                     Nav aktīvu brīdinājumu
                   </p>
                   <p className="mt-1 text-sm text-[hsl(214,14%,42%)]">
-                    Šeit parādīsies dublētas receptes un bīstamas kombinācijas.
+                    Šeit parādīsies medikamentu riski un kritiski analīžu rezultāti.
                   </p>
                 </div>
               ) : (
