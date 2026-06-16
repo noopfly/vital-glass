@@ -1,5 +1,6 @@
 import * as React from "react";
 import {
+  ArrowUpRight,
   Check,
   ChevronRight,
   ChevronUp,
@@ -228,10 +229,12 @@ function RowIconTile({
 function ScoreCard({
   isExpanded = false,
   onToggle,
+  onOpenDetails,
   expandable = false,
 }: {
   isExpanded?: boolean;
   onToggle?: () => void;
+  onOpenDetails?: () => void;
   expandable?: boolean;
 }) {
   return (
@@ -257,9 +260,23 @@ function ScoreCard({
               1.8%
             </p>
 
-            <p className={cn("mt-3 whitespace-nowrap text-[11px] font-medium", mutedColor)}>
-              Aprēķināts 05.02.2025
-            </p>
+            {onOpenDetails ? (
+              <button
+                type="button"
+                onClick={onOpenDetails}
+                className={cn(
+                  "mt-3 inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-medium transition hover:text-[#23314D]",
+                  mutedColor,
+                )}
+              >
+                <span>Aprēķināts 05.02.2025</span>
+                <ArrowUpRight className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
+              </button>
+            ) : (
+              <p className={cn("mt-3 whitespace-nowrap text-[11px] font-medium", mutedColor)}>
+                Aprēķināts 05.02.2025
+              </p>
+            )}
           </div>
 
           <div className="ml-auto flex min-w-0 flex-col items-center pt-1 text-center">
@@ -508,11 +525,13 @@ function PreventionFullViewModal({
   onClose,
   groups,
   initialExpandedGroupId,
+  initialScoreExpanded,
 }: {
   open: boolean;
   onClose: () => void;
   groups: PreventionGroup[];
   initialExpandedGroupId: PreventionGroup["id"] | null;
+  initialScoreExpanded: boolean;
 }) {
   const [isScoreDataExpanded, setIsScoreDataExpanded] = React.useState(false);
   const [expandedGroups, setExpandedGroups] = React.useState<
@@ -553,8 +572,8 @@ function PreventionFullViewModal({
       vaccinations: initialExpandedGroupId === "vaccinations",
       annualCheckup: initialExpandedGroupId === "annualCheckup",
     });
-    setIsScoreDataExpanded(false);
-  }, [initialExpandedGroupId, open]);
+    setIsScoreDataExpanded(initialScoreExpanded);
+  }, [initialExpandedGroupId, initialScoreExpanded, open]);
 
   if (!open) {
     return null;
@@ -605,6 +624,7 @@ function PreventionFullViewModal({
             <ScoreCard
               expandable
               isExpanded={isScoreDataExpanded}
+              onOpenDetails={() => setIsScoreDataExpanded(true)}
               onToggle={() => setIsScoreDataExpanded((current) => !current)}
             />
 
@@ -636,6 +656,7 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
   const [initialExpandedGroupId, setInitialExpandedGroupId] = React.useState<
     PreventionGroup["id"] | null
   >(null);
+  const [initialScoreExpanded, setInitialScoreExpanded] = React.useState(false);
 
   const screeningItems =
     patient.gender === "female" ? femaleScreeningItems : maleScreeningItems;
@@ -695,8 +716,12 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
   );
 
   const visibleSummaryGroups = getVisibleSummaryGroups(displayedPreventionGroups);
-  const handleOpenFullView = (groupId: PreventionGroup["id"] | null = null) => {
+  const handleOpenFullView = (
+    groupId: PreventionGroup["id"] | null = null,
+    options?: { scoreExpanded?: boolean },
+  ) => {
     setInitialExpandedGroupId(groupId);
+    setInitialScoreExpanded(Boolean(options?.scoreExpanded));
     setIsModalOpen(true);
   };
 
@@ -725,7 +750,7 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
         </div>
 
         <div className="flex flex-1 flex-col gap-3">
-          <ScoreCard />
+          <ScoreCard onOpenDetails={() => handleOpenFullView(null, { scoreExpanded: true })} />
 
           <div className="overflow-hidden rounded-[8px] border border-[#E3E5EE] bg-white">
             {visibleSummaryGroups.map((group) => (
@@ -758,6 +783,7 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
         onClose={() => setIsModalOpen(false)}
         groups={displayedPreventionGroups}
         initialExpandedGroupId={initialExpandedGroupId}
+        initialScoreExpanded={initialScoreExpanded}
       />
     </>
   );

@@ -33,7 +33,7 @@ interface ImagingStudy {
   datamedUrl?: string;
 }
 
-const studies: ImagingStudy[] = [
+export const imagingStudies: ImagingStudy[] = [
   {
     id: "1",
     type: "MRI",
@@ -120,7 +120,7 @@ const conclusionPanelStyles: Record<ImagingStatus, string> = {
     "border-[hsl(0,58%,84%)] bg-[linear-gradient(180deg,hsl(0,72%,98%),hsl(0,58%,96%))]",
 };
 
-function formatLatvianDate(isoDate: string) {
+export function formatLatvianDate(isoDate: string) {
   const date = new Date(isoDate);
   const day = String(date.getDate()).padStart(2, "0");
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -158,7 +158,7 @@ function InfoColumn({
 }
 
 const MedicalImagingViewer = () => {
-  const orderedStudies = useMemo(() => studies, []);
+  const orderedStudies = useMemo(() => imagingStudies, []);
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);

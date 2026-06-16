@@ -1,17 +1,30 @@
 ﻿import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Mail, Phone, RefreshCw } from "lucide-react";
+import {
+  AlertCircle,
+  Mail,
+  Phone,
+  RefreshCw,
+  Search,
+  Send,
+  Sparkles,
+  X,
+} from "lucide-react";
 
 import AlertsCard from "@/components/AlertsCard";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import EventTimelineHorizontal from "@/components/EventTimelineHorizontal";
 import HealthTrends from "@/components/HealthTrends";
 import HumanBodyModel from "@/components/HumanBodyModel";
-import MedicalImagingViewer from "@/components/MedicalImagingViewer";
+import MedicalImagingViewer, {
+  formatLatvianDate,
+  imagingStudies,
+} from "@/components/MedicalImagingViewer";
 import MedicationTable from "@/components/MedicationTable";
 import PatientCard from "@/components/PatientCard";
 import PreventionCard from "@/components/PreventionCard";
 import ReferralHistory from "@/components/ReferralHistory";
+import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import { patients } from "@/data/patients";
 import {
   filterDashboardLayoutOrderBySpecialty,
@@ -62,6 +75,58 @@ const layoutColumnSpans: Record<DashboardComponentKey, number> = {
   humanBodyModel: 1,
   referralHistory: 1,
 };
+
+function compactDashboardGridOrder(
+  visibleKeys: readonly DashboardComponentKey[],
+): DashboardComponentKey[] {
+  const orderedKeys = [...visibleKeys];
+  let currentColumn = 0;
+
+  for (let index = 0; index < orderedKeys.length; index += 1) {
+    const span = layoutColumnSpans[orderedKeys[index]];
+    const remainingColumns = 3 - currentColumn;
+
+    if (currentColumn !== 0 && span > remainingColumns) {
+      let candidateIndex = -1;
+
+      for (let searchIndex = index + 1; searchIndex < orderedKeys.length; searchIndex += 1) {
+        const candidateSpan = layoutColumnSpans[orderedKeys[searchIndex]];
+
+        if (candidateSpan > remainingColumns) {
+          continue;
+        }
+
+        if (candidateSpan === remainingColumns) {
+          candidateIndex = searchIndex;
+          break;
+        }
+
+        if (candidateIndex === -1) {
+          candidateIndex = searchIndex;
+        }
+      }
+
+      if (candidateIndex !== -1) {
+        const [candidateKey] = orderedKeys.splice(candidateIndex, 1);
+        orderedKeys.splice(index, 0, candidateKey);
+      }
+    }
+
+    const resolvedSpan = layoutColumnSpans[orderedKeys[index]];
+
+    if (currentColumn + resolvedSpan > 3) {
+      currentColumn = 0;
+    }
+
+    currentColumn += resolvedSpan;
+
+    if (currentColumn >= 3) {
+      currentColumn = 0;
+    }
+  }
+
+  return orderedKeys;
+}
 
 function getExpandedLayoutClasses(
   visibleKeys: readonly DashboardComponentKey[],
@@ -127,6 +192,467 @@ function formatRefreshTimestamp(date: Date) {
 const InfoDivider = () => (
   <span className="mx-2.5 text-[hsl(220,16%,80%)] md:mx-3">|</span>
 );
+
+type AssistantMessage = {
+  id: string;
+  role: "assistant" | "user";
+  text: string;
+  sections?: { title: string; lines: string[] }[];
+  sourceLabel?: string;
+  sourceTargetKey?: DashboardComponentKey;
+  suggestions?: string[];
+  timeLabel: string;
+};
+
+const assistantQuickQuestions = [
+  "Kādas ir hroniskās slimības?",
+  "Kādi ir riska faktori?",
+  "Kādas ir aktuālās novirzes?",
+];
+
+function getAssistantTimeLabel() {
+  return new Intl.DateTimeFormat("lv-LV", {
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(new Date());
+}
+
+function createWelcomeAssistantMessage(patient: Patient): AssistantMessage {
+  return {
+    id: "assistant-welcome",
+    role: "assistant",
+    text: `Varu palīdzēt ātri atrast būtiskāko par ${patient.name}. Uzdodiet jautājumu par diagnozēm, riska faktoriem vai aktuālajām novirzēm.`,
+    suggestions: assistantQuickQuestions,
+    timeLabel: getAssistantTimeLabel(),
+  };
+}
+
+function buildAssistantReply(patient: Patient, query: string): AssistantMessage {
+  const normalizedQuery = query.toLowerCase();
+  const timeLabel = getAssistantTimeLabel();
+  const ctStudies = imagingStudies.filter((study) => study.type === "CT");
+  const asksAboutCt =
+    /(^|[^a-z])ct([^a-z]|$)/i.test(query) ||
+    normalizedQuery.includes("datortomogr") ||
+    normalizedQuery.includes("tomogr");
+
+  if (asksAboutCt) {
+    if (ctStudies.length === 0) {
+      return {
+        id: `assistant-${Date.now()}`,
+        role: "assistant",
+        text: "Šajā kartē CT izmeklējums nav redzams.",
+        sourceLabel: "Attēldiagnostika",
+        sourceTargetKey: "medicalImagingViewer",
+        timeLabel,
+      };
+    }
+
+    return {
+      id: `assistant-${Date.now()}`,
+      role: "assistant",
+      text:
+        ctStudies.length === 1
+          ? "Jā, šim pacientam kartē ir dokumentēts 1 CT izmeklējums."
+          : `Jā, šim pacientam kartē ir dokumentēti ${ctStudies.length} CT izmeklējumi.`,
+      sections: [
+        {
+          title: "CT izmeklējumi",
+          lines: ctStudies.map(
+            (study) =>
+              `${formatLatvianDate(study.date)} · ${study.title} · ${study.status}`,
+          ),
+        },
+      ],
+      sourceLabel: "Attēldiagnostika",
+      sourceTargetKey: "medicalImagingViewer",
+      timeLabel,
+    };
+  }
+
+  if (normalizedQuery.includes("hron")) {
+    return {
+      id: `assistant-${Date.now()}`,
+      role: "assistant",
+      text: "Pacientam dokumentētas šādas hroniskās slimības:",
+      sections: [
+        {
+          title: "Hroniskās slimības",
+          lines: patient.chronicDiseases.map(
+            (item) =>
+              `${item.description}${item.diagnosedAt ? ` · kopš ${item.diagnosedAt}` : ""}`,
+          ),
+        },
+      ],
+      sourceLabel: "Hronisko slimību pārskats",
+      sourceTargetKey: "patientCard",
+      timeLabel,
+    };
+  }
+
+  if (normalizedQuery.includes("riska")) {
+    return {
+      id: `assistant-${Date.now()}`,
+      role: "assistant",
+      text: "Pacientam šobrīd redzami šādi riska faktori:",
+      sections: [
+        {
+          title: "Riska faktori",
+          lines: patient.riskFactors,
+        },
+      ],
+      sourceLabel: "Pacienta klīniskais profils",
+      sourceTargetKey: "patientCard",
+      timeLabel,
+    };
+  }
+
+  if (
+    normalizedQuery.includes("novirz") ||
+    normalizedQuery.includes("anal") ||
+    normalizedQuery.includes("rādīt")
+  ) {
+    return {
+      id: `assistant-${Date.now()}`,
+      role: "assistant",
+      text: "Aktuālās dokumentētās novirzes šajā kartē ir šādas:",
+      sections: [
+        {
+          title: "Novirzes",
+          lines: patient.deviations,
+        },
+      ],
+      sourceLabel: "Pacienta noviržu pārskats",
+      sourceTargetKey: "patientCard",
+      timeLabel,
+    };
+  }
+
+  if (normalizedQuery.includes("diagno")) {
+    return {
+      id: `assistant-${Date.now()}`,
+      role: "assistant",
+      text: "Šeit ir galvenās pacienta diagnozes:",
+      sections: [
+        {
+          title: "Diagnozes",
+          lines: patient.diagnoses.map(
+            (item) =>
+              `${item.code} · ${item.description}${item.diagnosedAt ? ` · ${item.diagnosedAt}` : ""}`,
+          ),
+        },
+      ],
+      sourceLabel: "Diagnožu saraksts",
+      sourceTargetKey: "patientCard",
+      timeLabel,
+    };
+  }
+
+  return {
+    id: `assistant-${Date.now()}`,
+    role: "assistant",
+    text: patient.summary,
+    sourceLabel: "Pacienta klīniskais profils",
+    sourceTargetKey: "patientCard",
+    suggestions: assistantQuickQuestions,
+    timeLabel,
+  };
+}
+
+function DashboardAssistant({ patient }: { patient: Patient }) {
+  const [isOpen, setIsOpen] = React.useState(false);
+  const [draft, setDraft] = React.useState("");
+  const [isResponding, setIsResponding] = React.useState(false);
+  const [messages, setMessages] = React.useState<AssistantMessage[]>(() => [
+    createWelcomeAssistantMessage(patient),
+  ]);
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  const scrollRef = React.useRef<HTMLDivElement | null>(null);
+  const responseTimeoutRef = React.useRef<number | null>(null);
+
+  React.useEffect(() => {
+    if (responseTimeoutRef.current !== null) {
+      window.clearTimeout(responseTimeoutRef.current);
+      responseTimeoutRef.current = null;
+    }
+
+    setMessages([createWelcomeAssistantMessage(patient)]);
+    setDraft("");
+    setIsResponding(false);
+    setIsOpen(false);
+  }, [patient]);
+
+  React.useEffect(() => {
+    return () => {
+      if (responseTimeoutRef.current !== null) {
+        window.clearTimeout(responseTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  React.useEffect(() => {
+    if (!isOpen) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      inputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [isOpen]);
+
+  React.useEffect(() => {
+    const element = scrollRef.current;
+    if (!element) return;
+
+    element.scrollTop = element.scrollHeight;
+  }, [messages, isOpen, isResponding]);
+
+  const sendMessage = (value: string) => {
+    const trimmedValue = value.trim();
+    if (!trimmedValue || isResponding) return;
+
+    setMessages((current) => [
+      ...current,
+      {
+        id: `user-${Date.now()}`,
+        role: "user",
+        text: trimmedValue,
+        timeLabel: getAssistantTimeLabel(),
+      },
+    ]);
+    setDraft("");
+    setIsResponding(true);
+
+    responseTimeoutRef.current = window.setTimeout(() => {
+      setMessages((current) => [...current, buildAssistantReply(patient, trimmedValue)]);
+      setIsResponding(false);
+      responseTimeoutRef.current = null;
+
+      window.requestAnimationFrame(() => {
+        inputRef.current?.focus();
+      });
+    }, 700);
+  };
+
+  const openSource = (targetKey: DashboardComponentKey | undefined) => {
+    if (!targetKey) return;
+
+    document
+      .getElementById(`dashboard-card-${targetKey}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    setIsOpen(false);
+  };
+
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsOpen(true)}
+        className={`fixed bottom-5 right-4 z-[95] inline-flex items-center gap-2.5 rounded-full border px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_28px_rgba(15,23,42,0.24)] transition hover:-translate-y-0.5 md:bottom-6 md:right-6 lg:bottom-7 lg:right-8 ${
+          isOpen
+            ? "border-[rgba(40,69,123,0.98)] bg-[#17386b]"
+            : "border-[rgba(24,45,86,0.98)] bg-[#102445]"
+        }`}
+        aria-label="Atvērt pacienta datu palīgu"
+      >
+        <span className="flex h-5 w-5 items-center justify-center">
+          <Search className="h-4 w-4" strokeWidth={2} />
+        </span>
+        <span className="hidden sm:inline">Pacienta datu palīgs</span>
+      </button>
+
+      {isOpen ? (
+        <CenteredOverlay
+          onClose={() => setIsOpen(false)}
+          className="items-end justify-end p-3 pb-[90px] md:p-6 md:pb-[98px] lg:pr-8 lg:pb-[104px]"
+          overlayClassName="bg-[rgba(23,35,58,0.30)] backdrop-blur-[4px]"
+          contentClassName="w-[min(400px,calc(100vw-24px))]"
+        >
+          <div className="relative">
+            <section className="flex max-h-[min(640px,calc(100vh-170px))] flex-col overflow-hidden rounded-[14px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.18)]">
+              <header className="flex items-center justify-between gap-3 border-b border-[rgba(226,232,240,0.92)] px-4 py-3">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <p className="truncate text-[14px] font-semibold tracking-[-0.02em] text-[hsl(222,28%,18%)]">
+                      Pacienta datu palīgs
+                    </p>
+                    <span className="inline-flex items-center rounded-full bg-[hsl(219,70%,96%)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[hsl(221,44%,48%)]">
+                      Beta
+                    </span>
+                  </div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(221,18%,44%)] transition hover:bg-[hsl(210,32%,96%)]"
+                  aria-label="Aizvērt palīgu"
+                >
+                  <X className="h-4 w-4" strokeWidth={2} />
+                </button>
+              </header>
+
+              <div
+                ref={scrollRef}
+                className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,#f8fbff_0%,#f3f7fd_100%)] px-3 py-3"
+              >
+                <div className="space-y-2.5">
+                  {messages.map((message) => (
+                    <div
+                      key={message.id}
+                      className={message.role === "user" ? "flex justify-end" : "flex justify-start"}
+                    >
+                    {message.role === "assistant" ? (
+                        <div className="flex max-w-[90%] items-start gap-2">
+                          <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[hsl(219,50%,52%)] shadow-[0_8px_18px_rgba(86,107,166,0.14)]">
+                            <Sparkles className="h-3.5 w-3.5" strokeWidth={1.8} />
+                          </div>
+
+                          <div className="min-w-0">
+                            <div className="rounded-[16px] rounded-tl-[6px] border border-[rgba(215,224,237,0.96)] bg-white px-3.5 py-3 shadow-[0_12px_26px_rgba(148,163,184,0.12)]">
+                              <p className="text-[11px] leading-5 text-[hsl(222,20%,26%)]">{message.text}</p>
+
+                              {message.sections?.length ? (
+                                <div className="mt-3 space-y-2.5">
+                                  {message.sections.map((section) => (
+                                    <div
+                                      key={section.title}
+                                      className="rounded-[14px] border border-[rgba(223,229,239,0.96)] bg-[hsl(210,40%,99%)] px-3 py-2.5"
+                                    >
+                                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[hsl(217,26%,44%)]">
+                                        {section.title}
+                                      </p>
+                                      <div className="mt-2 space-y-1.5">
+                                        {section.lines.map((line) => (
+                                          <div key={line} className="flex items-start gap-2 text-[11px] text-[hsl(222,20%,26%)]">
+                                            <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[hsl(218,44%,55%)]" />
+                                            <span>{line}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    </div>
+                                  ))}
+                                </div>
+                              ) : null}
+
+                              <div className="mt-3 flex items-center gap-2 text-[10px] text-[hsl(217,15%,56%)]">
+                                {message.sourceLabel ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openSource(message.sourceTargetKey)}
+                                    className="inline-flex items-center gap-1 font-medium text-[hsl(220,42%,44%)] transition hover:text-[hsl(220,52%,34%)]"
+                                  >
+                                    Atsauce: {message.sourceLabel}
+                                    <span aria-hidden="true">↗</span>
+                                  </button>
+                                ) : (
+                                  <span>Atsauce: pacienta karte</span>
+                                )}
+                                <span className="ml-auto">{message.timeLabel}</span>
+                              </div>
+                            </div>
+
+                            {message.suggestions?.length ? (
+                              <div className="mt-2 flex flex-wrap gap-1.5">
+                                {message.suggestions.map((suggestion) => (
+                                  <button
+                                    key={suggestion}
+                                    type="button"
+                                    onClick={() => sendMessage(suggestion)}
+                                    className="rounded-[9px] border border-[rgba(204,218,240,0.96)] bg-white px-2.5 py-1 text-[9px] font-medium text-[hsl(220,34%,38%)] transition hover:border-[rgba(177,198,235,0.96)] hover:bg-[hsl(210,60%,98%)]"
+                                  >
+                                    {suggestion}
+                                  </button>
+                                ))}
+                              </div>
+                            ) : null}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="max-w-[80%] break-words rounded-[16px] rounded-tr-[6px] bg-[linear-gradient(135deg,#dbe9ff,#c8dbff)] px-3 py-2.5 text-[12px] leading-4 text-[hsl(222,28%,22%)] shadow-[0_12px_24px_rgba(129,154,206,0.18)]">
+                          <p>{message.text}</p>
+                          <p className="mt-1.5 text-right text-[9px] text-[hsl(220,18%,52%)]">
+                            {message.timeLabel}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+
+                  {isResponding ? (
+                    <div className="flex justify-start">
+                      <div className="flex max-w-[90%] items-start gap-2">
+                        <div className="mt-1 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-white text-[hsl(219,50%,52%)] shadow-[0_8px_18px_rgba(86,107,166,0.14)]">
+                          <Sparkles className="h-3.5 w-3.5" strokeWidth={1.8} />
+                        </div>
+
+                        <div className="rounded-[16px] rounded-tl-[6px] border border-[rgba(215,224,237,0.96)] bg-white px-3.5 py-3 shadow-[0_12px_26px_rgba(148,163,184,0.12)]">
+                          <div className="flex items-center gap-1.5">
+                            <span
+                              className="h-2 w-2 rounded-full bg-[hsl(218,28%,68%)] animate-bounce [animation-delay:-0.24s] [animation-duration:0.9s]"
+                              aria-hidden="true"
+                            />
+                            <span
+                              className="h-2 w-2 rounded-full bg-[hsl(218,28%,68%)] animate-bounce [animation-delay:-0.12s] [animation-duration:0.9s]"
+                              aria-hidden="true"
+                            />
+                            <span
+                              className="h-2 w-2 rounded-full bg-[hsl(218,28%,68%)] animate-bounce [animation-duration:0.9s]"
+                              aria-hidden="true"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+
+              <footer className="border-t border-[rgba(226,232,240,0.92)] bg-white px-3 py-3">
+                <form
+                  onSubmit={(event) => {
+                    event.preventDefault();
+                    sendMessage(draft);
+                  }}
+                  className="flex items-center gap-3"
+                >
+                  <div className="relative min-w-0 flex-1">
+                    <input
+                      ref={inputRef}
+                      value={draft}
+                      onChange={(event) => setDraft(event.target.value)}
+                      placeholder="Jautājums par pacienta datiem..."
+                      disabled={isResponding}
+                      className="h-11 w-full rounded-[15px] border border-[rgba(203,215,233,0.96)] bg-[hsl(210,60%,99%)] pl-4 pr-14 text-[12px] text-[hsl(222,28%,20%)] outline-none transition placeholder:text-[hsl(217,12%,58%)] focus:border-[rgba(113,154,228,0.96)] focus:bg-white focus:ring-4 focus:ring-[rgba(93,136,217,0.14)]"
+                    />
+                    <button
+                      type="submit"
+                      disabled={!draft.trim() || isResponding}
+                      className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[hsl(220,24%,48%)] transition hover:bg-[hsl(214,32%,96%)] hover:text-[hsl(219,42%,24%)] disabled:cursor-not-allowed disabled:opacity-45"
+                      aria-label="Nosūtīt jautājumu"
+                    >
+                      <Send className="h-3.5 w-3.5" strokeWidth={1.65} />
+                    </button>
+                  </div>
+                </form>
+
+                <div className="mt-2 flex items-start gap-2 text-[9px] leading-4 text-[hsl(217,12%,56%)]">
+                  <AlertCircle className="mt-[1px] h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
+                  <p>
+                    Atbildes tiek ģenerētas no pieejamajiem pacienta datiem. Pirms klīniska
+                    lēmuma pieņemšanas pārbaudiet informāciju avotā.
+                  </p>
+                </div>
+              </footer>
+            </section>
+
+            <div className="absolute bottom-[-8px] right-[52px] h-4 w-4 rotate-45 border-b border-r border-[rgba(220,228,236,0.96)] bg-white shadow-[10px_12px_24px_rgba(15,23,42,0.10)]" />
+          </div>
+        </CenteredOverlay>
+      ) : null}
+    </>
+  );
+}
 
 const Index = () => {
   const location = useLocation();
@@ -271,7 +797,12 @@ const Index = () => {
     },
   ];
 
-  const visibleItems = order
+  const orderedVisibleKeys = React.useMemo(
+    () => compactDashboardGridOrder(order),
+    [order],
+  );
+
+  const visibleItems = orderedVisibleKeys
     .map((key) => componentItems.find((item) => item.key === key))
     .filter(Boolean) as typeof componentItems;
 
@@ -410,6 +941,7 @@ const Index = () => {
             {visibleItems.map((item) => (
               <div
                 key={item.key}
+                id={`dashboard-card-${item.key}`}
                 className={`relative min-w-0 ${resolvedLayoutClasses[item.key]}`}
               >
                 <div className="h-full">{item.element}</div>
@@ -418,6 +950,8 @@ const Index = () => {
           </div>
         </main>
       </div>
+
+      <DashboardAssistant patient={patient} />
     </div>
   );
 };

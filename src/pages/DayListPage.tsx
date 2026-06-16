@@ -588,14 +588,14 @@ export default function DayListPage() {
           </header>
 
           <div className={cn(panelClass, "overflow-hidden")}>
-            <section className="px-5 py-5 sm:px-6 xl:px-7">
-              <div className="mb-4 flex items-center justify-between gap-3">
+            <section className="px-4 py-4 sm:px-5 xl:px-6">
+              <div className="mb-3 flex items-center justify-between gap-3">
                 <p className={sectionLabelClass}>Dienas izvēle</p>
-                <span className="rounded-full bg-[hsl(220,46%,96%)] px-3 py-1 text-[12px] font-medium text-[hsl(220,48%,46%)]">
+                <span className="rounded-full bg-[hsl(220,46%,96%)] px-3 py-1 text-[11px] font-medium text-[hsl(220,48%,46%)]">
                   Saraksts: {formatMonthDate(selectedDate)}
                 </span>
               </div>
-              <div className="grid gap-3 md:grid-cols-[1fr_1.08fr_1fr]">
+              <div className="grid gap-2.5 md:grid-cols-[1fr_1.08fr_1fr]">
                 {[
                   {
                     date: previousDate,
@@ -648,7 +648,7 @@ export default function DayListPage() {
                         type="button"
                         onClick={action}
                         className={cn(
-                          "flex min-h-[86px] items-center justify-between gap-3 rounded-[14px] border px-4 py-3 text-left transition",
+                          "flex min-h-[74px] items-center justify-between gap-3 rounded-[12px] border px-3.5 py-2.5 text-left transition",
                           active
                             ? "border-[hsl(220,36%,18%)] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] text-white shadow-[0_16px_30px_rgba(29,53,87,0.18)]"
                             : "border-[rgba(214,223,231,0.82)] bg-white text-[hsl(218,30%,24%)] hover:border-[rgba(189,202,215,0.96)] hover:bg-[hsl(214,28%,98%)]",
@@ -657,20 +657,20 @@ export default function DayListPage() {
                         {iconPlacement !== "right" && (
                           <div
                             className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]",
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]",
                               active
                                 ? "bg-[rgba(255,255,255,0.1)]"
                                 : "bg-[hsl(214,24%,96%)] text-[hsl(217,22%,42%)]",
                             )}
                           >
-                            <Icon className="h-4 w-4" />
+                            <Icon className="h-3.5 w-3.5" />
                           </div>
                         )}
 
                         <div className="min-w-0 flex-1">
                           <p
                             className={cn(
-                              "text-[11px] font-semibold uppercase tracking-[0.08em]",
+                              "text-[10px] font-semibold uppercase tracking-[0.08em]",
                               active
                                 ? "text-[rgba(255,255,255,0.88)]"
                                 : "text-[hsl(214,14%,44%)]",
@@ -678,7 +678,7 @@ export default function DayListPage() {
                           >
                             {label}
                           </p>
-                          <p className="mt-0.5 text-[16px] font-semibold tracking-[-0.03em] md:text-[18px]">
+                          <p className="mt-0.5 text-[15px] font-semibold tracking-[-0.03em] md:text-[16px]">
                             {formatNumericDate(date)}
                           </p>
                           <p
@@ -695,13 +695,13 @@ export default function DayListPage() {
                         {iconPlacement === "right" && (
                           <div
                             className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px]",
+                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]",
                               active
                                 ? "bg-[rgba(255,255,255,0.1)]"
                                 : "bg-[hsl(214,24%,96%)] text-[hsl(217,22%,42%)]",
                             )}
                           >
-                            <Icon className="h-4 w-4" />
+                            <Icon className="h-3.5 w-3.5" />
                           </div>
                         )}
                       </button>
@@ -712,7 +712,7 @@ export default function DayListPage() {
             </section>
 
             <form
-              className="relative flex flex-col gap-5 border-t border-[hsl(214,26%,90%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.55))] px-5 py-5 sm:px-6 xl:px-7"
+              className="relative flex flex-col gap-4 border-t border-[hsl(214,26%,90%)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.55))] px-4 py-4 sm:px-5 xl:px-6"
               onSubmit={(event) => {
                 event.preventDefault();
                 handleAddPatientByCode();
@@ -721,7 +721,7 @@ export default function DayListPage() {
               <div className="min-w-0">
                 <p className={sectionLabelClass}>Pievienot pacientu</p>
 
-                <div className="mt-4 flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+                <div className="mt-3 flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-1">
                       {personalCodeDigits.map((digit, index) => {
@@ -827,12 +827,12 @@ export default function DayListPage() {
 
                                 inputRefs.current[nextFocusIndex]?.focus();
                               }}
-                              className="h-[42px] w-[42px] shrink-0 rounded-[6px] border border-[hsl(214,28%,84%)] bg-white text-center text-[15px] font-medium text-[hsl(220,38%,24%)] outline-none transition focus:border-[hsl(216,46%,58%)] focus:ring-2 focus:ring-[rgba(59,130,246,0.12)]"
+                              className="h-[36px] w-[36px] shrink-0 rounded-[6px] border border-[hsl(214,28%,84%)] bg-white text-center text-[14px] font-medium text-[hsl(220,38%,24%)] outline-none transition focus:border-[hsl(216,46%,58%)] focus:ring-2 focus:ring-[rgba(59,130,246,0.12)]"
                               aria-label={`Personas koda cipars ${index + 1}`}
                             />
 
                             {showDivider && (
-                              <span className="px-1 text-[17px] font-medium text-[hsl(218,14%,50%)]">
+                              <span className="px-1 text-[15px] font-medium text-[hsl(218,14%,50%)]">
                                 -
                               </span>
                             )}
@@ -843,7 +843,7 @@ export default function DayListPage() {
 
                     <p
                       className={cn(
-                        "mt-2.5 text-[12px]",
+                        "mt-2 text-[11px]",
                         error
                           ? "font-medium text-[hsl(0,60%,48%)]"
                           : "text-[hsl(218,16%,52%)]",
@@ -855,9 +855,9 @@ export default function DayListPage() {
 
                   <Button
                     type="submit"
-                    className="h-[42px] w-full rounded-[6px] bg-[hsl(219,44%,19%)] px-5 text-[14px] font-medium text-white hover:bg-[hsl(219,44%,22%)] lg:mt-0.5 lg:w-auto lg:min-w-[200px]"
+                    className="h-[38px] w-full rounded-[6px] bg-[hsl(219,44%,19%)] px-4 text-[13px] font-medium text-white hover:bg-[hsl(219,44%,22%)] lg:mt-0.5 lg:w-auto lg:min-w-[180px]"
                   >
-                    <UserPlus className="mr-2 h-4 w-4" strokeWidth={2.2} />
+                    <UserPlus className="mr-2 h-3.5 w-3.5" strokeWidth={2.2} />
                     Pievienot pacientu
                   </Button>
                 </div>
