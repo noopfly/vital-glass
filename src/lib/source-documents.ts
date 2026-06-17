@@ -162,6 +162,10 @@ export const dashboardSourceDocuments: SourceDocument[] = [
     url: `${documentBaseUrl}ekg-protokols-2026-03-25.html`,
     linkLabel: "Skatīt EKG protokolu",
     relatedDashboardKeys: ["eventTimeline", "patientCard"],
+    usedDocumentsGroup: "Citi",
+    usedDocumentsTitle: "EKG protokols",
+    usedDocumentsSubtitle: "25.03.2026",
+    showInUsedDocumentsPanel: true,
   },
   {
     id: sourceDocumentIds.diabetesCard,
@@ -245,6 +249,10 @@ export const dashboardSourceDocuments: SourceDocument[] = [
     url: `${documentBaseUrl}ct-kreisais-celis-2026-02-19.html`,
     linkLabel: "Skatīt CT izmeklējuma aprakstu",
     relatedDashboardKeys: ["medicalImagingViewer"],
+    usedDocumentsGroup: "Citi",
+    usedDocumentsTitle: "CT izmeklējuma apraksts",
+    usedDocumentsSubtitle: "19.02.2026",
+    showInUsedDocumentsPanel: true,
   },
   {
     id: sourceDocumentIds.mriHead,
@@ -256,6 +264,10 @@ export const dashboardSourceDocuments: SourceDocument[] = [
     url: `${documentBaseUrl}mri-galvas-zona-2026-03-04.pdf`,
     linkLabel: "Skatīt MRI izmeklējumu",
     relatedDashboardKeys: ["medicalImagingViewer"],
+    usedDocumentsGroup: "Citi",
+    usedDocumentsTitle: "MRI izmeklējuma dokuments",
+    usedDocumentsSubtitle: "04.03.2026",
+    showInUsedDocumentsPanel: true,
   },
   {
     id: sourceDocumentIds.abdominalUsg,
@@ -267,6 +279,10 @@ export const dashboardSourceDocuments: SourceDocument[] = [
     url: `${documentBaseUrl}usg-vedera-dobums-2026-01-27.html`,
     linkLabel: "Skatīt USG izmeklējuma aprakstu",
     relatedDashboardKeys: ["medicalImagingViewer"],
+    usedDocumentsGroup: "Citi",
+    usedDocumentsTitle: "USG izmeklējuma apraksts",
+    usedDocumentsSubtitle: "27.01.2026",
+    showInUsedDocumentsPanel: true,
   },
 ].sort(
   (left, right) => new Date(right.date).getTime() - new Date(left.date).getTime(),

@@ -125,6 +125,14 @@ const profileMenuItems = [
   },
 ];
 
+const usedDocumentsGroupOrder = [
+  "Laboratorijas rezultāti",
+  "Izraksti un slēdzieni",
+  "Medikamentu dati",
+  "Reģistri un kartes",
+  "Citi",
+] as const;
+
 const settingsModules = [
   {
     key: "patientCard",
@@ -562,16 +570,32 @@ export default function DashboardSidebar({
     const grouped = new Map<string, typeof usedDocumentsPanelDocuments>();
 
     for (const document of usedDocumentsPanelDocuments) {
-      const groupLabel = document.usedDocumentsGroup ?? "Citi dokumenti";
+      const groupLabel = document.usedDocumentsGroup ?? "Citi";
       const currentGroup = grouped.get(groupLabel) ?? [];
       currentGroup.push(document);
       grouped.set(groupLabel, currentGroup);
     }
 
-    return Array.from(grouped.entries()).map(([title, documents]) => ({
-      title,
-      documents,
-    }));
+    return Array.from(grouped.entries())
+      .sort(([leftTitle], [rightTitle]) => {
+        const leftIndex = usedDocumentsGroupOrder.indexOf(
+          leftTitle as (typeof usedDocumentsGroupOrder)[number],
+        );
+        const rightIndex = usedDocumentsGroupOrder.indexOf(
+          rightTitle as (typeof usedDocumentsGroupOrder)[number],
+        );
+
+        const normalizedLeftIndex =
+          leftIndex === -1 ? usedDocumentsGroupOrder.length : leftIndex;
+        const normalizedRightIndex =
+          rightIndex === -1 ? usedDocumentsGroupOrder.length : rightIndex;
+
+        return normalizedLeftIndex - normalizedRightIndex;
+      })
+      .map(([title, documents]) => ({
+        title,
+        documents,
+      }));
   }, []);
 
   React.useEffect(() => {
@@ -833,7 +857,7 @@ export default function DashboardSidebar({
                     >
                       <span className="absolute inset-y-2 left-0 w-1 rounded-r-full bg-[hsl(220,36%,18%)]" />
 
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-3">
                             <p className="truncate text-[15px] font-semibold leading-5 text-[hsl(220,36%,18%)]">
@@ -883,10 +907,10 @@ export default function DashboardSidebar({
                         <button
                           type="button"
                           onClick={() => setIsSourceDocumentsOpen(true)}
-                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-white/14 bg-white/8 text-white transition hover:bg-white/16"
+                          className="inline-flex h-8 w-8 shrink-0 self-center items-center justify-center rounded-[10px] text-white transition hover:bg-white/10"
                           aria-label="Skatīt izmantotos dokumentus"
                         >
-                          <FileText className="h-3.5 w-3.5" />
+                          <FileText className="h-[18px] w-[18px]" strokeWidth={1.6} />
                         </button>
                       </div>
                     </div>
@@ -1280,6 +1304,7 @@ export default function DashboardSidebar({
       {isSourceDocumentsOpen && (
         <CenteredOverlay
           onClose={() => setIsSourceDocumentsOpen(false)}
+          className="z-[110]"
           overlayClassName="bg-[rgba(21,33,56,0.22)] backdrop-blur-[8px]"
           contentClassName="max-w-[560px]"
         >

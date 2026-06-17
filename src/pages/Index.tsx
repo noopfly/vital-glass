@@ -204,8 +204,6 @@ type AssistantMessage = {
   sections?: { title: string; lines: string[] }[];
   sourceLabel?: string;
   sourceHref?: string;
-  sourceTargetKey?: DashboardComponentKey;
-  suggestions?: string[];
   timeLabel: string;
 };
 
@@ -214,6 +212,10 @@ const assistantQuickQuestions = [
   "Kādi ir riska faktori?",
   "Kādas ir aktuālās novirzes?",
 ];
+
+function normalizeAssistantQuestion(value: string) {
+  return value.trim().toLowerCase().replace(/\s+/g, " ");
+}
 
 function getAssistantTimeLabel() {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -227,21 +229,18 @@ function createWelcomeAssistantMessage(patient: Patient): AssistantMessage {
     id: "assistant-welcome",
     role: "assistant",
     text: `Varu palīdzēt ātri atrast būtiskāko par ${patient.name}. Uzdodiet jautājumu par diagnozēm, riska faktoriem vai aktuālajām novirzēm.`,
-    suggestions: assistantQuickQuestions,
     timeLabel: getAssistantTimeLabel(),
   };
 }
 
 function createAssistantSourceReference(
   documentId: (typeof sourceDocumentIds)[keyof typeof sourceDocumentIds],
-  targetKey: DashboardComponentKey,
 ) {
   const sourceDocument = dashboardSourceDocumentMap[documentId];
 
   return {
-    sourceLabel: sourceDocument.linkLabel,
+    sourceLabel: sourceDocument.title,
     sourceHref: sourceDocument.url,
-    sourceTargetKey: targetKey,
   };
 }
 
@@ -260,10 +259,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
         id: `assistant-${Date.now()}`,
         role: "assistant",
         text: "Šajā kartē CT izmeklējums nav redzams.",
-        ...createAssistantSourceReference(
-          sourceDocumentIds.ctKnee,
-          "medicalImagingViewer",
-        ),
+        ...createAssistantSourceReference(sourceDocumentIds.ctKnee),
         timeLabel,
       };
     }
@@ -284,10 +280,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           ),
         },
       ],
-      ...createAssistantSourceReference(
-        sourceDocumentIds.ctKnee,
-        "medicalImagingViewer",
-      ),
+      ...createAssistantSourceReference(sourceDocumentIds.ctKnee),
       timeLabel,
     };
   }
@@ -306,10 +299,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           ),
         },
       ],
-      ...createAssistantSourceReference(
-        sourceDocumentIds.ambulatoryVisit,
-        "patientCard",
-      ),
+      ...createAssistantSourceReference(sourceDocumentIds.ambulatoryVisit),
       timeLabel,
     };
   }
@@ -325,10 +315,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           lines: patient.riskFactors,
         },
       ],
-      ...createAssistantSourceReference(
-        sourceDocumentIds.ambulatoryVisit,
-        "patientCard",
-      ),
+      ...createAssistantSourceReference(sourceDocumentIds.ambulatoryVisit),
       timeLabel,
     };
   }
@@ -348,10 +335,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           lines: patient.deviations,
         },
       ],
-      ...createAssistantSourceReference(
-        sourceDocumentIds.laboratoryBloodPanel,
-        "patientCard",
-      ),
+      ...createAssistantSourceReference(sourceDocumentIds.laboratoryBloodPanel),
       timeLabel,
     };
   }
@@ -370,10 +354,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           ),
         },
       ],
-      ...createAssistantSourceReference(
-        sourceDocumentIds.dischargeSummary,
-        "patientCard",
-      ),
+      ...createAssistantSourceReference(sourceDocumentIds.dischargeSummary),
       timeLabel,
     };
   }
@@ -382,11 +363,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
     id: `assistant-${Date.now()}`,
     role: "assistant",
     text: patient.summary,
-    ...createAssistantSourceReference(
-      sourceDocumentIds.ambulatoryVisit,
-      "patientCard",
-    ),
-    suggestions: assistantQuickQuestions,
+    ...createAssistantSourceReference(sourceDocumentIds.ambulatoryVisit),
     timeLabel,
   };
 }
@@ -466,15 +443,6 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
     }, 700);
   };
 
-  const openSource = (targetKey: DashboardComponentKey | undefined) => {
-    if (!targetKey) return;
-
-    document
-      .getElementById(`dashboard-card-${targetKey}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setIsOpen(false);
-  };
-
   return (
     <>
       <button
@@ -529,7 +497,18 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                 className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,#f8fbff_0%,#f3f7fd_100%)] px-3 py-3"
               >
                 <div className="space-y-2.5">
-                  {messages.map((message) => (
+                  {messages.map((message, index) => {
+                    const previousUserQuestion =
+                      index > 0 && messages[index - 1]?.role === "user"
+                        ? normalizeAssistantQuestion(messages[index - 1].text)
+                        : null;
+                    const hasSourceLink = Boolean(message.sourceLabel && message.sourceHref);
+                    const visibleQuickQuestions = assistantQuickQuestions.filter(
+                      (suggestion) =>
+                        normalizeAssistantQuestion(suggestion) !== previousUserQuestion,
+                    );
+
+                    return (
                     <div
                       key={message.id}
                       className={message.role === "user" ? "flex justify-end" : "flex justify-start"}
@@ -567,47 +546,39 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                                 </div>
                               ) : null}
 
-                              <div className="mt-3 flex items-center gap-2 text-[10px] text-[hsl(217,15%,56%)]">
-                                {message.sourceLabel && message.sourceHref ? (
+                              <div
+                                className={`flex items-center gap-2 text-[10px] text-[hsl(217,15%,56%)] ${
+                                  hasSourceLink ? "mt-3" : "mt-1.5 justify-end"
+                                }`}
+                              >
+                                {hasSourceLink ? (
                                   <a
                                     href={message.sourceHref}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1 font-medium text-[hsl(220,42%,44%)] transition hover:text-[hsl(220,52%,34%)]"
+                                    className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-[hsl(220,42%,44%)] transition hover:text-[hsl(220,52%,34%)]"
                                   >
                                     Atsauce: {message.sourceLabel}
                                     <span aria-hidden="true">↗</span>
                                   </a>
-                                ) : (
-                                  <span>Atsauce: pacienta karte</span>
-                                )}
-                                {message.sourceTargetKey ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => openSource(message.sourceTargetKey)}
-                                    className="inline-flex items-center gap-1 text-[hsl(217,18%,48%)] transition hover:text-[hsl(220,42%,34%)]"
-                                  >
-                                    Panelī
-                                  </button>
                                 ) : null}
-                                <span className="ml-auto">{message.timeLabel}</span>
+                                <span className={hasSourceLink ? "ml-auto" : ""}>{message.timeLabel}</span>
                               </div>
                             </div>
 
-                            {message.suggestions?.length ? (
-                              <div className="mt-2 flex flex-wrap gap-1.5">
-                                {message.suggestions.map((suggestion) => (
-                                  <button
-                                    key={suggestion}
-                                    type="button"
-                                    onClick={() => sendMessage(suggestion)}
-                                    className="rounded-[9px] border border-[rgba(204,218,240,0.96)] bg-white px-2.5 py-1 text-[9px] font-medium text-[hsl(220,34%,38%)] transition hover:border-[rgba(177,198,235,0.96)] hover:bg-[hsl(210,60%,98%)]"
-                                  >
-                                    {suggestion}
-                                  </button>
-                                ))}
-                              </div>
-                            ) : null}
+                            <div className="mt-2 flex flex-wrap gap-1.5 pl-1">
+                              {visibleQuickQuestions.map((suggestion) => (
+                                <button
+                                  key={`${message.id}-${suggestion}`}
+                                  type="button"
+                                  onClick={() => sendMessage(suggestion)}
+                                  disabled={isResponding}
+                                  className="rounded-[9px] border border-[rgba(204,218,240,0.72)] bg-[rgba(255,255,255,0.82)] px-2.5 py-1 text-[9px] font-medium text-[hsl(220,34%,38%)] transition hover:border-[rgba(177,198,235,0.96)] hover:bg-[rgba(255,255,255,0.96)] disabled:cursor-not-allowed disabled:opacity-45"
+                                >
+                                  {suggestion}
+                                </button>
+                              ))}
+                            </div>
                           </div>
                         </div>
                       ) : (
@@ -619,7 +590,7 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                         </div>
                       )}
                     </div>
-                  ))}
+                  )})}
 
                   {isResponding ? (
                     <div className="flex justify-start">
