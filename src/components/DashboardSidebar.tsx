@@ -11,6 +11,7 @@ import {
   Loader2,
   Plus,
   RotateCcw,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
@@ -25,6 +26,7 @@ import {
   writeStoredDashboardLayoutOrder,
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
+import { usedDocumentsPanelDocuments } from "@/lib/source-documents";
 import { type SpecialtyId } from "@/lib/specialties";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
@@ -517,6 +519,7 @@ export default function DashboardSidebar({
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   const [isReportOpen, setIsReportOpen] = React.useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = React.useState(false);
+  const [isSourceDocumentsOpen, setIsSourceDocumentsOpen] = React.useState(false);
   const [isAllPatientsOpen, setIsAllPatientsOpen] = React.useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [draggedSettingsKey, setDraggedSettingsKey] = React.useState<
@@ -554,6 +557,22 @@ export default function DashboardSidebar({
   const orderedSettingsModules = settingsOrder
     .map((key) => settingsModuleMap[key])
     .filter(Boolean);
+
+  const usedDocumentsGroups = React.useMemo(() => {
+    const grouped = new Map<string, typeof usedDocumentsPanelDocuments>();
+
+    for (const document of usedDocumentsPanelDocuments) {
+      const groupLabel = document.usedDocumentsGroup ?? "Citi dokumenti";
+      const currentGroup = grouped.get(groupLabel) ?? [];
+      currentGroup.push(document);
+      grouped.set(groupLabel, currentGroup);
+    }
+
+    return Array.from(grouped.entries()).map(([title, documents]) => ({
+      title,
+      documents,
+    }));
+  }, []);
 
   React.useEffect(() => {
     if (!layoutOrder?.length) {
@@ -844,6 +863,36 @@ export default function DashboardSidebar({
                     </div>
                   );
                 }
+
+                if (isActivePatient) {
+                  return (
+                    <div
+                      key={patient.id}
+                      aria-current="page"
+                      className="rounded-[8px] bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] px-3 py-2 text-white"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-[15px] font-semibold leading-5">
+                            {patient.name}
+                          </p>
+                          <p className="mt-0.5 text-[11px] text-white/72">
+                            {patient.personalCode}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => setIsSourceDocumentsOpen(true)}
+                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-white/14 bg-white/8 text-white transition hover:bg-white/16"
+                          aria-label="Skatīt izmantotos dokumentus"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                }
+
 
                 return (
                   <Link
@@ -1223,6 +1272,95 @@ export default function DashboardSidebar({
                   </span>
                 </button>
               ))}
+            </div>
+          </div>
+        </CenteredOverlay>
+      )}
+
+      {isSourceDocumentsOpen && (
+        <CenteredOverlay
+          onClose={() => setIsSourceDocumentsOpen(false)}
+          overlayClassName="bg-[rgba(21,33,56,0.22)] backdrop-blur-[8px]"
+          contentClassName="max-w-[560px]"
+        >
+          <div className="mx-auto w-full max-w-[560px] overflow-hidden rounded-[18px] border border-[rgba(223,229,239,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,255,0.98))] shadow-[0_32px_90px_rgba(15,23,42,0.18)]">
+            <div className="flex items-start justify-between px-6 pb-2 pt-6">
+              <div>
+                <h2 className="text-[18px] font-semibold tracking-[-0.03em] text-[hsl(220,36%,18%)]">
+                  Izmantotie dokumenti
+                </h2>
+                <p className="mt-2 whitespace-nowrap text-[12px] leading-5 text-[hsl(214,16%,50%)]">
+                  Dokumenti un datu avoti, kas izmantoti pārskata izveidei.
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setIsSourceDocumentsOpen(false)}
+                className="flex h-8 w-8 items-center justify-center rounded-full text-[hsl(220,18%,50%)] transition hover:bg-[hsl(214,22%,97%)] hover:text-[hsl(220,24%,28%)]"
+                aria-label="Aizvert izmantoto dokumentu logu"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="max-h-[72vh] overflow-y-auto px-6 pb-6 pt-2">
+              <div className="space-y-5">
+                {usedDocumentsGroups.map((group) => (
+                  <section key={group.title}>
+                    <h3 className="text-[13px] font-semibold text-[hsl(220,28%,22%)]">
+                      {group.title}
+                    </h3>
+
+                    <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgba(224,230,238,0.96)] bg-white shadow-[0_10px_24px_rgba(148,163,184,0.08)]">
+                      {group.documents.map((document, index) => (
+                        <a
+                          key={document.id}
+                          href={document.url}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={cn(
+                            "flex items-center gap-3 px-4 py-3 transition hover:bg-[hsl(214,22%,98%)]",
+                            index !== group.documents.length - 1 &&
+                              "border-b border-[rgba(233,237,243,0.96)]",
+                          )}
+                        >
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(222,228,237,0.96)] bg-[hsl(210,25%,99%)] text-[hsl(221,20%,48%)]">
+                            <FileText className="h-4 w-4" />
+                          </div>
+
+                          <div className="min-w-0 flex-1">
+                            <p className="truncate text-[12px] font-semibold text-[hsl(220,30%,24%)]">
+                              {document.usedDocumentsTitle ?? document.title}
+                            </p>
+                            <p className="mt-0.5 truncate text-[11px] text-[hsl(219,14%,58%)]">
+                              {document.usedDocumentsSubtitle ?? document.date}
+                            </p>
+                            <p className="hidden">
+                          {document.facility} • {document.date}
+                        </p>
+                        <p className="hidden">
+                          {document.description}
+                        </p>
+                      </div>
+
+                          <span className="shrink-0 text-[12px] font-semibold text-[hsl(222,36%,58%)]">
+                            Atvērt
+                          </span>
+                        </a>
+                      ))}
+                    </div>
+                  </section>
+                ))}
+              </div>
+
+              <div className="mt-5 flex items-start gap-2 rounded-[12px] bg-[hsl(217,46%,98%)] px-3 py-3 text-[11px] leading-4.5 text-[hsl(218,16%,56%)]">
+                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(219,22%,58%)]" />
+                <p>
+                  Dokumenti tiek atlasīti automātiski un atbilst datu pieejamības un
+                  piekrišanas nosacījumiem.
+                </p>
+              </div>
             </div>
           </div>
         </CenteredOverlay>

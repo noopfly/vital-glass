@@ -40,6 +40,10 @@ import {
   readStoredLastViewedPatient,
   writeStoredLastViewedPatientId,
 } from "@/lib/last-viewed-patient";
+import {
+  dashboardSourceDocumentMap,
+  sourceDocumentIds,
+} from "@/lib/source-documents";
 import { Patient } from "@/types/patient";
 
 type DashboardLocationState = {
@@ -199,6 +203,7 @@ type AssistantMessage = {
   text: string;
   sections?: { title: string; lines: string[] }[];
   sourceLabel?: string;
+  sourceHref?: string;
   sourceTargetKey?: DashboardComponentKey;
   suggestions?: string[];
   timeLabel: string;
@@ -227,6 +232,19 @@ function createWelcomeAssistantMessage(patient: Patient): AssistantMessage {
   };
 }
 
+function createAssistantSourceReference(
+  documentId: (typeof sourceDocumentIds)[keyof typeof sourceDocumentIds],
+  targetKey: DashboardComponentKey,
+) {
+  const sourceDocument = dashboardSourceDocumentMap[documentId];
+
+  return {
+    sourceLabel: sourceDocument.linkLabel,
+    sourceHref: sourceDocument.url,
+    sourceTargetKey: targetKey,
+  };
+}
+
 function buildAssistantReply(patient: Patient, query: string): AssistantMessage {
   const normalizedQuery = query.toLowerCase();
   const timeLabel = getAssistantTimeLabel();
@@ -242,8 +260,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
         id: `assistant-${Date.now()}`,
         role: "assistant",
         text: "Šajā kartē CT izmeklējums nav redzams.",
-        sourceLabel: "Attēldiagnostika",
-        sourceTargetKey: "medicalImagingViewer",
+        ...createAssistantSourceReference(
+          sourceDocumentIds.ctKnee,
+          "medicalImagingViewer",
+        ),
         timeLabel,
       };
     }
@@ -264,8 +284,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           ),
         },
       ],
-      sourceLabel: "Attēldiagnostika",
-      sourceTargetKey: "medicalImagingViewer",
+      ...createAssistantSourceReference(
+        sourceDocumentIds.ctKnee,
+        "medicalImagingViewer",
+      ),
       timeLabel,
     };
   }
@@ -284,8 +306,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           ),
         },
       ],
-      sourceLabel: "Hronisko slimību pārskats",
-      sourceTargetKey: "patientCard",
+      ...createAssistantSourceReference(
+        sourceDocumentIds.ambulatoryVisit,
+        "patientCard",
+      ),
       timeLabel,
     };
   }
@@ -301,8 +325,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           lines: patient.riskFactors,
         },
       ],
-      sourceLabel: "Pacienta klīniskais profils",
-      sourceTargetKey: "patientCard",
+      ...createAssistantSourceReference(
+        sourceDocumentIds.ambulatoryVisit,
+        "patientCard",
+      ),
       timeLabel,
     };
   }
@@ -322,8 +348,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           lines: patient.deviations,
         },
       ],
-      sourceLabel: "Pacienta noviržu pārskats",
-      sourceTargetKey: "patientCard",
+      ...createAssistantSourceReference(
+        sourceDocumentIds.laboratoryBloodPanel,
+        "patientCard",
+      ),
       timeLabel,
     };
   }
@@ -342,8 +370,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
           ),
         },
       ],
-      sourceLabel: "Diagnožu saraksts",
-      sourceTargetKey: "patientCard",
+      ...createAssistantSourceReference(
+        sourceDocumentIds.dischargeSummary,
+        "patientCard",
+      ),
       timeLabel,
     };
   }
@@ -352,8 +382,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
     id: `assistant-${Date.now()}`,
     role: "assistant",
     text: patient.summary,
-    sourceLabel: "Pacienta klīniskais profils",
-    sourceTargetKey: "patientCard",
+    ...createAssistantSourceReference(
+      sourceDocumentIds.ambulatoryVisit,
+      "patientCard",
+    ),
     suggestions: assistantQuickQuestions,
     timeLabel,
   };
@@ -536,18 +568,28 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                               ) : null}
 
                               <div className="mt-3 flex items-center gap-2 text-[10px] text-[hsl(217,15%,56%)]">
-                                {message.sourceLabel ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => openSource(message.sourceTargetKey)}
+                                {message.sourceLabel && message.sourceHref ? (
+                                  <a
+                                    href={message.sourceHref}
+                                    target="_blank"
+                                    rel="noreferrer"
                                     className="inline-flex items-center gap-1 font-medium text-[hsl(220,42%,44%)] transition hover:text-[hsl(220,52%,34%)]"
                                   >
                                     Atsauce: {message.sourceLabel}
                                     <span aria-hidden="true">↗</span>
-                                  </button>
+                                  </a>
                                 ) : (
                                   <span>Atsauce: pacienta karte</span>
                                 )}
+                                {message.sourceTargetKey ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => openSource(message.sourceTargetKey)}
+                                    className="inline-flex items-center gap-1 text-[hsl(217,18%,48%)] transition hover:text-[hsl(220,42%,34%)]"
+                                  >
+                                    Panelī
+                                  </button>
+                                ) : null}
                                 <span className="ml-auto">{message.timeLabel}</span>
                               </div>
                             </div>

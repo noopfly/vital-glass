@@ -16,6 +16,10 @@ import {
 } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+import {
+  dashboardSourceDocumentMap,
+  sourceDocumentIds,
+} from "@/lib/source-documents";
 
 type EventType =
   | "laboratorija"
@@ -49,8 +53,10 @@ const events: TimelineEvent[] = [
       "Leikocīti bez būtiskām novirzēm.",
       "CRP paaugstinājums nav konstatēts.",
     ],
-    originalDocumentLabel: "Skatīt laboratorijas izrakstu",
-    originalDocumentUrl: "#original-document-1",
+    originalDocumentLabel:
+      dashboardSourceDocumentMap[sourceDocumentIds.laboratoryBloodPanel].linkLabel,
+    originalDocumentUrl:
+      dashboardSourceDocumentMap[sourceDocumentIds.laboratoryBloodPanel].url,
   },
   {
     id: "2",
@@ -64,8 +70,10 @@ const events: TimelineEvent[] = [
       "Turpināt esošo terapiju.",
       "Ieteikta kontrole pēc 3 mēnešiem.",
     ],
-    originalDocumentLabel: "Skatīt ambulatorās vizītes protokolu",
-    originalDocumentUrl: "#original-document-2",
+    originalDocumentLabel:
+      dashboardSourceDocumentMap[sourceDocumentIds.ambulatoryVisit].linkLabel,
+    originalDocumentUrl:
+      dashboardSourceDocumentMap[sourceDocumentIds.ambulatoryVisit].url,
   },
   {
     id: "3",
@@ -79,8 +87,10 @@ const events: TimelineEvent[] = [
       "Sirds ēna normāla izmēra un konfigurācijas.",
       "Pleiras dobumos šķidrums netiek konstatēts.",
     ],
-    originalDocumentLabel: "Skatīt radiologa slēdzienu",
-    originalDocumentUrl: "#original-document-3",
+    originalDocumentLabel:
+      dashboardSourceDocumentMap[sourceDocumentIds.chestXray].linkLabel,
+    originalDocumentUrl:
+      dashboardSourceDocumentMap[sourceDocumentIds.chestXray].url,
   },
   {
     id: "4",
@@ -95,8 +105,10 @@ const events: TimelineEvent[] = [
       "PR intervāls: 162 ms.",
       "ST segmenta izmaiņas nav konstatētas.",
     ],
-    originalDocumentLabel: "Skatīt EKG protokolu",
-    originalDocumentUrl: "#original-document-4",
+    originalDocumentLabel:
+      dashboardSourceDocumentMap[sourceDocumentIds.ekgProtocol].linkLabel,
+    originalDocumentUrl:
+      dashboardSourceDocumentMap[sourceDocumentIds.ekgProtocol].url,
   },
   {
     id: "5",
@@ -110,8 +122,10 @@ const events: TimelineEvent[] = [
       "Nozīmēta un realizēta terapija bez komplikācijām.",
       "Pacients izrakstīts stabilā vispārējā stāvoklī.",
     ],
-    originalDocumentLabel: "Skatīt izraksta epikrīzi",
-    originalDocumentUrl: "#original-document-5",
+    originalDocumentLabel:
+      dashboardSourceDocumentMap[sourceDocumentIds.dischargeSummary].linkLabel,
+    originalDocumentUrl:
+      dashboardSourceDocumentMap[sourceDocumentIds.dischargeSummary].url,
   },
   {
     id: "6",
@@ -125,8 +139,10 @@ const events: TimelineEvent[] = [
       "Leikocītu līmenis normas robežās.",
       "Glikoze urīnā nav konstatēta.",
     ],
-    originalDocumentLabel: "Skatīt laboratorijas izrakstu",
-    originalDocumentUrl: "#original-document-6",
+    originalDocumentLabel:
+      dashboardSourceDocumentMap[sourceDocumentIds.urineLabPanel].linkLabel,
+    originalDocumentUrl:
+      dashboardSourceDocumentMap[sourceDocumentIds.urineLabPanel].url,
   },
 ];
 
