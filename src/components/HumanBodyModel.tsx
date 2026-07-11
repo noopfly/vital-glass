@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { CSSProperties, ComponentType } from "react";
 import {
   Activity,
@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 
 import humanBody from "@/assets/human-body.png";
+import { DashboardCardHeader } from "@/components/DashboardCardHeader";
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 
 type Category =
@@ -73,13 +74,13 @@ const CATEGORY_CONFIG: Record<
   stacionars: {
     color: "hsl(358 44% 45%)",
     tint: "hsl(358 72% 97%)",
-    badge: "Stacionāra atradnes",
+    badge: "Stacionara atradnes",
     Icon: HeartPulse,
   },
   radiologija: {
     color: "hsl(271 40% 46%)",
     tint: "hsl(272 65% 96%)",
-    badge: "Radioloģiskas atradnes",
+    badge: "Radiologiskas atradnes",
     Icon: ScanSearch,
   },
   laboratorija: {
@@ -91,13 +92,13 @@ const CATEGORY_CONFIG: Record<
   iedzimtas: {
     color: "hsl(209 34% 42%)",
     tint: "hsl(209 58% 96%)",
-    badge: "Iedzimtas slimības",
+    badge: "Iedzimtas slimibas",
     Icon: Dna,
   },
   hroniskas: {
     color: "hsl(37 58% 40%)",
     tint: "hsl(42 66% 95%)",
-    badge: "Hroniskas slimības",
+    badge: "Hroniskas slimibas",
     Icon: Activity,
   },
 };
@@ -123,32 +124,32 @@ const ORGANS: OrganData[] = [
         shortSummary: "CT: mezgliņš kreisajā plaušā (8 mm)",
         category: "radiologija",
         details: [
-          { label: "Izmeklējums", value: "Datortomogrāfija (CT)" },
+          { label: "Izmeklejums", value: "Datortomografija (CT)" },
           { label: "Atradne", value: "Solitārs mezgliņš kreisajā plaušā, 8 mm" },
           { label: "Datums", value: "04.02.2025" },
-          { label: "Ārsts", value: "Dr. I. Liepiņa, radioloģe" },
+          { label: "Arsts", value: "Dr. I. Liepina, radiologe" },
           { label: "LUNG-RADS", value: "3 kategorija" },
         ],
         recommendations: [
           "Atkārtota CT pēc 3 mēnešiem",
-          "Nav aizdomu par ļaundabīgu procesu",
+          "Nav aizdomu par laundabigu procesu",
           "Smēķēšanas pārtraukšanas konsultācija",
         ],
       },
       {
         id: "p2",
-        title: "Hroniskas intersticiālas izmaiņas",
-        shortSummary: "Nelielas fibrozas izmaiņas abās plaušās",
+        title: "Hroniskas intersticialas izmainas",
+        shortSummary: "Nelielas fibrotiskas izmaiņas abās plaušās",
         category: "radiologija",
         details: [
-          { label: "Izmeklējums", value: "Krūškurvja CT" },
-          { label: "Atradne", value: "Nelielas perifēras fibrozas izmaiņas" },
+          { label: "Izmeklejums", value: "Krūškurvja CT" },
+          { label: "Atradne", value: "Nelielas periferas fibrozas izmainas" },
           { label: "Datums", value: "04.02.2025" },
-          { label: "Salīdzinājums", value: "Stabilas salīdzinot ar iepriekšējo" },
+          { label: "Salidzinajums", value: "Stabilas, salīdzinot ar iepriekšējo" },
         ],
         recommendations: [
           "Pulmonologa kontrole 6 mēnešu laikā",
-          "Atkārtota radioloģiska kontrole dinamikā",
+          "Atkartota radiologiska kontrole dinamika",
         ],
       },
     ],
@@ -161,51 +162,51 @@ const ORGANS: OrganData[] = [
     problems: [
       {
         id: "c1",
-        title: "Akūts STEMI",
+        title: "Akuts STEMI",
         shortSummary: "Miokarda infarkts — izraksts 12.03.2025",
         category: "stacionars",
         details: [
-          { label: "Diagnoze", value: "Akūts ST-elevācijas miokarda infarkts (STEMI)" },
-          { label: "Hospitalizācija", value: "05.03 – 12.03.2025" },
-          { label: "Procedūra", value: "Perkutāna koronāra intervence (PCI)" },
-          { label: "Stents", value: "DES stents LAD artērijā" },
-          { label: "EF pēc PCI", value: "45% (viegls samazinājums)" },
+          { label: "Diagnoze", value: "Akuts ST-elevacijas miokarda infarkts (STEMI)" },
+          { label: "Hospitalizacija", value: "05.03. – 12.03.2025" },
+          { label: "Procedura", value: "Perkutana koronara intervence (PCI)" },
+          { label: "Stents", value: "DES stents LAD arterija" },
+          { label: "EF pec PCI", value: "45% (viegls samazinajums)" },
         ],
         recommendations: [
           "Aspirīns 100 mg 1x/d ilgstoši",
-          "Klopidogrels 75 mg 1x/d — 12 mēneši",
-          "Atorvastatīns 40 mg 1x/d",
-          "Kardiorehabilitācija — 8 nedēļas",
+          "Klopidogrels 75 mg 1x/d – 12 mēneši",
+          "Atorvastatins 40 mg 1x/d",
+          "Kardiorehabilitācija – 8 nedēļas",
         ],
       },
       {
         id: "c2",
-        title: "Pēcinfarkta kreisā kambara disfunkcija",
-        shortSummary: "EF samazinājums pēc PCI",
+        title: "Pecinfarkta kreisa kambara disfunkcija",
+        shortSummary: "EF samazinajums pec PCI",
         category: "stacionars",
         details: [
           { label: "Echo", value: "EF 45%" },
-          { label: "Funkcija", value: "Viegls sistoliskās funkcijas samazinājums" },
+          { label: "Funkcija", value: "Viegls sistoliskas funkcijas samazinajums" },
           { label: "Kontrole", value: "Plānota pēc 3 mēnešiem" },
         ],
         recommendations: [
-          "Turpināt kardiologa uzraudzību",
+          "Turpinat kardiologa uzraudzibu",
           "Atkārtota ehokardiogrāfija pēc 3 mēnešiem",
         ],
       },
       {
         id: "c3",
-        title: "Troponīna pieaugums akūtā fāzē",
-        shortSummary: "Laboratoriski apstiprināts miokarda bojājums",
+        title: "Troponina pieaugums akuta faze",
+        shortSummary: "Laboratoriski apstiprinats miokarda bojajums",
         category: "laboratorija",
         details: [
-          { label: "Troponīns I", value: "Izteikti paaugstināts akūtā periodā" },
-          { label: "Saistība", value: "Saskan ar STEMI klīnisko ainu" },
-          { label: "Periods", value: "Hospitalizācijas laikā" },
+          { label: "Troponins I", value: "Izteikti paaugstinats akuta perioda" },
+          { label: "Saistiba", value: "Saskan ar STEMI klinisko ainu" },
+          { label: "Periods", value: "Hospitalizacijas laika" },
         ],
         recommendations: [
-          "Turpināt sekundāro profilaksi",
-          "Kontrolēt lipīdus un glikēmiju",
+          "Turpinat sekundaro profilaksi",
+          "Kontrolet lipidus un glikemiju",
         ],
       },
     ],
@@ -218,36 +219,36 @@ const ORGANS: OrganData[] = [
     problems: [
       {
         id: "l1",
-        title: "ALAT / ASAT paaugstinājums",
-        shortSummary: "ALT: 78 U/L ↑ | AST: 65 U/L ↑",
+        title: "ALAT / ASAT paaugstinajums",
+        shortSummary: "ALT: 78 U/L ? | AST: 65 U/L ?",
         category: "laboratorija",
         details: [
-          { label: "ALT", value: "78 U/L (norma: 7–56 U/L) ↑" },
-          { label: "AST", value: "65 U/L (norma: 10–40 U/L) ↑" },
+          { label: "ALT", value: "78 U/L (norma: 7–56 U/L) ?" },
+          { label: "AST", value: "65 U/L (norma: 10–40 U/L) ?" },
           { label: "GGT", value: "42 U/L (norma)" },
-          { label: "Bilirubīns", value: "18 μmol/L (norma)" },
+          { label: "Bilirubins", value: "18 µmol/L (norma)" },
           { label: "Analīžu datums", value: "01.04.2025" },
         ],
         recommendations: [
-          "Atkārtotas aknu analīzes pēc 2 nedēļām",
-          "Ieteicams USG vēdera dobuma",
-          "Izvērtēt medikamentu hepatotoksicitāti",
+          "Atkartotas aknu analizes pec 2 nedelam",
+          "Ieteicams USG vedera dobuma",
+          "Izvertet medikamentu hepatotoksicitati",
         ],
       },
       {
         id: "l2",
-        title: "Steatozes pazīmes USG",
-        shortSummary: "USG: taukainas aknas bez fokāliem veidojumiem",
+        title: "Steatozes pazimes USG",
+        shortSummary: "USG: taukainas aknas bez fokaliem veidojumiem",
         category: "radiologija",
         details: [
-          { label: "Izmeklējums", value: "USG vēdera dobuma" },
-          { label: "Atradne", value: "Difūzas steatozes pazīmes" },
-          { label: "Fokāli veidojumi", value: "Netiek aprakstīti" },
+          { label: "Izmeklejums", value: "USG vedera dobuma" },
+          { label: "Atradne", value: "Difuzas steatozes pazimes" },
+          { label: "Fokali veidojumi", value: "Netiek aprakstiti" },
           { label: "Datums", value: "03.04.2025" },
         ],
         recommendations: [
-          "Dzīvesveida korekcija un svara kontrole",
-          "Atkārtot aknu rādītājus dinamikā",
+          "Dzivesveida korekcija un svara kontrole",
+          "Atkartot aknu raditajus dinamika",
         ],
       },
     ],
@@ -260,51 +261,51 @@ const ORGANS: OrganData[] = [
     problems: [
       {
         id: "k1",
-        title: "Policistiskā nieru slimība (PKD1)",
-        shortSummary: "Apstiprināta ģenētiska diagnoze",
+        title: "Policistiska nieru slimiba (PKD1)",
+        shortSummary: "Apstiprinata genetiska diagnoze",
         category: "iedzimtas",
         details: [
-          { label: "Diagnoze", value: "Autosomāli dominantā policistiskā nieru slimība" },
-          { label: "Gēns", value: "PKD1 mutācija (apstiprināta 2020)" },
+          { label: "Diagnoze", value: "Autosomali dominanta policistiska nieru slimiba" },
+          { label: "Gens", value: "PKD1 mutacija (apstiprinata 2020)" },
           { label: "GFR", value: "62 mL/min/1.73m² (CKD 2. stadija)" },
-          { label: "Nieru izmērs", value: "Labā: 14.2 cm | Kreisā: 13.8 cm" },
-          { label: "Cistas", value: "Multiplās, lielākā 3.2 cm" },
+          { label: "Nieru izmers", value: "Laba: 14.2 cm | Kreisa: 13.8 cm" },
+          { label: "Cistas", value: "Multiplas, lielaka 3.2 cm" },
         ],
         recommendations: [
           "USG + asinsanalīzes ik 6 mēnešus",
           "Asinsspiediena kontrole <130/80",
-          "Ģenētiskā konsultācija ģimenei",
+          "Genetiska konsultacija gimenei",
           "Ūdens uzņemšana ≥2.5 L/dienā",
         ],
       },
       {
         id: "k2",
-        title: "Hroniska nieru slimība, 2. stadija",
+        title: "Hroniska nieru slimiba, 2. stadija",
         shortSummary: "GFR samazinājums, nepieciešama kontrole",
         category: "hroniskas",
         details: [
           { label: "GFR", value: "62 mL/min/1.73m²" },
           { label: "CKD stadija", value: "2. stadija" },
-          { label: "Albuminūrija", value: "Nav būtiska" },
+          { label: "Albuminurija", value: "Nav butiska" },
         ],
         recommendations: [
-          "Kontrolēt nieru funkciju dinamikā",
-          "Izvairīties no nefrotoksiskiem medikamentiem",
+          "Kontrolet nieru funkciju dinamika",
+          "Izvairities no nefrotoksiskiem medikamentiem",
         ],
       },
       {
         id: "k3",
         title: "Multiplas nieru cistas USG",
-        shortSummary: "Attēldiagnostiski redzamas daudzas cistas abās nierēs",
+        shortSummary: "Atteldiagnostiski redzamas daudzas cistas abas nieres",
         category: "radiologija",
         details: [
-          { label: "Izmeklējums", value: "Nieru ultrasonogrāfija" },
-          { label: "Atradne", value: "Multiplas cistas abās nierēs" },
-          { label: "Lielākā cista", value: "3.2 cm" },
+          { label: "Izmeklejums", value: "Nieru ultrasonografija" },
+          { label: "Atradne", value: "Multiplas cistas abas nieres" },
+          { label: "Lielaka cista", value: "3.2 cm" },
         ],
         recommendations: [
-          "Atkārtot attēldiagnostiku pēc nefrologa norādes",
-          "Novērot nieru izmērus un cistu dinamiku",
+          "Atkartot atteldiagnostiku pec nefrologa norades",
+          "Noverot nieru izmerus un cistu dinamiku",
         ],
       },
     ],
@@ -319,10 +320,10 @@ const FEATURED_PROBLEM_IDS: Record<string, string> = {
 };
 
 const PERSISTENT_CALLOUT_LAYOUTS: Record<string, PersistentCalloutLayout> = {
-  plausas: { x: -142, y: -72, width: 128, height: 42 },
-  sirds: { x: 26, y: -74, width: 128, height: 40 },
-  aknas: { x: -142, y: 56, width: 128, height: 42 },
-  nieres: { x: 12, y: 76, width: 132, height: 42 },
+  plausas: { x: -152, y: -78, width: 144, height: 52 },
+  sirds: { x: 24, y: -76, width: 144, height: 52 },
+  aknas: { x: -152, y: 64, width: 144, height: 52 },
+  nieres: { x: 16, y: 80, width: 144, height: 52 },
 };
 
 function getFindingCountLabel(count: number) {
@@ -330,7 +331,7 @@ function getFindingCountLabel(count: number) {
 }
 
 function getProblemCountLabel(count: number) {
-  return count === 1 ? "1 problēma" : `${count} problēmas`;
+  return count === 1 ? "1 problema" : `${count} problemas`;
 }
 
 function getUniqueCategories(problems: OrganProblem[]): Category[] {
@@ -537,22 +538,18 @@ function buildSharpConnector({
 function DiagnosisCallout({
   organ,
   problem,
-  otherProblems,
   layout,
   categoryColor,
   Icon,
-  expanded,
   onClick,
   onHoverStart,
   onHoverEnd,
 }: {
   organ: OrganData;
   problem: OrganProblem;
-  otherProblems: OrganProblem[];
   layout: PersistentCalloutLayout;
   categoryColor: string;
   Icon: ComponentType<{ className?: string; style?: CSSProperties }>;
-  expanded: boolean;
   onClick: () => void;
   onHoverStart: () => void;
   onHoverEnd: () => void;
@@ -582,15 +579,15 @@ function DiagnosisCallout({
           onClick={onClick}
           onFocus={onHoverStart}
           onBlur={onHoverEnd}
-          className="relative flex w-full items-center px-2 py-1.5 text-left focus-visible:outline-none"
+          className="relative flex w-full items-start px-3 py-2 text-left focus-visible:outline-none"
           style={{
-            height: `${layout.height}px`,
+            minHeight: `${layout.height}px`,
           }}
           aria-label={`${organ.label}: ${problem.title}. Atvērt detalizētu informāciju.`}
         >
-          <div className="flex w-full items-center gap-1.5">
+          <div className="flex w-full items-start gap-2">
             <span
-              className="flex shrink-0 items-center justify-center rounded-[5px] border"
+              className="mt-0.5 flex shrink-0 items-center justify-center rounded-[5px] border"
               style={{
                 width: 20,
                 height: 20,
@@ -603,43 +600,15 @@ function DiagnosisCallout({
             </span>
 
             <span className="min-w-0 flex-1">
-              <span className="line-clamp-2 text-[8.5px] font-semibold leading-[10.5px] text-[hsl(220,42%,16%)]">
+              <span className="block whitespace-normal break-words text-xs font-semibold leading-4 text-[hsl(220,42%,16%)]">
                 {problem.title}
               </span>
             </span>
 
-            <ChevronRight className="h-2.5 w-2.5 shrink-0 text-[hsl(216,15%,58%)]" />
+            <ChevronRight className="mt-0.5 h-3 w-3 shrink-0 text-[hsl(216,15%,58%)]" />
           </div>
         </button>
 
-        {expanded && otherProblems.length > 0 && (
-          <div className="border-t border-[hsl(214,24%,90%)] bg-white px-2 pb-2 pt-1.5">
-            <p className="mb-1 text-[7px] font-semibold uppercase tracking-[0.08em] text-[hsl(216,16%,58%)]">
-              Citas diagnozes
-            </p>
-
-            <div className="space-y-1">
-              {otherProblems.map((item) => {
-                const itemCfg = CATEGORY_CONFIG[item.category];
-
-                return (
-                  <button
-                    key={item.id}
-                    type="button"
-                    onClick={onClick}
-                    className="flex w-full items-start gap-1.5 rounded-[5px] px-1 py-1 text-left text-[8px] font-medium leading-[10.5px] text-[hsl(220,30%,24%)] hover:bg-[hsl(214,26%,97%)]"
-                  >
-                    <span
-                      className="mt-[4px] h-1.5 w-1.5 shrink-0 rounded-full"
-                      style={{ backgroundColor: itemCfg.color }}
-                    />
-                    <span className="line-clamp-2">{item.title}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
@@ -684,10 +653,6 @@ function OrganHotspot({
   const categoryCfg = featuredProblem ? CATEGORY_CONFIG[featuredProblem.category] : null;
   const Icon = categoryCfg?.Icon;
 
-  const otherProblems = featuredProblem
-    ? organ.problems.filter((item) => item.id !== featuredProblem.id)
-    : [];
-
   return (
     <div
       className="absolute h-0 w-0"
@@ -724,11 +689,9 @@ function OrganHotspot({
           <DiagnosisCallout
             organ={organ}
             problem={featuredProblem}
-            otherProblems={otherProblems}
             layout={persistentCalloutLayout}
             categoryColor={categoryCfg.color}
             Icon={Icon}
-            expanded={isExpanded}
             onClick={onClick}
             onHoverStart={onHoverStart}
             onHoverEnd={onHoverEnd}
@@ -784,7 +747,7 @@ function OrganHotspot({
             }}
           >
             <span
-              className="font-bold leading-none text-[hsl(220,42%,16%)]"
+              className="font-semibold leading-none text-[hsl(220,42%,16%)]"
               style={{ fontSize: hasCallout ? 10 : 8.5 }}
             >
               {organ.problems.length}
@@ -817,12 +780,12 @@ function ProblemAccordion({
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-[14px] font-semibold text-[hsl(222,28%,20%)]">
+            <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
               {problem.title}
             </p>
 
             <span
-              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium"
+              className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-normal"
               style={{
                 backgroundColor: `${categoryCfg.color}10`,
                 color: categoryCfg.color,
@@ -833,7 +796,7 @@ function ProblemAccordion({
             </span>
           </div>
 
-          <p className="mt-2 text-[12px] leading-[17px] text-[hsl(214,14%,52%)]">
+          <p className="mt-2 text-xs leading-[17px] text-[hsl(214,14%,52%)]">
             {problem.shortSummary}
           </p>
         </div>
@@ -846,7 +809,7 @@ function ProblemAccordion({
       {open && (
         <div className="border-t border-[hsl(210,24%,90%)] bg-white px-4 py-4">
           <div className="mb-4">
-            <p className="mb-3 text-[10px] font-semibold uppercase tracking-[0.08em] text-[hsl(214,14%,58%)]">
+            <p className="mb-3 text-xs font-semibold text-[hsl(214,14%,58%)]">
               Detalizēta informācija
             </p>
 
@@ -854,12 +817,12 @@ function ProblemAccordion({
               {problem.details.map((item, index) => (
                 <div
                   key={`${item.label}-${index}`}
-                  className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 text-[13px] leading-[18px] max-sm:grid-cols-1 max-sm:gap-y-0.5"
+                  className="grid grid-cols-[120px_minmax(0,1fr)] gap-x-4 text-sm leading-[18px] max-sm:grid-cols-1 max-sm:gap-y-0.5"
                 >
-                  <span className="font-medium text-[hsl(214,14%,56%)]">
+                  <span className="font-normal text-[hsl(214,14%,56%)]">
                     {item.label}:
                   </span>
-                  <span className="font-medium text-[hsl(222,20%,24%)]">
+                  <span className="font-normal text-[hsl(222,20%,24%)]">
                     {item.value}
                   </span>
                 </div>
@@ -868,7 +831,7 @@ function ProblemAccordion({
           </div>
 
           <div className="border-t border-[hsl(210,24%,92%)] pt-4">
-            <p className="mb-2.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[hsl(214,14%,58%)]">
+            <p className="mb-2.5 text-xs font-semibold text-[hsl(214,14%,58%)]">
               Ieteikumi
             </p>
 
@@ -876,7 +839,7 @@ function ProblemAccordion({
               {problem.recommendations.map((item, index) => (
                 <li
                   key={`${item}-${index}`}
-                  className="flex items-start gap-2 text-[13px] leading-[18px] text-[hsl(222,20%,24%)]"
+                  className="flex items-start gap-2 text-sm leading-[18px] text-[hsl(222,20%,24%)]"
                 >
                   <span
                     className="mt-[6px] h-1.5 w-1.5 shrink-0 rounded-full"
@@ -934,7 +897,7 @@ function OrganModal({ organ, onClose }: { organ: OrganData; onClose: () => void 
                   className="absolute inset-[5px] flex items-center justify-center rounded-full border bg-white"
                   style={{ borderColor: "hsl(210 18% 88%)" }}
                 >
-                  <span className="text-[11px] font-bold text-[hsl(222,28%,20%)]">
+                  <span className="text-xs font-semibold text-[hsl(222,28%,20%)]">
                     {organ.problems.length}
                   </span>
                 </div>
@@ -942,12 +905,12 @@ function OrganModal({ organ, onClose }: { organ: OrganData; onClose: () => void 
 
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-3">
-                  <h3 className="text-[22px] font-semibold text-[hsl(222,28%,20%)]">
+                  <h3 className="text-xl font-semibold text-[hsl(222,28%,20%)]">
                     {organ.label}
                   </h3>
 
                   <span
-                    className="inline-flex rounded-full px-2.5 py-1 text-[11px] font-medium"
+                    className="inline-flex rounded-full px-2.5 py-1 text-xs font-normal"
                     style={{
                       backgroundColor: `${primaryColor}10`,
                       color: primaryColor,
@@ -987,24 +950,18 @@ export default function HumanBodyModel() {
 
   return (
     <>
-      <div className="relative flex h-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-3.5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="flex items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]">
-              <ScanSearch className="h-[18px] w-[18px]" />
-            </div>
+      <div className="clinical-panel relative flex h-full w-full flex-col">
+        <DashboardCardHeader
+          title="Ķermeņa pārskats"
+          infoLabel="Informācija par ķermeņa pārskatu"
+          infoDescription="Nospiediet uz orgāna vai diagnozes, lai skatītu detalizētu informāciju par atradnēm."
+        />
 
-            <h2 className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
-              Ķermeņa pārskats
-            </h2>
-          </div>
-        </div>
-
-        <div className="relative mx-auto mt-3 flex h-[390px] w-full max-w-[360px] items-center justify-center overflow-visible rounded-[1.4rem] px-2 py-2 shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]">
+        <div className="relative mt-1 flex h-[390px] w-full items-center justify-center overflow-visible rounded-[1.4rem] px-2 py-2 shadow-[inset_0_1px_0_hsla(0,0%,100%,0.75)]">
           <img
             src={humanBody}
             alt="Cilvēka ķermeņa modelis"
-            className="relative z-0 h-[340px] w-auto max-w-full select-none object-contain object-center opacity-95"
+            className="relative z-0 h-[340px] w-full max-w-full select-none object-contain object-center opacity-95"
             style={{
               filter:
                 "drop-shadow(0 8px 24px rgba(148,163,184,0.14)) saturate(0.92)",
@@ -1029,10 +986,6 @@ export default function HumanBodyModel() {
             />
           ))}
         </div>
-
-        <p className="mt-2 text-center text-[10px] leading-4 text-[hsl(214,14%,58%)]">
-          Nospiediet uz orgāna vai diagnozes, lai atvērtu detalizētu informāciju
-        </p>
       </div>
       
 

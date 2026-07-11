@@ -16,6 +16,17 @@ export interface SourceDocument {
   showInUsedDocumentsPanel?: boolean;
 }
 
+export interface IncompleteSourceReport {
+  id: string;
+  sourceLabel: string;
+  status: "review" | "unrecognized";
+  confidence: string;
+  indicatorCount: number;
+  issueCount: number;
+  receivedDate: string;
+  reviewUrl: string;
+}
+
 const documentBaseUrl = `${import.meta.env.BASE_URL}documents/`;
 
 export const sourceDocumentIds = {
@@ -295,3 +306,26 @@ export const dashboardSourceDocumentMap = Object.fromEntries(
 export const usedDocumentsPanelDocuments = dashboardSourceDocuments.filter(
   (document) => document.showInUsedDocumentsPanel,
 );
+
+export const incompleteSourceReports: IncompleteSourceReport[] = [
+  {
+    id: "incomplete-pdf-1",
+    sourceLabel: "pdf: unknown",
+    status: "review",
+    confidence: "50%",
+    indicatorCount: 1,
+    issueCount: 1,
+    receivedDate: "17.06.2026",
+    reviewUrl: `${documentBaseUrl}mri-galvas-zona-2026-03-04.pdf`,
+  },
+  {
+    id: "incomplete-pdf-2",
+    sourceLabel: "pdf: unknown",
+    status: "unrecognized",
+    confidence: "0%",
+    indicatorCount: 0,
+    issueCount: 1,
+    receivedDate: "17.06.2026",
+    reviewUrl: `${documentBaseUrl}ct-kreisais-celis-2026-02-19.html`,
+  },
+];

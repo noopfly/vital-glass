@@ -1,4 +1,4 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Activity,
@@ -119,18 +119,18 @@ const moduleOptions: ModuleOption[] = [
   {
     id: "patient-card",
     title: "Pacienta klīniskais profils",
-    description: "Pamatinformācija, diagnozes un primārie riski",
+    description: "Pamatiinformācija, diagnozes un primārie riski",
     icon: UserRound,
   },
   {
     id: "prevention",
     title: "Profilakse",
-    description: "SCORE2 risks, skrīningi un vakcinācijas progress",
+    description: "SCORE2 risks, skrīningi un vakcinācijas process",
     icon: Shield,
   },
   {
     id: "health-trends",
-    title: "Klīniskie rādītāji",
+    title: "Kliniskie rādītāji",
     description: "Laboratorijas rezultātu un mērījumu dinamika",
     icon: Activity,
   },
@@ -160,7 +160,7 @@ const moduleOptions: ModuleOption[] = [
   },
   {
     id: "body-model",
-    title: "Ķermeņa pārskats",
+    title: "Kermeņa pārskats",
     description: "Anatomiskais skats ar atradnēm un reģioniem",
     icon: UserRound,
   },
@@ -235,7 +235,7 @@ const specialtyOptions: SpecialtyOption[] = [
   },
   {
     id: "pulmonology",
-    title: "Pulmonologs",
+    title: "Pulmologs",
     icon: Wind,
     modules: sharedRegistrationModules,
   },
@@ -303,7 +303,7 @@ const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> =
 const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   prevention: {
     note: "Profilakse",
-    summary: "SCORE2 risks, skrīningi un vakcinācijas progress.",
+    summary: "SCORE2 risks, skrīningi un vakcinācijas process.",
     pattern: "prevention",
     colSpan: 1,
     rowSpan: 1,
@@ -322,8 +322,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "health-trends": {
-    note: "Klīniskie rādītāji",
-    summary: "Pulss, glikoze, asinsspiediens un citi rādītāji dinamikā.",
+    note: "Kliniskie rādītāji",
+    summary: "Pulss, glikoze, asinsspiediens un citu rādītāju dinamika.",
     pattern: "trend",
     colSpan: 2,
     rowSpan: 1,
@@ -362,8 +362,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(239,203,203,0.96)] bg-[hsl(0,60%,97%)] shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   timeline: {
-    note: "Notikumu laika līnija",
-    summary: "Vizīšu, analīžu un procedūru hronoloģiskā secība.",
+    note: "Notikumu laika linija",
+    summary: "Vizīšu, analīžu un procedūru hronoloģiska secība.",
     pattern: "timeline",
     colSpan: 2,
     rowSpan: 1,
@@ -484,11 +484,11 @@ function PreviewCard({
       )}
     >
       <div className="flex items-center gap-2">
-        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[hsl(214,22%,97%)] text-[11px] font-semibold text-[hsl(219,30%,22%)]">
+        <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[hsl(214,22%,97%)] text-xs font-semibold text-[hsl(219,30%,22%)]">
           {index + 1}
         </span>
         <div className="min-w-0">
-          <p className="text-[9px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,16%,58%)]">
+          <p className="text-xs font-semibold text-[hsl(214,16%,58%)]">
             {preview.note}
           </p>
         </div>
@@ -672,7 +672,7 @@ function normalizeText(value: string) {
 
 function getRegistrationModuleDescription(item: ModuleOption) {
   if (item.id === "prevention") {
-    return "SCORE2 risks, skrīningi un vakcinācijas progress";
+    return "SCORE2 risks, skriningi un vakcinacijas progress";
   }
 
   return item.description;
@@ -909,7 +909,7 @@ export default function RegistrationPage() {
                     >
                       <span
                         className={cn(
-                          "flex h-6 w-6 items-center justify-center rounded-full border text-[11px] font-semibold transition",
+                          "flex h-6 w-6 items-center justify-center rounded-full border text-xs font-semibold transition",
                           isActive
                             ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
                             : isComplete
@@ -922,7 +922,7 @@ export default function RegistrationPage() {
 
                       <span
                         className={cn(
-                          "text-[13px] font-medium tracking-[0.04em]",
+                          "text-sm font-normal tracking-[0.04em]",
                           isActive || isComplete
                             ? "text-[hsl(219,30%,22%)]"
                             : "text-[hsl(214,14%,56%)]",
@@ -947,7 +947,7 @@ export default function RegistrationPage() {
               <div className="flex h-7 w-7 items-center justify-center rounded-full bg-[hsl(214,20%,96%)] text-[hsl(219,30%,22%)]">
                 <UserRound className="h-3.5 w-3.5" />
               </div>
-              <span className="text-[11px] font-medium text-[hsl(219,30%,22%)]">
+              <span className="text-xs font-normal text-[hsl(219,30%,22%)]">
                 {registeredDoctorAccount.name}
               </span>
             </div>
@@ -958,15 +958,15 @@ export default function RegistrationPage() {
           {step === 0 && (
             <section className="flex flex-1 flex-col pt-6 md:pt-8">
               <div className="w-full max-w-[920px]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[hsl(219,40%,16%)]">
+                <p className="text-xs font-semibold text-[hsl(219,40%,16%)]">
                   Solis 01
                 </p>
 
-                <h1 className="mt-4 text-[40px] font-semibold leading-[0.98] tracking-[-0.06em] text-[hsl(219,40%,16%)] md:text-[56px]">
+                <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.06em] text-[hsl(219,40%,16%)]">
                   Izvēlieties savu specialitāti
                 </h1>
 
-                <p className="mt-5 max-w-[820px] whitespace-nowrap text-[16px] leading-7 text-[hsl(214,16%,46%)]">
+                <p className="mt-5 max-w-[820px] whitespace-nowrap text-sm leading-7 text-[hsl(214,16%,46%)]">
                   Mēs pielāgosim pacienta pārskatu jūsu darba prioritātēm. Šos
                   iestatījumus varēsiet mainīt jebkurā brīdī.
                 </p>
@@ -978,8 +978,8 @@ export default function RegistrationPage() {
                   <Input
                     value={searchQuery}
                     onChange={(event) => setSearchQuery(event.target.value)}
-                    placeholder="Meklēt specialitāti..."
-                    className="h-14 rounded-[10px] border-[rgba(214,222,230,0.96)] bg-white pl-14 pr-4 text-[16px] shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
+                    placeholder="Meklēt specialitāti"
+                    className="h-14 rounded-[10px] border-[rgba(214,222,230,0.96)] bg-white pl-14 pr-4 text-sm shadow-none placeholder:text-[hsl(214,14%,62%)] focus-visible:ring-0"
                   />
                 </div>
               </div>
@@ -1012,7 +1012,7 @@ export default function RegistrationPage() {
                       </span>
 
                       <span className="min-w-0 flex-1">
-                        <span className="block text-[16px] font-semibold text-[hsl(219,30%,22%)]">
+                        <span className="block text-sm font-semibold text-[hsl(219,30%,22%)]">
                           {option.title}
                         </span>
                       </span>
@@ -1028,7 +1028,7 @@ export default function RegistrationPage() {
               </div>
 
               {!filteredSpecialties.length && (
-                <div className="mt-8 rounded-[14px] border border-dashed border-[rgba(214,222,230,0.96)] bg-white px-5 py-8 text-[14px] text-[hsl(214,16%,50%)]">
+                <div className="mt-8 rounded-[14px] border border-dashed border-[rgba(214,222,230,0.96)] bg-white px-5 py-8 text-sm text-[hsl(214,16%,50%)]">
                   Neatradām nevienu specialitāti pēc ievadītā meklējuma.
                 </div>
               )}
@@ -1044,25 +1044,25 @@ export default function RegistrationPage() {
           {step === 1 && (
             <section className="flex min-h-0 flex-1 flex-col pt-6 md:pt-8">
               <div className="w-full max-w-[920px]">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[hsl(219,40%,16%)]">
+                <p className="text-xs font-semibold text-[hsl(219,40%,16%)]">
                   Solis 02
                 </p>
 
-                <h1 className="mt-4 text-[40px] font-semibold leading-[0.98] tracking-[-0.06em] text-[hsl(219,40%,16%)] md:text-[56px]">
+                <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.06em] text-[hsl(219,40%,16%)]">
                   Iekārtojiet savu darba paneli
                 </h1>
 
-                <p className="mt-5 max-w-[820px] whitespace-nowrap text-[16px] leading-7 text-[hsl(214,16%,46%)]">
+                <p className="mt-5 max-w-[820px] whitespace-nowrap text-sm leading-7 text-[hsl(214,16%,46%)]">
                   {selectedSpecialty ? (
                     <>
                       Sākuma saturs ir pielāgots specialitātei{" "}
                       <strong className="font-semibold text-[hsl(219,30%,22%)]">
                         {selectedSpecialty.title}
                       </strong>
-                      . Sakārtojiet komponentes sev ērtākajā secībā un izkārtojumā.
+                      . Sakārtojiet komponentes sev ērtiākajā secībā un izkārtojumā. <strong className="font-semibold text-[hsl(219,30%,22%)]">Vēlāk šo izkārtojumu var mainīt.</strong>
                     </>
                   ) : (
-                    "Sakārtojiet moduļus sev ērtākajā secībā."
+                    "Sakārtojiet komponentes sev ērtiākajā secībā."
                   )}
                 </p>
               </div>
@@ -1070,11 +1070,11 @@ export default function RegistrationPage() {
               <div className="mt-8 grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(460px,0.92fr)]">
                 <div className="rounded-[20px] border border-[rgba(219,226,235,0.96)] bg-white p-5 shadow-[0_18px_42px_rgba(29,53,87,0.06)]">
                   <div>
-                    <p className="text-[15px] font-semibold text-[hsl(219,30%,22%)]">
+                    <p className="text-sm font-semibold text-[hsl(219,30%,22%)]">
                       Sakārtojiet pārskatu pēc nozīmīguma
                     </p>
 
-                    <p className="mt-2 text-[13px] leading-5 text-[hsl(214,16%,48%)]">
+                    <p className="mt-2 text-sm leading-5 text-[hsl(214,16%,48%)]">
                       Velciet komponentus uz sev atbilstošo izkārtojumu.
                     </p>
                   </div>
@@ -1107,14 +1107,14 @@ export default function RegistrationPage() {
                         <div className="flex h-8 w-5 shrink-0 items-center justify-center text-[hsl(214,12%,62%)]">
                           <GripVertical className="h-4 w-4" />
                         </div>
-                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[hsl(214,22%,97%)] text-[16px] font-semibold text-[hsl(219,30%,22%)]">
+                        <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] bg-[hsl(214,22%,97%)] text-sm font-semibold text-[hsl(219,30%,22%)]">
                           {index + 1}
                         </span>
                         <div className="min-w-0 flex-1">
-                          <p className="text-[14px] font-semibold text-[hsl(219,30%,22%)]">
+                          <p className="text-sm font-semibold text-[hsl(219,30%,22%)]">
                             {item.title}
                           </p>
-                          <p className="mt-1 text-[12px] leading-5 text-[hsl(214,16%,48%)]">
+                          <p className="mt-1 text-xs leading-5 text-[hsl(214,16%,48%)]">
                             {getRegistrationModuleDescription(item)}
                           </p>
                         </div>
@@ -1180,14 +1180,14 @@ export default function RegistrationPage() {
                             )}
                           >
                             <GripVertical className="h-3.5 w-3.5 shrink-0 text-[hsl(214,12%,58%)]" />
-                            <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-[11px] font-semibold text-[hsl(214,18%,48%)]">
+                            <span className="flex h-6 w-6 shrink-0 items-center justify-center bg-[hsl(214,20%,96%)] text-xs font-semibold text-[hsl(214,18%,48%)]">
                               {aboveTheFoldItems.length + index + 1}
                             </span>
                             <div className="min-w-0 flex-1">
-                              <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
+                              <p className="text-sm font-semibold text-[hsl(219,30%,22%)]">
                                 {item.title}
                               </p>
-                              <p className="mt-0.5 line-clamp-1 text-[10px] leading-3.5 text-[hsl(214,16%,48%)]">
+                              <p className="mt-0.5 whitespace-normal break-words text-xs leading-3.5 text-[hsl(214,16%,48%)]">
                                 {getRegistrationModuleDescription(item)}
                               </p>
                             </div>
@@ -1214,13 +1214,7 @@ export default function RegistrationPage() {
                       </div>
                     </>
                   )}
-
-                  <div className="mt-4 flex items-start gap-2.5 rounded-[10px] border border-[rgba(223,230,238,0.96)] bg-[hsl(214,22%,98.5%)] px-3 py-3 text-[12px] leading-5 text-[hsl(214,16%,48%)]">
-                    <Info className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(214,24%,50%)]" />
-                    <p>
-                      Prioritātes un izkārtojumu varēsiet mainīt arī vēlāk savos iestatījumos.
-                    </p>
-                  </div>
+                 
                 </div>
 
                 <div className="overflow-hidden rounded-[20px] border border-[rgba(219,226,235,0.96)] bg-white shadow-[0_18px_42px_rgba(29,53,87,0.06)]">
@@ -1231,7 +1225,7 @@ export default function RegistrationPage() {
                         <span className="h-2.5 w-2.5 rounded-full bg-[hsl(214,14%,76%)]" />
                         <span className="h-2.5 w-2.5 rounded-full bg-[hsl(214,14%,76%)]" />
                       </div>
-                      <span className="text-[12px] font-semibold uppercase tracking-[0.16em] text-[hsl(214,16%,62%)]">
+                      <span className="text-xs font-semibold text-[hsl(214,16%,62%)]">
                         Priekšskatījums
                       </span>
                     </div>
@@ -1241,10 +1235,10 @@ export default function RegistrationPage() {
                     <div className="rounded-[16px] border border-[rgba(223,230,238,0.96)] bg-white px-4 py-3 shadow-[0_8px_18px_rgba(29,53,87,0.03)]">
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
-                          <p className="text-[13px] font-semibold text-[hsl(219,30%,22%)]">
+                          <p className="text-sm font-semibold text-[hsl(219,30%,22%)]">
                             Vārds Uzvārds
                           </p>
-                          <p className="text-[10px] text-[hsl(214,14%,58%)]">
+                          <p className="text-xs text-[hsl(214,14%,58%)]">
                             Kontaktinformācija
                           </p>
                         </div>
@@ -1283,7 +1277,7 @@ export default function RegistrationPage() {
                     type="button"
                     variant="ghost"
                     onClick={handleSkipSpecialty}
-                    className="h-11 self-start border border-transparent px-0 text-[15px] font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
+                    className="h-11 self-start border border-transparent px-0 text-sm font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
                   >
                     Izlaist
                   </Button>
@@ -1291,7 +1285,7 @@ export default function RegistrationPage() {
                     type="button"
                     onClick={handleNext}
                     disabled={!form.specialty}
-                    className="h-12 min-w-[168px] self-end rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-[15px] font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
+                    className="h-12 min-w-[168px] self-end rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-sm font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
                   >
                     Turpināt
                     <ArrowRight className="h-5 w-5" />
@@ -1303,7 +1297,7 @@ export default function RegistrationPage() {
                     type="button"
                     variant="ghost"
                     onClick={handleBack}
-                    className="h-11 border border-transparent px-0 text-[15px] font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
+                    className="h-11 border border-transparent px-0 text-sm font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
                     Atpakaļ
@@ -1311,7 +1305,7 @@ export default function RegistrationPage() {
                   <Button
                     type="button"
                     onClick={handleSubmit}
-                    className="h-12 min-w-[168px] rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-[15px] font-semibold text-white transition hover:opacity-95"
+                    className="h-12 min-w-[168px] rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-sm font-semibold text-white transition hover:opacity-95"
                   >
                     Sākt darbu
                     <ArrowRight className="h-5 w-5" />

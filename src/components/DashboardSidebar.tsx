@@ -9,6 +9,7 @@ import {
   GripVertical,
   Info,
   Loader2,
+  Menu,
   Plus,
   RotateCcw,
   ShieldCheck,
@@ -26,7 +27,10 @@ import {
   writeStoredDashboardLayoutOrder,
   type DashboardComponentKey,
 } from "@/lib/dashboard-layout";
-import { usedDocumentsPanelDocuments } from "@/lib/source-documents";
+import {
+  incompleteSourceReports,
+  usedDocumentsPanelDocuments,
+} from "@/lib/source-documents";
 import { type SpecialtyId } from "@/lib/specialties";
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
@@ -42,6 +46,7 @@ type DashboardSidebarProps = {
   onSaveLayoutOrder?: (layoutOrder: DashboardComponentKey[]) => void;
   loadingPatientId?: string | null;
   loadingPatientComplete?: boolean;
+  sourceDocumentsOpenRequest?: number;
 };
 
 type SettingsModuleKey = DashboardComponentKey;
@@ -133,11 +138,22 @@ const usedDocumentsGroupOrder = [
   "Citi",
 ] as const;
 
+const incompleteStatusConfig = {
+  review: {
+    label: "Jāpārskata",
+    className: "text-[hsl(220,28%,22%)]",
+  },
+  unrecognized: {
+    label: "Neatpazīts",
+    className: "text-[hsl(220,28%,22%)]",
+  },
+} as const;
+
 const settingsModules = [
   {
     key: "patientCard",
     title: "Pacienta klīniskais profils",
-    description: "Galvenie pacienta dati un kontaktinformacija",
+    description: "Galvenie pacienta dati",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
@@ -151,7 +167,7 @@ const settingsModules = [
   {
     key: "healthTrends",
     title: "Klīniskie rādītāji",
-    description: "Laboratoriju pārskats un izmaiņas laika",
+    description: "Laboratoriju pārskats un izmaiņas laikā",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
@@ -159,41 +175,41 @@ const settingsModules = [
     key: "alertsCard",
     title: "Brīdinājumi",
     description: "Kritiskie rādītāji un svarīgi notikumi",
-    sizeLabel: "šaurs",
+    sizeLabel: "Šaurs",
     previewColumns: 1,
   },
   {
     key: "medicalImagingViewer",
     title: "Attēldiagnostika",
-    description: "RTG, CT un citu izmeklējumu skati",
-    sizeLabel: "šaurs",
+    description: "RTG, CT un citu izmeklējumu skats",
+    sizeLabel: "Šaurs",
     previewColumns: 1,
   },
   {
     key: "humanBodyModel",
     title: "Ķermeņa pārskats",
-    description: "Interaktiva problemu zonu karte",
-    sizeLabel: "šaurs",
+    description: "Interaktīva problēmu zonu karte",
+    sizeLabel: "Šaurs",
     previewColumns: 1,
   },
   {
     key: "medicationTable",
     title: "Medikamenti",
-    description: "Aktuala terapija un mijiedarbibas",
-    sizeLabel: "šaurs",
+    description: "Aktuāla terapija un mijiedarbības",
+    sizeLabel: "Šaurs",
     previewColumns: 1,
   },
   {
     key: "referralHistory",
-    title: "E-nosutījumi",
-    description: "Aktivie un vesturiskie nosutijumi",
-    sizeLabel: "šaurs",
+    title: "E-nosūtījumi",
+    description: "Aktīvie un vēsturiskie nosūtījumi",
+    sizeLabel: "Šaurs",
     previewColumns: 1,
   },
   {
     key: "eventTimeline",
     title: "Notikumu laika līnija",
-    description: "Laika skala ar kliniskajiem notikumiem",
+    description: "Laika skala ar klīniskajiem notikumiem",
     sizeLabel: "Plats",
     previewColumns: 2,
   },
@@ -307,11 +323,11 @@ function SettingsPreviewCard({
     >
       <div className="flex items-center justify-between gap-1.5">
         <div className="min-w-0 pr-1">
-          <p className="text-[7px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,16%,58%)]">
+          <p className="text-xs font-semibold text-[hsl(214,16%,58%)]">
             {preview.note}
           </p>
         </div>
-        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[9px] bg-[hsl(214,20%,96%)] text-[9px] font-semibold text-[hsl(214,16%,48%)]">
+        <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-[9px] bg-[hsl(214,20%,96%)] text-xs font-semibold text-[hsl(214,16%,48%)]">
           {index + 1}
         </span>
       </div>
@@ -510,6 +526,7 @@ export default function DashboardSidebar({
   onSaveLayoutOrder,
   loadingPatientId = null,
   loadingPatientComplete = false,
+  sourceDocumentsOpenRequest = 0,
 }: DashboardSidebarProps) {
   const navigate = useNavigate();
   const footerRef = React.useRef<HTMLDivElement | null>(null);
@@ -523,6 +540,7 @@ export default function DashboardSidebar({
 
     return window.localStorage.getItem(storageKey) === "true";
   });
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = React.useState(false);
   const [isHelpOpen, setIsHelpOpen] = React.useState(false);
   const [isReportOpen, setIsReportOpen] = React.useState(false);
@@ -666,6 +684,12 @@ export default function DashboardSidebar({
     settingsPreviewRef.current?.scrollTo({ top: 0 });
   }, [isSettingsOpen]);
 
+  React.useEffect(() => {
+    if (sourceDocumentsOpenRequest > 0) {
+      setIsSourceDocumentsOpen(true);
+    }
+  }, [sourceDocumentsOpenRequest]);
+
   const handleProfileMenuItemClick = (title: string) => {
     if (title === "Uzzināt vairāk") {
       setIsProfileMenuOpen(false);
@@ -716,9 +740,29 @@ export default function DashboardSidebar({
   };
 
   return (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsMobileMenuOpen(true)}
+        className="fixed left-4 top-4 z-50 flex h-11 w-11 items-center justify-center rounded-[8px] border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,30%,28%)] shadow-[0_8px_20px_rgba(29,53,87,0.10)] transition hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] lg:hidden"
+        aria-label="Atvērt navigāciju"
+      >
+        <Menu size={20} />
+      </button>
+
+      {isMobileMenuOpen ? (
+        <button
+          type="button"
+          onClick={() => setIsMobileMenuOpen(false)}
+          className="fixed inset-0 z-50 bg-[rgba(15,23,42,0.32)] lg:hidden"
+          aria-label="Aizvērt navigāciju"
+        />
+      ) : null}
+
     <aside
       className={cn(
-        "w-full shrink-0 transition-[width] duration-300 lg:fixed lg:left-0 lg:top-0 lg:z-30 lg:h-screen lg:w-[280px]",
+        "fixed inset-y-0 left-0 z-[60] w-[min(320px,calc(100vw-24px))] shrink-0 -translate-x-[calc(100%+24px)] transition-[width,transform] duration-200 lg:fixed lg:left-0 lg:top-0 lg:z-30 lg:h-screen lg:w-[280px] lg:translate-x-0",
+        isMobileMenuOpen && "translate-x-0",
         isCollapsed && "lg:w-[76px]",
       )}
     >
@@ -753,10 +797,18 @@ export default function DashboardSidebar({
             <button
               type="button"
               onClick={() => setIsCollapsed((current) => !current)}
-              className="flex h-8 w-8 shrink-0 items-center justify-center text-[hsl(214,18%,68%)] transition hover:text-[hsl(214,28%,36%)]"
+              className="hidden h-8 w-8 shrink-0 items-center justify-center text-[hsl(214,18%,68%)] transition hover:text-[hsl(214,28%,36%)] lg:flex"
               aria-label={isCollapsed ? "Izvērst sānjoslu" : "Sakļaut sānjoslu"}
             >
               <Columns2 className="h-4 w-4" strokeWidth={1.8} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-[hsl(214,18%,54%)] transition hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] lg:hidden"
+              aria-label="Aizvērt navigāciju"
+            >
+              <X className="h-5 w-5" />
             </button>
           </div>
         </div>
@@ -778,7 +830,7 @@ export default function DashboardSidebar({
               <Plus className="h-4 w-4" />
             </div>
             {!isCollapsed && (
-              <span className="min-w-0 flex-1 text-[13px] font-semibold">
+              <span className="min-w-0 flex-1 text-sm font-semibold">
                 Jauna meklēšana
               </span>
             )}
@@ -802,10 +854,10 @@ export default function DashboardSidebar({
 
             {!isCollapsed && (
               <>
-                <span className="min-w-0 flex-1 text-[13px] font-semibold">
+                <span className="min-w-0 flex-1 text-sm font-semibold">
                   Dienas saraksts
                 </span>
-                <span className="flex h-5 min-w-5 items-center justify-center rounded-[5px] bg-[hsl(214,32%,95%)] px-1.5 text-[10px] font-semibold text-[hsl(214,18%,56%)]">
+                <span className="flex h-5 min-w-5 items-center justify-center rounded-[5px] bg-[hsl(214,32%,95%)] px-1.5 text-xs font-semibold text-[hsl(214,18%,56%)]">
                   {dayListCount}
                 </span>
               </>
@@ -829,7 +881,7 @@ export default function DashboardSidebar({
             </div>
 
             {!isCollapsed && (
-              <span className="min-w-0 flex-1 text-[13px] font-semibold">
+              <span className="min-w-0 flex-1 text-sm font-semibold">
                 Dokumentu sagataves
               </span>
             )}
@@ -838,7 +890,7 @@ export default function DashboardSidebar({
 
         {!isCollapsed && (
           <div className="flex-1 px-4 pb-4">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[hsl(214,20%,68%)]">
+            <p className="text-xs font-semibold text-[hsl(214,20%,68%)]">
               Nesen skatītie
             </p>
 
@@ -860,13 +912,13 @@ export default function DashboardSidebar({
                       <div className="flex items-center justify-between gap-3">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center justify-between gap-3">
-                            <p className="truncate text-[15px] font-semibold leading-5 text-[hsl(220,36%,18%)]">
+                            <p className="whitespace-normal break-words text-sm font-semibold leading-5 text-[hsl(220,36%,18%)]">
                               {patient.name}
                             </p>
 
                             <span
                               className={cn(
-                                "inline-flex shrink-0 translate-y-px items-center gap-1.5 rounded-full px-2.5 py-1 text-[9px] font-semibold",
+                                "inline-flex shrink-0 translate-y-px items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold",
                                 loadingPatientComplete
                                   ? "bg-[rgba(228,247,233,0.98)] text-[hsl(148,54%,34%)]"
                                   : "bg-[hsl(220,34%,94%)] text-[hsl(220,42%,34%)]",
@@ -879,7 +931,7 @@ export default function DashboardSidebar({
                             </span>
                           </div>
 
-                          <p className="mt-0.5 text-[11px] text-[hsl(214,18%,56%)]">
+                          <p className="mt-0.5 text-xs text-[hsl(214,18%,56%)]">
                             {patient.personalCode}
                           </p>
                         </div>
@@ -895,23 +947,13 @@ export default function DashboardSidebar({
                       aria-current="page"
                       className="rounded-[8px] bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] px-3 py-2 text-white"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-[15px] font-semibold leading-5">
-                            {patient.name}
-                          </p>
-                          <p className="mt-0.5 text-[11px] text-white/72">
-                            {patient.personalCode}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          onClick={() => setIsSourceDocumentsOpen(true)}
-                          className="inline-flex h-8 w-8 shrink-0 self-center items-center justify-center rounded-[10px] text-white transition hover:bg-white/10"
-                          aria-label="Skatīt izmantotos dokumentus"
-                        >
-                          <FileText className="h-[18px] w-[18px]" strokeWidth={1.6} />
-                        </button>
+                      <div className="min-w-0">
+                        <p className="whitespace-normal break-words text-sm font-semibold leading-5">
+                          {patient.name}
+                        </p>
+                        <p className="mt-0.5 text-xs text-white/72">
+                          {patient.personalCode}
+                        </p>
                       </div>
                     </div>
                   );
@@ -921,7 +963,7 @@ export default function DashboardSidebar({
                 return (
                   <Link
                     key={patient.id}
-                    to="/components"
+                    to="/clinical-dashboard"
                     state={{ patient, layoutOrder, specialtyId }}
                     aria-current={isActivePatient ? "page" : undefined}
                     className={cn(
@@ -936,7 +978,7 @@ export default function DashboardSidebar({
                         <div className="flex items-center justify-between gap-3">
                           <p
                             className={cn(
-                              "truncate text-[15px] font-semibold leading-5",
+                              "whitespace-normal break-words text-sm font-semibold leading-5",
                               undefined,
                             )}
                           >
@@ -945,7 +987,7 @@ export default function DashboardSidebar({
                         </div>
                         <p
                           className={cn(
-                            "mt-0.5 text-[11px]",
+                            "mt-0.5 text-xs",
                             isActivePatient
                                 ? "text-white/72"
                                 : "text-[hsl(214,16%,62%)]",
@@ -963,7 +1005,7 @@ export default function DashboardSidebar({
             <button
               type="button"
               onClick={() => setIsAllPatientsOpen(true)}
-              className="mt-4 inline-flex items-center gap-2 text-[13px] font-medium"
+              className="mt-4 inline-flex items-center gap-2 text-sm font-normal"
             >
               Visi pacienti
               <ArrowRight className="h-3.5 w-3.5" />
@@ -976,7 +1018,7 @@ export default function DashboardSidebar({
             <button
               type="button"
               onClick={() => setIsReportOpen(true)}
-              className="inline-flex items-center gap-2 text-[12px] font-medium text-[hsl(214,16%,58%)] transition hover:text-[hsl(214,24%,38%)]"
+              className="inline-flex items-center gap-2 text-xs font-normal text-[hsl(214,16%,58%)] transition hover:text-[hsl(214,24%,38%)]"
             >
               <Info className="h-4 w-4" />
               Ziņot par problēmu
@@ -1005,10 +1047,10 @@ export default function DashboardSidebar({
                   )}
                 >
                   <div className="min-w-0">
-                    <p className="text-[15px] font-semibold leading-5 text-[hsl(220,36%,18%)]">
+                    <p className="text-sm font-semibold leading-5 text-[hsl(220,36%,18%)]">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-[12px] leading-4 text-[hsl(214,16%,56%)]">
+                    <p className="mt-1 text-xs leading-4 text-[hsl(214,16%,56%)]">
                       {item.description}
                     </p>
                   </div>
@@ -1034,15 +1076,15 @@ export default function DashboardSidebar({
             aria-expanded={!isCollapsed ? isProfileMenuOpen : undefined}
             aria-haspopup={!isCollapsed ? "menu" : undefined}
           >
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,38%,22%),hsl(217,40%,30%))] text-[11px] font-semibold text-white shadow-none">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[linear-gradient(180deg,hsl(220,38%,22%),hsl(217,40%,30%))] text-xs font-semibold text-white shadow-none">
               {getInitials(registeredDoctorAccount.name)}
             </div>
 
             {!isCollapsed && (
               <>
                 <div className="min-w-0 flex-1 text-left">
-                  <p className="text-[13px] font-semibold">{registeredDoctorAccount.name}</p>
-                  <p className="text-[11px] text-[hsl(214,16%,62%)]">
+                  <p className="text-sm font-semibold">{registeredDoctorAccount.name}</p>
+                  <p className="text-xs text-[hsl(214,16%,62%)]">
                     {registeredDoctorAccount.role}
                   </p>
                 </div>
@@ -1066,13 +1108,13 @@ export default function DashboardSidebar({
           <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-6 py-5">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                <p className="text-xs font-semibold text-[hsl(214,18%,62%)]">
                   Atbalsts
                 </p>
-                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Sazināties ar komandu
                 </h2>
-                <p className="mt-2 text-[14px] leading-6 text-[hsl(214,16%,50%)]">
+                <p className="mt-2 text-sm leading-6 text-[hsl(214,16%,50%)]">
                   Velciet, lai pārkārtotu komponenšu izkārtojumu
                 </p>
               </div>
@@ -1088,7 +1130,7 @@ export default function DashboardSidebar({
             </div>
 
             <div className="px-6 py-6">
-              <p className="text-[14px] leading-6 text-[hsl(220,20%,34%)]">
+              <p className="text-sm leading-6 text-[hsl(220,20%,34%)]">
                 Aprakstiet problēmu vai jautājumu. Mēs atbildēsim uz jūsu
                 reģistrēto e-pasta adresi.
               </p>
@@ -1096,15 +1138,15 @@ export default function DashboardSidebar({
               <textarea
                 value={supportMessage}
                 onChange={(event) => setSupportMessage(event.target.value)}
-                placeholder="Jūsu ziņa..."
-                className="mt-5 min-h-[140px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-3 text-[14px] text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
+                placeholder="Jūsu ziņa"
+                className="mt-5 min-h-[140px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-3 text-sm text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
               />
 
               <div className="mt-5 flex justify-end gap-3">
                 <button
                   type="button"
                   onClick={() => setIsHelpOpen(false)}
-                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-5 py-2.5 text-[14px] font-medium text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
+                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-5 py-2.5 text-sm font-normal text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
                 >
                   Atcelt
                 </button>
@@ -1114,7 +1156,7 @@ export default function DashboardSidebar({
                     setIsHelpOpen(false);
                     setSupportMessage("");
                   }}
-                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-sm font-normal text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >
                   Nosūtīt
                 </button>
@@ -1133,10 +1175,10 @@ export default function DashboardSidebar({
           <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-6 py-5">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                <p className="text-xs font-semibold text-[hsl(214,18%,62%)]">
                   Ziņojums
                 </p>
-                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Ziņot par problēmu
                 </h2>
               </div>
@@ -1154,7 +1196,7 @@ export default function DashboardSidebar({
             <div className="px-6 py-6">
               <label
                 htmlFor="report-message"
-                className="text-[13px] font-semibold text-[hsl(220,24%,24%)]"
+                className="text-sm font-semibold text-[hsl(220,24%,24%)]"
               >
                 Kas notika?
               </label>
@@ -1164,11 +1206,11 @@ export default function DashboardSidebar({
                 value={reportMessage}
                 onChange={(event) => setReportMessage(event.target.value)}
                 placeholder='Piemēram, "Pacientu saraksts neielādējas"'
-                className="mt-3 min-h-[120px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-3 text-[14px] text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
+                className="mt-3 min-h-[120px] w-full resize-none rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-3 text-sm text-[hsl(220,24%,22%)] outline-none transition placeholder:text-[hsl(214,16%,68%)] focus:border-[hsl(214,28%,76%)]"
               />
 
               <div className="mt-5">
-                <p className="text-[13px] font-semibold text-[hsl(220,24%,24%)]">
+                <p className="text-sm font-semibold text-[hsl(220,24%,24%)]">
                   Svarīgums
                 </p>
 
@@ -1176,20 +1218,24 @@ export default function DashboardSidebar({
                   {[
                     {
                       key: "blocking",
-                      label: "🔴 Bloķē darbu",
+                      label: "Bloķē darbu",
+                      dotClassName: "bg-[hsl(0,72%,52%)]",
                     },
                     {
                       key: "annoying",
-                      label: "🟡 Traucē",
+                      label: "Traucē",
+                      dotClassName: "bg-[hsl(34,88%,48%)]",
                     },
                     {
                       key: "suggestion",
-                      label: "🟢 Ieteikums",
+                      label: "Ieteikums",
+                      dotClassName: "bg-[hsl(194,68%,42%)]",
                     },
                   ].map((item) => (
                     <button
                       key={item.key}
                       type="button"
+                      aria-pressed={reportSeverity === item.key}
                       onClick={() =>
                         setReportSeverity((current) =>
                           current === item.key
@@ -1198,12 +1244,16 @@ export default function DashboardSidebar({
                         )
                       }
                       className={cn(
-                        "inline-flex items-center rounded-[10px] border px-3 py-2 text-[13px] font-medium transition",
+                        "inline-flex min-h-11 items-center gap-2 rounded-[10px] border px-3 py-2 text-sm font-normal transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] focus-visible:ring-offset-2",
                         reportSeverity === item.key
                           ? "border-[hsl(214,28%,76%)] bg-[hsl(214,22%,98%)] text-[hsl(220,30%,24%)]"
                           : "border-[rgba(220,228,236,0.96)] bg-white text-[hsl(214,18%,48%)] hover:bg-[hsl(214,22%,98%)]",
                       )}
                     >
+                      <span
+                        aria-hidden="true"
+                        className={cn("h-2.5 w-2.5 shrink-0 rounded-full", item.dotClassName)}
+                      />
                       {item.label}
                     </button>
                   ))}
@@ -1218,7 +1268,7 @@ export default function DashboardSidebar({
                     setReportMessage("");
                     setReportSeverity(null);
                   }}
-                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-[14px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                  className="inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-5 py-2.5 text-sm font-normal text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >
                   Nosūtīt
                 </button>
@@ -1237,10 +1287,10 @@ export default function DashboardSidebar({
           <div className="mx-auto overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-6 py-5">
               <div>
-                <p className="text-[12px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                <p className="text-xs font-semibold text-[hsl(214,18%,62%)]">
                   Resursi
                 </p>
-                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="mt-2 text-xl font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Uzzināt vairāk
                 </h2>
               </div>
@@ -1283,15 +1333,15 @@ export default function DashboardSidebar({
                   )}
                 >
                   <div className="min-w-0">
-                    <p className="text-[16px] font-semibold leading-6 text-[hsl(220,36%,18%)]">
+                    <p className="text-sm font-semibold leading-6 text-[hsl(220,36%,18%)]">
                       {item.title}
                     </p>
-                    <p className="mt-1 text-[13px] leading-5 text-[hsl(214,16%,50%)]">
+                    <p className="mt-1 text-sm leading-5 text-[hsl(214,16%,50%)]">
                       {item.description}
                     </p>
                   </div>
 
-                  <span className="inline-flex shrink-0 items-center rounded-[8px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-[hsl(214,18%,62%)]">
+                  <span className="inline-flex shrink-0 items-center rounded-[8px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-1.5 text-xs font-semibold text-[hsl(214,18%,62%)]">
                     {item.badge}
                   </span>
                 </button>
@@ -1305,16 +1355,21 @@ export default function DashboardSidebar({
         <CenteredOverlay
           onClose={() => setIsSourceDocumentsOpen(false)}
           className="z-[110]"
-          overlayClassName="bg-[rgba(21,33,56,0.22)] backdrop-blur-[8px]"
-          contentClassName="max-w-[560px]"
+          overlayClassName="bg-[rgba(15,23,42,0.32)] backdrop-blur-sm"
+          contentClassName="max-w-4xl"
         >
-          <div className="mx-auto w-full max-w-[560px] overflow-hidden rounded-[18px] border border-[rgba(223,229,239,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,255,0.98))] shadow-[0_32px_90px_rgba(15,23,42,0.18)]">
-            <div className="flex items-start justify-between px-6 pb-2 pt-6">
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Izmantotie dokumenti"
+            className="mx-auto w-full overflow-hidden rounded-[12px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.16)]"
+          >
+            <div className="flex items-start justify-between gap-4 border-b border-[hsl(214,22%,90%)] px-5 py-5 sm:px-6">
               <div>
-                <h2 className="text-[18px] font-semibold tracking-[-0.03em] text-[hsl(220,36%,18%)]">
+                <h2 className="text-xl font-semibold tracking-[-0.035em] text-[hsl(222,28%,20%)]">
                   Izmantotie dokumenti
                 </h2>
-                <p className="mt-2 whitespace-nowrap text-[12px] leading-5 text-[hsl(214,16%,50%)]">
+                <p className="mt-1 text-sm leading-6 text-[hsl(215,14%,52%)]">
                   Dokumenti un datu avoti, kas izmantoti pārskata izveidei.
                 </p>
               </div>
@@ -1322,65 +1377,143 @@ export default function DashboardSidebar({
               <button
                 type="button"
                 onClick={() => setIsSourceDocumentsOpen(false)}
-                className="flex h-8 w-8 items-center justify-center rounded-full text-[hsl(220,18%,50%)] transition hover:bg-[hsl(214,22%,97%)] hover:text-[hsl(220,24%,28%)]"
-                aria-label="Aizvert izmantoto dokumentu logu"
+                className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-[hsl(215,14%,42%)] transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
+                aria-label="Aizvērt izmantoto dokumentu logu"
               >
-                <X className="h-4 w-4" />
+                <X size={18} />
               </button>
             </div>
 
-            <div className="max-h-[72vh] overflow-y-auto px-6 pb-6 pt-2">
-              <div className="space-y-5">
-                {usedDocumentsGroups.map((group) => (
-                  <section key={group.title}>
-                    <h3 className="text-[13px] font-semibold text-[hsl(220,28%,22%)]">
-                      {group.title}
-                    </h3>
+            <div className="max-h-[72vh] overflow-y-auto px-5 py-5 sm:px-6">
+              <div className="space-y-8">
+                <section>
+                  <h3 className="text-sm font-semibold leading-6 text-[hsl(222,28%,20%)]">
+                    Nepilnīgi ziņojumi
+                  </h3>
 
-                    <div className="mt-3 overflow-hidden rounded-[14px] border border-[rgba(224,230,238,0.96)] bg-white shadow-[0_10px_24px_rgba(148,163,184,0.08)]">
-                      {group.documents.map((document, index) => (
-                        <a
-                          key={document.id}
-                          href={document.url}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={cn(
-                            "flex items-center gap-3 px-4 py-3 transition hover:bg-[hsl(214,22%,98%)]",
-                            index !== group.documents.length - 1 &&
-                              "border-b border-[rgba(233,237,243,0.96)]",
-                          )}
-                        >
-                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] border border-[rgba(222,228,237,0.96)] bg-[hsl(210,25%,99%)] text-[hsl(221,20%,48%)]">
-                            <FileText className="h-4 w-4" />
-                          </div>
+                  <p className="mt-1 w-full max-w-none text-sm leading-6 text-[hsl(215,14%,52%)]">
+                    Avoti, ko nevarēja droši nolasīt automātiski. Pārskatiet un
+                    apstipriniet, vai tie nonāk pacienta ierakstā.
+                  </p>
 
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate text-[12px] font-semibold text-[hsl(220,30%,24%)]">
-                              {document.usedDocumentsTitle ?? document.title}
-                            </p>
-                            <p className="mt-0.5 truncate text-[11px] text-[hsl(219,14%,58%)]">
-                              {document.usedDocumentsSubtitle ?? document.date}
-                            </p>
-                            <p className="hidden">
-                          {document.facility} • {document.date}
-                        </p>
-                        <p className="hidden">
-                          {document.description}
-                        </p>
+                  <div className="mt-4 overflow-x-auto rounded-[8px] border border-[hsl(214,22%,88%)] bg-white">
+                    <div className="min-w-[760px]">
+                      <div className="grid grid-cols-[1.3fr_1fr_0.8fr_0.95fr_0.9fr] gap-3 border-b border-[hsl(214,22%,90%)] px-4 py-3 text-xs font-semibold text-[hsl(215,14%,52%)]">
+                        <span>Avots</span>
+                        <span>Statuss</span>
+                        <span>Pārliecība</span>
+                        <span>Saņemts</span>
                       </div>
 
-                          <span className="shrink-0 text-[12px] font-semibold text-[hsl(222,36%,58%)]">
-                            Atvērt
-                          </span>
-                        </a>
-                      ))}
+                      {incompleteSourceReports.map((report, index) => {
+                        const status = incompleteStatusConfig[report.status];
+
+                        return (
+                          <a
+                            key={report.id}
+                            href={report.reviewUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className={cn(
+                              "grid grid-cols-[1.3fr_1fr_0.8fr_0.95fr_0.9fr] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)]",
+                              index !== incompleteSourceReports.length - 1 &&
+                                "border-b border-[hsl(214,22%,90%)]",
+                            )}
+                          >
+                            <span className="whitespace-normal break-words text-[hsl(220,28%,22%)]">
+                              {report.sourceLabel}
+                            </span>
+
+                            <span
+                              className={cn(
+                                "font-semibold",
+                                status.className,
+                              )}
+                            >
+                              {status.label}
+                            </span>
+
+                            <span className="text-[hsl(220,28%,22%)]">
+                              {report.confidence}
+                            </span>
+
+                            <span className="text-[hsl(215,14%,52%)]">
+                              {report.receivedDate}
+                            </span>
+
+                            <span className="text-right text-sm font-semibold text-[hsl(220,36%,28%)]">
+                              Pārskatīt →
+                            </span>
+                          </a>
+                        );
+                      })}
                     </div>
-                  </section>
-                ))}
+                  </div>
+                </section>
+
+                <section className="border-t border-[hsl(214,22%,90%)] pt-6">
+                  <h3 className="text-sm font-semibold leading-6 text-[hsl(222,28%,20%)]">
+                    Veiksmīgi nolasītie dokumenti
+                  </h3>
+
+                  <p className="mt-1 w-full max-w-none text-sm leading-6 text-[hsl(215,14%,52%)]">
+                    Dokumenti, kurus sistēma nolasīja korekti un iekļāva pacienta
+                    pārskatā. Zemāk tie ir sagrupēti pēc dokumenta tipa.
+                  </p>
+
+                  <div className="mt-4 space-y-6">
+                    {usedDocumentsGroups.map((group) => (
+                      <section key={group.title}>
+                        <h4 className="text-sm font-semibold leading-6 text-[hsl(220,28%,22%)]">
+                          {group.title}
+                        </h4>
+
+                        <div className="mt-2 overflow-hidden rounded-[8px] border border-[hsl(214,22%,88%)] bg-white">
+                          {group.documents.map((document, index) => (
+                            <a
+                              key={document.id}
+                              href={document.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className={cn(
+                                "flex items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)]",
+                                index !== group.documents.length - 1 &&
+                                  "border-b border-[hsl(214,22%,90%)]",
+                              )}
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center text-[hsl(215,14%,52%)]">
+                                <FileText className="h-4 w-4" />
+                              </div>
+
+                              <div className="min-w-0 flex-1">
+                                <p className="whitespace-normal break-words font-semibold text-[hsl(220,28%,22%)]">
+                                  {document.usedDocumentsTitle ?? document.title}
+                                </p>
+                                <p className="mt-0.5 whitespace-normal break-words text-sm text-[hsl(215,14%,52%)]">
+                                  {document.usedDocumentsSubtitle ?? document.date}
+                                </p>
+                                <p className="hidden">
+                                  {document.facility} • {document.date}
+                                </p>
+                                <p className="hidden">
+                                  {document.description}
+                                </p>
+                              </div>
+
+                              <span className="shrink-0 font-semibold text-[hsl(220,36%,28%)]">
+                                Atvērt
+                              </span>
+                            </a>
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                </section>
               </div>
 
-              <div className="mt-5 flex items-start gap-2 rounded-[12px] bg-[hsl(217,46%,98%)] px-3 py-3 text-[11px] leading-4.5 text-[hsl(218,16%,56%)]">
-                <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[hsl(219,22%,58%)]" />
+              <div className="mt-6 flex items-start gap-2 border-t border-[hsl(214,22%,90%)] pt-4 text-sm leading-6 text-[hsl(215,14%,52%)]">
+                <ShieldCheck className="mt-1 h-4 w-4 shrink-0 text-[hsl(215,14%,52%)]" />
                 <p>
                   Dokumenti tiek atlasīti automātiski un atbilst datu pieejamības un
                   piekrišanas nosacījumiem.
@@ -1397,10 +1530,10 @@ export default function DashboardSidebar({
           overlayClassName="bg-[rgba(16,24,40,0.18)] backdrop-blur-[6px]"
           contentClassName="max-w-[760px]"
         >
-          <div className="mx-auto w-full max-w-[760px] overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
+          <div className="mx-auto w-full max-w-[760px] overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white">
             <div className="flex items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-8 py-7">
               <div>
-                <h2 className="text-[24px] font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
+                <h2 className="text-xl font-semibold tracking-[-0.02em] text-[hsl(220,36%,18%)]">
                   Visi pacienti
                 </h2>
               </div>
@@ -1409,7 +1542,7 @@ export default function DashboardSidebar({
                 type="button"
                 onClick={() => setIsAllPatientsOpen(false)}
                 className="flex h-12 w-12 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
-                aria-label="AizvÄ“rt pacientu sarakstu"
+                aria-label="Aizvērt pacientu sarakstu"
               >
                 <X className="h-5 w-5" />
               </button>
@@ -1425,19 +1558,19 @@ export default function DashboardSidebar({
                   return (
                     <Link
                       key={patient.id}
-                      to="/components"
+                      to="/clinical-dashboard"
                       state={{ patient, layoutOrder, specialtyId }}
                       onClick={() => setIsAllPatientsOpen(false)}
                       aria-current={isActivePatient ? "page" : undefined}
                       className={cn(
                         "block w-full overflow-hidden rounded-[14px] border px-4 py-3 transition duration-200",
                         isActivePatient
-                          ? "border-[rgba(199,214,231,0.96)] bg-[hsl(214,30%,97%)] text-[hsl(220,36%,18%)] shadow-[0_8px_20px_rgba(29,53,87,0.08)]"
-                          : "border-transparent text-[hsl(220,36%,18%)] hover:-translate-y-[1px] hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,22%,98%)] hover:shadow-[0_8px_18px_rgba(29,53,87,0.06)]",
+                          ? "border-[rgba(199,214,231,0.96)] bg-[hsl(214,30%,97%)] text-[hsl(220,36%,18%)]"
+                          : "border-transparent text-[hsl(220,36%,18%)] hover:-translate-y-[1px] hover:border-[rgba(214,222,230,0.96)] hover:bg-[hsl(214,22%,98%)]",
                       )}
                     >
-                      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-6 text-[15px] leading-5">
-                        <p className="min-w-0 truncate font-semibold">
+                      <div className="grid min-w-0 grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-6 text-sm leading-5">
+                        <p className="min-w-0 whitespace-normal break-words font-semibold">
                           {patient.name}
                         </p>
                         <p
@@ -1479,10 +1612,10 @@ export default function DashboardSidebar({
           <div className="mx-auto flex h-[min(86vh,820px)] w-[min(1060px,calc(100vw-32px))] flex-col overflow-hidden rounded-[18px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.14)]">
             <div className="flex shrink-0 items-start justify-between border-b border-[rgba(230,235,241,0.96)] px-5 py-4">
               <div>
-                <p className="text-[11px] font-semibold uppercase tracking-[0.28em] text-[hsl(214,18%,62%)]">
+                <p className="text-xs font-semibold text-[hsl(214,18%,62%)]">
                   Iestatījumi
                 </p>
-                <h2 className="mt-2 text-[22px] font-semibold tracking-[-0.03em] text-[hsl(220,36%,18%)]">
+                <h2 className="mt-2 text-xl font-semibold tracking-[-0.03em] text-[hsl(220,36%,18%)]">
                   Paneļa izkārtojums
                 </h2>
               </div>
@@ -1491,7 +1624,7 @@ export default function DashboardSidebar({
                 <button
                   type="button"
                   onClick={handleResetSettings}
-                  className="inline-flex items-center gap-2 rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-[13px] font-medium text-[hsl(220,24%,28%)] transition hover:bg-[hsl(214,22%,98%)]"
+                  className="inline-flex items-center gap-2 rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-sm font-normal text-[hsl(220,24%,28%)] transition hover:bg-[hsl(214,22%,98%)]"
                 >
                   <RotateCcw className="h-3.5 w-3.5" />
                   Atiestatīt
@@ -1501,7 +1634,7 @@ export default function DashboardSidebar({
                   type="button"
                   onClick={() => setIsSettingsOpen(false)}
                   className="flex h-10 w-10 items-center justify-center rounded-full border border-[rgba(220,228,236,0.96)] bg-white text-[hsl(220,24%,22%)] transition hover:bg-[hsl(214,22%,98%)]"
-                  aria-label="Aizvert iestatijumus"
+                  aria-label="Aizvērt iestatījumus"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -1515,10 +1648,10 @@ export default function DashboardSidebar({
               >
                 <div className="mb-5 flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[hsl(219,30%,32%)]">
+                    <p className="text-xs font-semibold text-[hsl(219,30%,32%)]">
                       Komponenti
                     </p>
-                    <p className="hidden mt-2 text-[14px] leading-6 text-[hsl(214,16%,50%)]">
+                    <p className="hidden mt-2 text-sm leading-6 text-[hsl(214,16%,50%)]">
                       Velciet, lai pārkārtotu komponenšu izkārtojumu
                     </p>
                   </div>
@@ -1544,16 +1677,16 @@ export default function DashboardSidebar({
                     >
                       <div className="mt-0.5 flex items-center gap-3 text-[hsl(214,14%,56%)]">
                         <GripVertical className="h-4 w-4" />
-                        <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[hsl(214,22%,97%)] text-[13px] font-medium leading-none text-[hsl(219,30%,22%)]">
+                        <span className="flex h-8 w-8 items-center justify-center rounded-[10px] bg-[hsl(214,22%,97%)] text-sm font-normal leading-none text-[hsl(219,30%,22%)]">
                           {index + 1}
                         </span>
                       </div>
 
                       <div className="min-w-0 flex-1">
-                        <p className="text-[12px] font-semibold text-[hsl(220,36%,18%)]">
+                        <p className="text-xs font-semibold text-[hsl(220,36%,18%)]">
                           {module.title}
                         </p>
-                        <p className="mt-1 max-w-[310px] text-[10px] leading-4.5 text-[hsl(214,16%,52%)]">
+                        <p className="mt-1 max-w-[310px] text-xs leading-4.5 text-[hsl(214,16%,52%)]">
                           {getSettingsModuleDescription(module)}
                         </p>
                       </div>
@@ -1568,7 +1701,7 @@ export default function DashboardSidebar({
                 className="min-h-0 overflow-y-auto bg-white px-4 py-4"
               >
                 <div className="mb-4">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.22em] text-[hsl(214,18%,62%)]">
+                  <p className="text-xs font-semibold text-[hsl(214,18%,62%)]">
                     Priekšskatījums
                   </p>
                 </div>
@@ -1577,10 +1710,10 @@ export default function DashboardSidebar({
                   <div className="mb-3 rounded-[16px] border border-[rgba(220,228,236,0.96)] bg-white px-3 py-3 shadow-[0_8px_18px_rgba(29,53,87,0.04)]">
                     <div className="flex items-start justify-between gap-3">
                       <div className="min-w-0">
-                        <p className="text-[8px] font-semibold text-[hsl(214,24%,28%)]">
+                        <p className="text-xs font-semibold text-[hsl(214,24%,28%)]">
                           Vārds Uzvārds
                         </p>
-                        <p className="mt-1 text-[7px] text-[hsl(214,16%,58%)]">
+                        <p className="mt-1 text-xs text-[hsl(214,16%,58%)]">
                           Kontaktinformācija
                         </p>
                       </div>
@@ -1609,14 +1742,14 @@ export default function DashboardSidebar({
                 <button
                   type="button"
                   onClick={() => setIsSettingsOpen(false)}
-                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-[13px] font-medium text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
+                  className="inline-flex items-center rounded-[10px] border border-[rgba(220,228,236,0.96)] bg-white px-4 py-2 text-sm font-normal text-[hsl(220,24%,34%)] transition hover:bg-[hsl(214,22%,98%)]"
                 >
                   Atcelt
                 </button>
                 <button
                   type="button"
                   onClick={handleSaveSettings}
-                  className="ml-auto inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-4 py-2 text-[13px] font-medium text-white transition hover:bg-[hsl(220,32%,14%)]"
+                  className="ml-auto inline-flex items-center rounded-[10px] bg-[hsl(220,36%,18%)] px-4 py-2 text-sm font-normal text-white transition hover:bg-[hsl(220,32%,14%)]"
                 >
                   Saglabāt izkārtojumu
                 </button>
@@ -1625,5 +1758,6 @@ export default function DashboardSidebar({
         </CenteredOverlay>
       )}
     </aside>
+    </>
   );
 }

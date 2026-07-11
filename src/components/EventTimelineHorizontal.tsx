@@ -7,15 +7,21 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  History,
+  ListFilter,
   Hospital,
-  Maximize2,
   Scissors,
   Stethoscope,
   X,
 } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+import { DashboardCardHeader } from "@/components/DashboardCardHeader";
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   dashboardSourceDocumentMap,
   sourceDocumentIds,
@@ -146,9 +152,6 @@ const events: TimelineEvent[] = [
   },
 ];
 
-const sectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
-
 const typeConfig: Record<
   EventType,
   {
@@ -270,7 +273,6 @@ function formatDate(date: string) {
 }
 
 type TimelineContentProps = {
-  updatedAt: string;
   selectedTypes: EventType[];
   activeEventId: string | null;
   filteredEvents: TimelineEvent[];
@@ -281,7 +283,6 @@ type TimelineContentProps = {
 };
 
 function TimelineContent({
-  updatedAt,
   selectedTypes,
   activeEventId,
   filteredEvents,
@@ -327,72 +328,64 @@ function TimelineContent({
     <div
       data-timeline-container
       onClick={handleCardClick}
-      className={`flex w-full flex-col rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-sm transition ${
+      className={`clinical-panel-interactive flex w-full flex-col ${
         expanded
           ? "min-h-[640px]"
-          : "h-full min-h-[420px] cursor-pointer hover:border-[hsl(214,24%,82%)] hover:shadow-[0_12px_28px_rgba(29,53,87,0.08)]"
+          : "h-full cursor-pointer"
       }`}
     >
-      <div className="mb-5 flex flex-nowrap items-center gap-3">
-        <div className={sectionIconClass}>
-          <History size={18} />
-        </div>
-
-        <p className="shrink-0 whitespace-nowrap text-[13px] font-semibold uppercase leading-[1.12] tracking-[0.08em] text-heading md:text-[14px]">
-          Notikumu laika līnija
-        </p>
-
-        <div
-          className={`ml-auto flex min-w-0 flex-1 items-center justify-end overflow-hidden ${
-            expanded ? "gap-2 pr-16" : "gap-1"
-          }`}
-        >
-          {allTypes.map((type) => {
-            const isSelected = selectedTypes.includes(type);
-            const config = typeConfig[type];
-
-            return (
+      <DashboardCardHeader
+        title="Notikumu laika līnija"
+        infoLabel="Informācija par notikumu laika līniju"
+        infoDescription="Atlasiet notikumu veidus vai nospiediet notikumu, lai skatītu detaļas"
+        onExpand={expanded ? undefined : onOpenExpanded}
+        expandLabel="Izvērst laika līniju pilnskatā"
+      >
+        <div className={`flex min-w-0 flex-1 items-center justify-end ${expanded ? "pr-16" : ""}`}>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
               <button
-                key={type}
                 type="button"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  onToggleType(type);
-                }}
-                className={`inline-flex shrink-0 items-center rounded-full border font-medium transition-all ${
-                  expanded
-                    ? "gap-1.5 px-2.5 py-1.5 text-[10px]"
-                    : "gap-0.5 px-1.5 py-[3px] text-[8px]"
-                } ${
-                  isSelected
-                    ? `${config.badgeClass} shadow-sm`
-                    : "border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] text-[hsl(214,18%,38%)]"
-                }`}
+                onClick={(event) => event.stopPropagation()}
+                className="group inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-md border border-[hsl(214,22%,84%)] bg-white px-3 text-sm font-normal text-text-dark shadow-sm transition hover:border-[hsl(220,36%,16%)] hover:bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(196,50%,42%)] focus-visible:ring-offset-2"
+                aria-label="Filtrēt notikumu veidus"
               >
-                <span className={`${config.textClass} ${expanded ? "" : "scale-75"}`}>
-                  {config.icon}
+                <ListFilter size={16} aria-hidden="true" />
+                <span>Notikumu veidi</span>
+                <span className="text-xs text-[hsl(214,18%,52%)] transition-colors group-hover:text-white">
+                  ({selectedTypes.length}/{allTypes.length})
                 </span>
-                <span>{config.label}</span>
+                <ChevronDown size={16} aria-hidden="true" />
               </button>
-            );
-          })}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align="end"
+              className="w-60 p-1.5"
+              onClick={(event) => event.stopPropagation()}
+            >
+              {allTypes.map((type) => {
+                const config = typeConfig[type];
+
+                return (
+                  <DropdownMenuCheckboxItem
+                    key={type}
+                    checked={selectedTypes.includes(type)}
+                    onSelect={(event) => event.preventDefault()}
+                    onCheckedChange={() => onToggleType(type)}
+                    className="group cursor-pointer gap-2 py-2 text-sm hover:!bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] hover:!text-white focus:!bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] focus:!text-white"
+                  >
+                    <span className={`${config.textClass} group-hover:text-white group-focus:text-white`}>
+                      {config.icon}
+                    </span>
+                    {config.label}
+                  </DropdownMenuCheckboxItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
 
-        {!expanded && onOpenExpanded ? (
-          <button
-            type="button"
-            onClick={(event) => {
-              event.stopPropagation();
-              onOpenExpanded();
-            }}
-            className="inline-flex h-6 w-6 shrink-0 items-center justify-center text-[hsl(220,36%,18%)] transition hover:opacity-70"
-            aria-label="Izvērst pilnskatā"
-            title="Izvērst pilnskatā"
-          >
-            <Maximize2 size={15} />
-          </button>
-        ) : null}
-      </div>
+      </DashboardCardHeader>
 
       {filteredEvents.length === 0 ? (
         <div className="flex min-h-[110px] flex-1 items-center justify-center rounded-[10px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
@@ -612,7 +605,7 @@ function TimelineContent({
                           >
                             {active && (event.details?.length || event.originalDocumentUrl) ? (
                               <>
-                                <p className="mb-4 text-[11px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,14%,50%)]">
+                                <p className="mb-4 text-[11px] font-semibold text-[hsl(214,14%,50%)]">
                                   Kopsavilkums
                                 </p>
 
@@ -660,12 +653,11 @@ function TimelineContent({
         </div>
       )}
 
-      <p className="mt-4 text-xs text-[hsl(214,18%,62%)]">Atjaunināts: {updatedAt}</p>
     </div>
   );
 }
 
-const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
+const EventTimelineHorizontal = () => {
   const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [isExpandedOpen, setIsExpandedOpen] = useState(false);
@@ -721,7 +713,6 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
   return (
     <>
       <TimelineContent
-        updatedAt={updatedAt}
         selectedTypes={selectedTypes}
         activeEventId={activeEventId}
         filteredEvents={filteredEvents}
@@ -748,7 +739,6 @@ const EventTimelineHorizontal = ({ updatedAt }: { updatedAt: string }) => {
 
             <div className="overflow-hidden">
               <TimelineContent
-                updatedAt={updatedAt}
                 selectedTypes={selectedTypes}
                 activeEventId={activeEventId}
                 filteredEvents={filteredEvents}

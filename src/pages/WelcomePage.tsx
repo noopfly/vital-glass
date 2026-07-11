@@ -28,11 +28,11 @@ export default function WelcomePage() {
             <KeyRound className="h-9 w-9" strokeWidth={1.8} />
           </div>
 
-          <h1 className="mt-6 text-[34px] font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-[46px]">
+          <h1 className="mt-6 text-2xl font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-3xl">
             Laipni lūdzam OMNUS
           </h1>
 
-          <p className="mt-3 text-[16px] leading-7 text-[hsl(214,16%,48%)] md:text-[17px]">
+          <p className="mt-3 text-sm leading-7 text-[hsl(214,16%,48%)] md:text-xl">
             Pieslēdzieties ar eID, lai piekļūtu sistēmai.
           </p>
 
@@ -40,7 +40,7 @@ export default function WelcomePage() {
             <Button
               type="button"
               onClick={() => navigate("/search")}
-              className={`${hoverButtonClass} h-16 w-full rounded-[10px] border border-[rgba(218,225,233,0.96)] px-6 text-[16px] font-semibold shadow-[0_12px_28px_rgba(29,53,87,0.06)]`}
+              className={`${hoverButtonClass} h-16 w-full rounded-[10px] border border-[rgba(218,225,233,0.96)] px-6 text-sm font-semibold shadow-[0_12px_28px_rgba(29,53,87,0.06)]`}
             >
               <span className="relative z-10 flex items-center justify-center">
                 <KeyRound className="mr-3 h-5 w-5" strokeWidth={1.9} />
@@ -49,14 +49,14 @@ export default function WelcomePage() {
             </Button>
           </div>
 
-          <div className="mt-6 inline-flex items-center gap-2 text-[14px] text-[hsl(214,16%,54%)]">
+          <div className="mt-6 inline-flex items-center gap-2 text-sm text-[hsl(214,16%,54%)]">
             <ShieldCheck className="h-4 w-4" />
             Dati tiek aizsargāti saskaņā ar GDPR regulām.
           </div>
 
           <div className="mt-16 flex items-center gap-4">
             <div className="h-px flex-1 bg-[rgba(220,228,236,0.96)]" />
-            <p className="text-[14px] font-medium text-[hsl(214,16%,56%)]">
+            <p className="text-sm font-normal text-[hsl(214,16%,56%)]">
               Vēl neesat reģistrēts?
             </p>
             <div className="h-px flex-1 bg-[rgba(220,228,236,0.96)]" />
@@ -67,7 +67,7 @@ export default function WelcomePage() {
               <Button
                 type="button"
                 variant="ghost"
-                className={`${hoverButtonClass} h-14 rounded-[10px] border border-[rgba(210,219,228,0.96)] px-7 text-[15px] font-semibold shadow-[0_10px_24px_rgba(29,53,87,0.05)]`}
+                className={`${hoverButtonClass} h-14 rounded-[10px] border border-[rgba(210,219,228,0.96)] px-7 text-sm font-semibold shadow-[0_10px_24px_rgba(29,53,87,0.05)]`}
               >
                 <span className="relative z-10 flex items-center justify-center">
                   Reģistrēties sistēmai

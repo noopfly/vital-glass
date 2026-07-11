@@ -1,191 +1,107 @@
-import { useState } from "react";
-import {
-  Activity,
-  AlertTriangle,
-  ChevronDown,
-  ChevronUp,
-  HeartPulse,
-  ShieldAlert,
-} from "lucide-react";
-import { Patient } from "@/types/patient";
+import { type ReactNode, useState } from "react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 
-const labelClass =
-  "text-[11px] font-semibold uppercase tracking-wider text-heading";
+import { DashboardCardHeader } from "@/components/DashboardCardHeader";
+import { Patient } from "@/types/patient";
 
 interface PatientCardProps {
   patient: Patient;
 }
 
-type RiskProfileItem =
-  | { type: "text"; value: string }
-  | { type: "diagnosis"; code: string; description: string };
+function ProfileSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <h3 className="text-sm font-semibold leading-6 text-[hsl(222,28%,20%)]">
+        {title}
+      </h3>
+      <div className="mt-2.5">{children}</div>
+    </section>
+  );
+}
+
+function ConditionList({
+  items,
+}: {
+  items: Array<{ code: string; description: string; diagnosedAt?: string }>;
+}) {
+  return (
+    <ul className="space-y-2.5">
+      {items.map((item) => (
+        <li key={`${item.code}-${item.description}`} className="text-sm leading-5 text-text-dark">
+          <span>{item.code} - {item.description}</span>
+          {item.diagnosedAt ? (
+            <span className="ml-1.5 whitespace-nowrap text-xs text-[hsl(215,14%,52%)]">
+              {item.diagnosedAt}
+            </span>
+          ) : null}
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 const PatientCard = ({ patient }: PatientCardProps) => {
   const [showAllDiagnoses, setShowAllDiagnoses] = useState(false);
-  const visibleDiagnoses = showAllDiagnoses
-    ? patient.diagnoses
-    : patient.diagnoses.slice(0, 2);
-  const hasHiddenDiagnoses = patient.diagnoses.length > 2;
-  const riskProfileItems: RiskProfileItem[] = patient.riskFactors.some((item) =>
-    /iedzim|congen/i.test(item),
-  )
-    ? patient.riskFactors.slice(0, 3).map((item) => ({ type: "text", value: item }))
-    : [
-        ...patient.riskFactors
-          .slice(0, 2)
-          .map((item) => ({ type: "text" as const, value: item })),
-        {
-          type: "diagnosis",
-          code: "Q61.2",
-          description: "Policistiskā nieru slimība",
-        },
-      ];
+  const visibleDiagnoses = showAllDiagnoses ? patient.diagnoses : patient.diagnoses.slice(0, 2);
 
   return (
-    <div className="overflow-hidden rounded-[6px] border border-[hsl(210,22%,89%)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-      {/* TOP HEADER */}
-      <div className="border-b border-[hsl(208,22%,92%)] px-7 py-5">
-        <div className="flex items-start">
-          <div className="flex flex-1 flex-col gap-2">
-            <div className="min-w-0">
-              <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
-                Pacienta klīniskais profils
-              </p>
+    <section className="clinical-panel flex h-full w-full flex-col">
+      <DashboardCardHeader
+        title="Pacienta klīniskais profils"
+        infoLabel="Informācija par pacienta klīnisko profilu"
+        infoDescription="Klīniskā stāvokļa kopsavilkums"
+      />
+      <p className="-mt-1 w-full max-w-none text-sm leading-6 text-[hsl(220,18%,26%)]">
+          {patient.summary}
+      </p>
 
-              <p className="mt-1 text-[14px] leading-6 text-text-dark">
-                {patient.summary}
-              </p>
-            </div>
-
-            <p className="text-xs text-[hsl(214,14%,56%)]">
-              Atjaunināts: {patient.updatedAt}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* CONTENT */}
-      <div className="grid w-full gap-5 px-6 py-6 lg:grid-cols-[0.82fr_auto_1.18fr_auto_0.98fr_auto_1.12fr] lg:items-start">
-        {/* Novirzes */}
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <AlertTriangle size={15} className="text-heading" />
-            <p className={labelClass}>Novirzes no normas</p>
-          </div>
-
+      <div className="mt-5 grid gap-x-8 gap-y-6 border-t border-[hsl(214,22%,90%)] pt-5 sm:grid-cols-2 xl:grid-cols-4">
+        <ProfileSection title="Novirzes no normas">
           <div className="flex flex-wrap gap-2">
-            {patient.deviations.slice(0, 3).map((deviation, index) => (
+            {patient.deviations.slice(0, 3).map((deviation) => (
               <span
-                key={index}
-                className="rounded-[999px] bg-[hsl(0,56%,96%)] px-3 py-1 text-[13px] font-semibold text-[hsl(0,54%,52%)]"
+                key={deviation}
+                className="rounded-full border border-[hsl(40,65%,82%)] bg-[hsl(40,64%,95%)] px-3 py-1.5 text-sm font-semibold text-[hsl(34,55%,32%)]"
               >
                 {deviation}
               </span>
             ))}
           </div>
-        </div>
+        </ProfileSection>
 
-        <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
-
-        {/* Diagnozes */}
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <Activity size={15} className="text-heading" />
-            <p className={labelClass}>Esošās diagnozes</p>
-          </div>
-
-          <ul className="space-y-1 text-sm leading-5 text-text-dark">
-            {visibleDiagnoses.map((diag, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-
-                <span>
-                  <strong>{diag.code}</strong> - {diag.description}
-
-                  {diag.diagnosedAt && (
-                    <span className="whitespace-nowrap text-[12px] text-[hsl(214,14%,62%)]">
-                      {" "}
-                      ({diag.diagnosedAt})
-                    </span>
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-
-          {hasHiddenDiagnoses && (
+        <ProfileSection title="Esošās diagnozes">
+          <ConditionList items={visibleDiagnoses} />
+          {patient.diagnoses.length > 2 ? (
             <button
               type="button"
               onClick={() => setShowAllDiagnoses((current) => !current)}
-              className="mt-2 inline-flex items-center gap-1 text-[12px] font-normal text-[hsl(214,14%,62%)] transition-colors hover:text-[hsl(214,14%,48%)]"
+              className="mt-2 inline-flex min-h-9 items-center gap-1 text-sm text-[hsl(220,36%,28%)] transition-colors hover:text-[hsl(220,48%,30%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
             >
-              {showAllDiagnoses ? "Rādīt mazāk" : "Rādīt vairāk"}
-              {showAllDiagnoses ? (
-                <ChevronUp className="h-3.5 w-3.5" />
-              ) : (
-                <ChevronDown className="h-3.5 w-3.5" />
-              )}
+              {showAllDiagnoses ? "Rādīt mazāk" : `Rādīt vēl ${patient.diagnoses.length - 2}`}
+              {showAllDiagnoses ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
             </button>
-          )}
-        </div>
+          ) : null}
+        </ProfileSection>
 
-        <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
+        <ProfileSection title="Hroniskās slimības">
+          <ConditionList items={patient.chronicDiseases.slice(0, 2)} />
+        </ProfileSection>
 
-        {/* Hroniskās */}
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <HeartPulse size={15} className="text-heading" />
-            <p className={labelClass}>Hroniskās slimības</p>
-          </div>
-
-          <ul className="space-y-1 text-sm leading-5 text-text-dark">
-            {patient.chronicDiseases.slice(0, 2).map((disease, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-
-                <span>
-                  <strong>{disease.code}</strong> - {disease.description}
-
-                  {disease.diagnosedAt && (
-                    <span className="whitespace-nowrap text-[12px] text-[hsl(214,14%,62%)]">
-                      {" "}
-                      ({disease.diagnosedAt})
-                    </span>
-                  )}
-                </span>
-              </li>
+        <ProfileSection title="Riska profils">
+          <ul className="space-y-2.5 text-sm leading-5 text-text-dark">
+            {patient.riskFactors.slice(0, 3).map((riskFactor) => (
+              <li key={riskFactor}>{riskFactor}</li>
             ))}
           </ul>
-        </div>
-
-        <div className="hidden self-stretch w-px bg-[linear-gradient(180deg,hsla(206,26%,90%,0),hsla(206,26%,90%,0.95),hsla(206,26%,90%,0))] lg:block" />
-
-        {/* Riska profils */}
-        <div>
-          <div className="mb-2 flex items-center gap-2">
-            <ShieldAlert size={15} className="text-heading" />
-            <p className={labelClass}>Riska profils</p>
-          </div>
-
-          <ul className="space-y-1.5 text-sm leading-5 text-text-dark">
-            {riskProfileItems.map((riskFactor, index) => (
-              <li key={index} className="flex items-start gap-2">
-                <span className="mt-[8px] h-1 w-1 rounded-full bg-[hsl(210,14%,34%)]" />
-                <span className="block leading-[1.45]">
-                  {riskFactor.type === "diagnosis" ? (
-                    <>
-                      <strong>{riskFactor.code}</strong> - {riskFactor.description}
-                    </>
-                  ) : (
-                    riskFactor.value
-                  )}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
+        </ProfileSection>
       </div>
-    </div>
+    </section>
   );
 };
 

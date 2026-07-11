@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   familyMedicineDashboardLayoutOrder,
+  getDashboardLayoutClasses,
   getDefaultDashboardLayoutOrderForSpecialty,
   normalizeDashboardLayoutOrder,
 } from "@/lib/dashboard-layout";
@@ -52,5 +53,14 @@ describe("dashboard layout presets", () => {
       "referralHistory",
       "eventTimeline",
     ]);
+  });
+
+  it("expands the event timeline to a full row when it is the last visible component", () => {
+    expect(getDashboardLayoutClasses(["patientCard", "eventTimeline"]).eventTimeline).toBe(
+      "lg:col-span-3",
+    );
+    expect(getDashboardLayoutClasses(["patientCard", "healthTrends", "eventTimeline"]).eventTimeline).toBe(
+      "lg:col-span-3",
+    );
   });
 });
