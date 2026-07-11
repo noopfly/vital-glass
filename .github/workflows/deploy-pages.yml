@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - ui-update
   workflow_dispatch:
 
 permissions:
