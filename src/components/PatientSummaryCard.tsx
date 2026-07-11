@@ -21,7 +21,7 @@ const PatientSummaryCard = ({
 
         <div className="flex flex-1 flex-col gap-2">
           <div className="min-w-0">
-            <p className="mb-1 text-[14px] font-semibold uppercase tracking-[0.12em] text-[hsl(214,18%,44%)]">
+            <p className="mb-1 text-sm font-semibold text-[hsl(214,18%,44%)]">
               Pacienta kopsavilkums
             </p>
 

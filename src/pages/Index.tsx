@@ -1,13 +1,13 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   AlertCircle,
-  Mail,
-  Phone,
+  FileText,
   RefreshCw,
   Search,
   Send,
   Sparkles,
+  UserRound,
   X,
 } from "lucide-react";
 
@@ -28,6 +28,7 @@ import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import { patients } from "@/data/patients";
 import {
   filterDashboardLayoutOrderBySpecialty,
+  getDashboardLayoutClasses,
   normalizeDashboardLayoutOrder,
   readStoredDashboardLayoutOrder,
   type DashboardComponentKey,
@@ -43,6 +44,7 @@ import {
 import {
   dashboardSourceDocumentMap,
   sourceDocumentIds,
+  usedDocumentsPanelDocuments,
 } from "@/lib/source-documents";
 import { Patient } from "@/types/patient";
 
@@ -52,126 +54,15 @@ type DashboardLocationState = {
   specialtyId?: SpecialtyId;
 };
 
-const dashboardCardHeight = "min-h-[420px]";
 const HEADER_COMPACT_ENTER_SCROLL_Y = 96;
 const HEADER_COMPACT_EXIT_SCROLL_Y = 24;
-
-const layoutBaseClasses: Record<DashboardComponentKey, string> = {
-  patientCard: "lg:col-span-3",
-  preventionCard: dashboardCardHeight,
-  healthTrends: `lg:col-span-2 ${dashboardCardHeight}`,
-  medicalImagingViewer: dashboardCardHeight,
-  medicationTable: `lg:col-span-2 ${dashboardCardHeight}`,
-  alertsCard: dashboardCardHeight,
-  eventTimeline: `lg:col-span-2 ${dashboardCardHeight}`,
-  humanBodyModel: dashboardCardHeight,
-  referralHistory: dashboardCardHeight,
-};
-
-const layoutColumnSpans: Record<DashboardComponentKey, number> = {
-  patientCard: 3,
-  preventionCard: 1,
-  healthTrends: 2,
-  medicalImagingViewer: 1,
-  medicationTable: 2,
-  alertsCard: 1,
-  eventTimeline: 2,
-  humanBodyModel: 1,
-  referralHistory: 1,
-};
 
 function compactDashboardGridOrder(
   visibleKeys: readonly DashboardComponentKey[],
 ): DashboardComponentKey[] {
-  const orderedKeys = [...visibleKeys];
-  let currentColumn = 0;
-
-  for (let index = 0; index < orderedKeys.length; index += 1) {
-    const span = layoutColumnSpans[orderedKeys[index]];
-    const remainingColumns = 3 - currentColumn;
-
-    if (currentColumn !== 0 && span > remainingColumns) {
-      let candidateIndex = -1;
-
-      for (let searchIndex = index + 1; searchIndex < orderedKeys.length; searchIndex += 1) {
-        const candidateSpan = layoutColumnSpans[orderedKeys[searchIndex]];
-
-        if (candidateSpan > remainingColumns) {
-          continue;
-        }
-
-        if (candidateSpan === remainingColumns) {
-          candidateIndex = searchIndex;
-          break;
-        }
-
-        if (candidateIndex === -1) {
-          candidateIndex = searchIndex;
-        }
-      }
-
-      if (candidateIndex !== -1) {
-        const [candidateKey] = orderedKeys.splice(candidateIndex, 1);
-        orderedKeys.splice(index, 0, candidateKey);
-      }
-    }
-
-    const resolvedSpan = layoutColumnSpans[orderedKeys[index]];
-
-    if (currentColumn + resolvedSpan > 3) {
-      currentColumn = 0;
-    }
-
-    currentColumn += resolvedSpan;
-
-    if (currentColumn >= 3) {
-      currentColumn = 0;
-    }
-  }
-
-  return orderedKeys;
-}
-
-function getExpandedLayoutClasses(
-  visibleKeys: readonly DashboardComponentKey[],
-): Record<DashboardComponentKey, string> {
-  const rowItems = new Map<number, DashboardComponentKey[]>();
-  const rowStartColumn = new Map<DashboardComponentKey, number>();
-  let currentRow = 0;
-  let currentColumn = 0;
-
-  for (const key of visibleKeys) {
-    const span = layoutColumnSpans[key];
-
-    if (currentColumn + span > 3) {
-      currentRow += 1;
-      currentColumn = 0;
-    }
-
-    rowStartColumn.set(key, currentColumn);
-
-    const items = rowItems.get(currentRow) ?? [];
-    items.push(key);
-    rowItems.set(currentRow, items);
-
-    currentColumn += span;
-
-    if (currentColumn >= 3) {
-      currentRow += 1;
-      currentColumn = 0;
-    }
-  }
-
-  const nextClasses = { ...layoutBaseClasses };
-
-  for (const [, keys] of rowItems) {
-    if (keys.length !== 1 || keys[0] !== "eventTimeline") continue;
-    if (rowStartColumn.get("eventTimeline") !== 0) continue;
-
-    nextClasses.eventTimeline = `lg:col-span-3 ${dashboardCardHeight}`;
-  }
-
-  return nextClasses;
+  // Preserve the clinician's chosen order. Related panels belong together more
+  // than a perfectly packed grid, and CSS Grid still reflows safely on narrow screens.
+  return [...visibleKeys];
 }
 
 function formatRefreshTime(date: Date) {
@@ -189,14 +80,6 @@ function formatRefreshDate(date: Date) {
   }).format(date)}.`;
 }
 
-function formatRefreshTimestamp(date: Date) {
-  return `${formatRefreshDate(date)} ${formatRefreshTime(date)}`;
-}
-
-const InfoDivider = () => (
-  <span className="mx-2.5 text-[hsl(220,16%,80%)] md:mx-3">|</span>
-);
-
 type AssistantMessage = {
   id: string;
   role: "assistant" | "user";
@@ -208,9 +91,9 @@ type AssistantMessage = {
 };
 
 const assistantQuickQuestions = [
-  "Kādas ir hroniskās slimības?",
-  "Kādi ir riska faktori?",
-  "Kādas ir aktuālās novirzes?",
+  "Kadas ir hroniskas slimibas?",
+  "Kadi ir riska faktori?",
+  "Kadas ir aktualas novirzes?",
 ];
 
 function normalizeAssistantQuestion(value: string) {
@@ -228,7 +111,7 @@ function createWelcomeAssistantMessage(patient: Patient): AssistantMessage {
   return {
     id: "assistant-welcome",
     role: "assistant",
-    text: `Varu palīdzēt ātri atrast būtiskāko par ${patient.name}. Uzdodiet jautājumu par diagnozēm, riska faktoriem vai aktuālajām novirzēm.`,
+    text: `Varu palidzet atri atrast butiskako par ${patient.name}. Uzdodiet jautajumu par diagnozem, riska faktoriem vai aktualajam novirzem.`,
     timeLabel: getAssistantTimeLabel(),
   };
 }
@@ -270,10 +153,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
       text:
         ctStudies.length === 1
           ? "Jā, šim pacientam kartē ir dokumentēts 1 CT izmeklējums."
-          : `Jā, šim pacientam kartē ir dokumentēti ${ctStudies.length} CT izmeklējumi.`,
+          : `Jā, šim pacientam kartē ir dokumentēti ${ctStudies.length} CT izmeklejumi.`,
       sections: [
         {
-          title: "CT izmeklējumi",
+          title: "CT izmeklejumi",
           lines: ctStudies.map(
             (study) =>
               `${formatLatvianDate(study.date)} · ${study.title} · ${study.status}`,
@@ -289,10 +172,10 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
     return {
       id: `assistant-${Date.now()}`,
       role: "assistant",
-      text: "Pacientam dokumentētas šādas hroniskās slimības:",
+      text: "Pacientam dokumentētas šādas hroniskas slimības:",
       sections: [
         {
-          title: "Hroniskās slimības",
+          title: "Hroniskas slimibas",
           lines: patient.chronicDiseases.map(
             (item) =>
               `${item.description}${item.diagnosedAt ? ` · kopš ${item.diagnosedAt}` : ""}`,
@@ -323,7 +206,7 @@ function buildAssistantReply(patient: Patient, query: string): AssistantMessage 
   if (
     normalizedQuery.includes("novirz") ||
     normalizedQuery.includes("anal") ||
-    normalizedQuery.includes("rādīt")
+    normalizedQuery.includes("radit")
   ) {
     return {
       id: `assistant-${Date.now()}`,
@@ -453,12 +336,12 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
             ? "border-[rgba(40,69,123,0.98)] bg-[#17386b]"
             : "border-[rgba(24,45,86,0.98)] bg-[#102445]"
         }`}
-        aria-label="Atvērt pacienta datu palīgu"
+        aria-label="Atvert pacienta datu paligu"
       >
         <span className="flex h-5 w-5 items-center justify-center">
           <Search className="h-4 w-4" strokeWidth={2} />
         </span>
-        <span className="hidden sm:inline">Pacienta datu palīgs</span>
+        <span className="hidden sm:inline">Pacienta datu paligs</span>
       </button>
 
       {isOpen ? (
@@ -473,10 +356,10 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
               <header className="flex items-center justify-between gap-3 border-b border-[rgba(226,232,240,0.92)] px-4 py-3">
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
-                    <p className="truncate text-[14px] font-semibold tracking-[-0.02em] text-[hsl(222,28%,18%)]">
-                      Pacienta datu palīgs
+                    <p className="whitespace-normal break-words text-sm font-semibold tracking-[-0.02em] text-[hsl(222,28%,18%)]">
+                      Pacienta datu paligs
                     </p>
-                    <span className="inline-flex items-center rounded-full bg-[hsl(219,70%,96%)] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.08em] text-[hsl(221,44%,48%)]">
+                    <span className="inline-flex items-center rounded-full bg-[hsl(219,70%,96%)] px-2 py-0.5 text-xs font-semibold text-[hsl(221,44%,48%)]">
                       Beta
                     </span>
                   </div>
@@ -486,7 +369,7 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                   type="button"
                   onClick={() => setIsOpen(false)}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[hsl(221,18%,44%)] transition hover:bg-[hsl(210,32%,96%)]"
-                  aria-label="Aizvērt palīgu"
+                  aria-label="Aizvert paligu"
                 >
                   <X className="h-4 w-4" strokeWidth={2} />
                 </button>
@@ -521,7 +404,7 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
 
                           <div className="min-w-0">
                             <div className="rounded-[16px] rounded-tl-[6px] border border-[rgba(215,224,237,0.96)] bg-white px-3.5 py-3 shadow-[0_12px_26px_rgba(148,163,184,0.12)]">
-                              <p className="text-[11px] leading-5 text-[hsl(222,20%,26%)]">{message.text}</p>
+                              <p className="text-xs leading-5 text-[hsl(222,20%,26%)]">{message.text}</p>
 
                               {message.sections?.length ? (
                                 <div className="mt-3 space-y-2.5">
@@ -530,12 +413,12 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                                       key={section.title}
                                       className="rounded-[14px] border border-[rgba(223,229,239,0.96)] bg-[hsl(210,40%,99%)] px-3 py-2.5"
                                     >
-                                      <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-[hsl(217,26%,44%)]">
+                                      <p className="text-xs font-semibold text-[hsl(217,26%,44%)]">
                                         {section.title}
                                       </p>
                                       <div className="mt-2 space-y-1.5">
                                         {section.lines.map((line) => (
-                                          <div key={line} className="flex items-start gap-2 text-[11px] text-[hsl(222,20%,26%)]">
+                                          <div key={line} className="flex items-start gap-2 text-xs text-[hsl(222,20%,26%)]">
                                             <span className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-[hsl(218,44%,55%)]" />
                                             <span>{line}</span>
                                           </div>
@@ -547,7 +430,7 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                               ) : null}
 
                               <div
-                                className={`flex items-center gap-2 text-[10px] text-[hsl(217,15%,56%)] ${
+                                className={`flex items-center gap-2 text-xs text-[hsl(217,15%,56%)] ${
                                   hasSourceLink ? "mt-3" : "mt-1.5 justify-end"
                                 }`}
                               >
@@ -556,10 +439,10 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                                     href={message.sourceHref}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className="inline-flex items-center gap-1 whitespace-nowrap font-medium text-[hsl(220,42%,44%)] transition hover:text-[hsl(220,52%,34%)]"
+                                    className="inline-flex items-center gap-1 whitespace-nowrap font-normal text-[hsl(220,42%,44%)] transition hover:text-[hsl(220,52%,34%)]"
                                   >
                                     Atsauce: {message.sourceLabel}
-                                    <span aria-hidden="true">↗</span>
+                                    <span aria-hidden="true">?</span>
                                   </a>
                                 ) : null}
                                 <span className={hasSourceLink ? "ml-auto" : ""}>{message.timeLabel}</span>
@@ -573,7 +456,7 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                                   type="button"
                                   onClick={() => sendMessage(suggestion)}
                                   disabled={isResponding}
-                                  className="rounded-[9px] border border-[rgba(204,218,240,0.72)] bg-[rgba(255,255,255,0.82)] px-2.5 py-1 text-[9px] font-medium text-[hsl(220,34%,38%)] transition hover:border-[rgba(177,198,235,0.96)] hover:bg-[rgba(255,255,255,0.96)] disabled:cursor-not-allowed disabled:opacity-45"
+                                  className="rounded-[9px] border border-[rgba(204,218,240,0.72)] bg-[rgba(255,255,255,0.82)] px-2.5 py-1 text-xs font-normal text-[hsl(220,34%,38%)] transition hover:border-[rgba(177,198,235,0.96)] hover:bg-[rgba(255,255,255,0.96)] disabled:cursor-not-allowed disabled:opacity-45"
                                 >
                                   {suggestion}
                                 </button>
@@ -582,9 +465,9 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                           </div>
                         </div>
                       ) : (
-                        <div className="max-w-[80%] break-words rounded-[16px] rounded-tr-[6px] bg-[linear-gradient(135deg,#dbe9ff,#c8dbff)] px-3 py-2.5 text-[12px] leading-4 text-[hsl(222,28%,22%)] shadow-[0_12px_24px_rgba(129,154,206,0.18)]">
+                        <div className="max-w-[80%] break-words rounded-[16px] rounded-tr-[6px] bg-[linear-gradient(135deg,#dbe9ff,#c8dbff)] px-3 py-2.5 text-xs leading-4 text-[hsl(222,28%,22%)] shadow-[0_12px_24px_rgba(129,154,206,0.18)]">
                           <p>{message.text}</p>
-                          <p className="mt-1.5 text-right text-[9px] text-[hsl(220,18%,52%)]">
+                          <p className="mt-1.5 text-right text-xs text-[hsl(220,18%,52%)]">
                             {message.timeLabel}
                           </p>
                         </div>
@@ -634,25 +517,25 @@ function DashboardAssistant({ patient }: { patient: Patient }) {
                       ref={inputRef}
                       value={draft}
                       onChange={(event) => setDraft(event.target.value)}
-                      placeholder="Jautājums par pacienta datiem..."
+                      placeholder="Jautājums par pacienta datiem"
                       disabled={isResponding}
-                      className="h-11 w-full rounded-[15px] border border-[rgba(203,215,233,0.96)] bg-[hsl(210,60%,99%)] pl-4 pr-14 text-[12px] text-[hsl(222,28%,20%)] outline-none transition placeholder:text-[hsl(217,12%,58%)] focus:border-[rgba(113,154,228,0.96)] focus:bg-white focus:ring-4 focus:ring-[rgba(93,136,217,0.14)]"
+                      className="h-11 w-full rounded-[15px] border border-[rgba(203,215,233,0.96)] bg-[hsl(210,60%,99%)] pl-4 pr-14 text-xs text-[hsl(222,28%,20%)] outline-none transition placeholder:text-[hsl(217,12%,58%)] focus:border-[rgba(113,154,228,0.96)] focus:bg-white focus:ring-4 focus:ring-[rgba(93,136,217,0.14)]"
                     />
                     <button
                       type="submit"
                       disabled={!draft.trim() || isResponding}
                       className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-[hsl(220,24%,48%)] transition hover:bg-[hsl(214,32%,96%)] hover:text-[hsl(219,42%,24%)] disabled:cursor-not-allowed disabled:opacity-45"
-                      aria-label="Nosūtīt jautājumu"
+                      aria-label="Nosutit jautajumu"
                     >
                       <Send className="h-3.5 w-3.5" strokeWidth={1.65} />
                     </button>
                   </div>
                 </form>
 
-                <div className="mt-2 flex items-start gap-2 text-[9px] leading-4 text-[hsl(217,12%,56%)]">
+                <div className="mt-2 flex items-start gap-2 text-xs leading-4 text-[hsl(217,12%,56%)]">
                   <AlertCircle className="mt-[1px] h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
                   <p>
-                    Atbildes tiek ģenerētas no pieejamajiem pacienta datiem. Pirms klīniska
+                    Atbildes tiek generetas no pieejamajiem pacienta datiem. Pirms kliniska
                     lēmuma pieņemšanas pārbaudiet informāciju avotā.
                   </p>
                 </div>
@@ -672,7 +555,11 @@ const Index = () => {
   const navigate = useNavigate();
 
   const routeState = location.state as DashboardLocationState | undefined;
-  const patient = routeState?.patient ?? readStoredLastViewedPatient(patients);
+  // The dashboard is also opened directly from bookmarks and refreshes, where
+  // React Router state is unavailable. Keep the demo patient visible instead
+  // of rendering an empty page while waiting for a prior selection.
+  const patient =
+    routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
   const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
 
   const routeLayoutOrder = React.useMemo(
@@ -692,6 +579,8 @@ const Index = () => {
   const [lastRefreshedAt, setLastRefreshedAt] = React.useState(new Date());
   const [isRefreshing, setIsRefreshing] = React.useState(false);
   const [isScrolled, setIsScrolled] = React.useState(false);
+  const [sourceDocumentsOpenRequest, setSourceDocumentsOpenRequest] =
+    React.useState(0);
 
   const recentPatients = React.useMemo(() => {
     if (!patient) return patients;
@@ -738,12 +627,6 @@ const Index = () => {
 
   React.useEffect(() => {
     if (!patient) {
-      navigate("/", { replace: true });
-    }
-  }, [navigate, patient]);
-
-  React.useEffect(() => {
-    if (!patient) {
       return;
     }
 
@@ -765,11 +648,8 @@ const Index = () => {
     return () => clearTimeout(timeout);
   }, [isRefreshing]);
 
-  if (!patient) return null;
-
-  const phone = "phone" in patient ? patient.phone : "";
-  const email = "email" in patient ? patient.email : "";
   const refreshedDateLabel = formatRefreshDate(lastRefreshedAt);
+  const usedDocumentsCount = usedDocumentsPanelDocuments.length;
 
   const componentItems = [
     {
@@ -798,7 +678,7 @@ const Index = () => {
     },
     {
       key: "eventTimeline" as const,
-      element: <EventTimelineHorizontal updatedAt={refreshedDateLabel} />,
+      element: <EventTimelineHorizontal />,
     },
     {
       key: "humanBodyModel" as const,
@@ -819,14 +699,13 @@ const Index = () => {
     .map((key) => componentItems.find((item) => item.key === key))
     .filter(Boolean) as typeof componentItems;
 
-  const visibleKeys = visibleItems.map((item) => item.key);
   const resolvedLayoutClasses = React.useMemo(
-    () => getExpandedLayoutClasses(visibleKeys),
-    [visibleKeys],
+    () => getDashboardLayoutClasses(orderedVisibleKeys),
+    [orderedVisibleKeys],
   );
 
   return (
-    <div className="min-h-screen bg-[#F5F7FA]">
+    <div className="min-h-screen bg-[hsl(210,32%,96%)]">
       <DashboardSidebar
         activePatient={patient}
         recentPatients={recentPatients}
@@ -836,35 +715,95 @@ const Index = () => {
         layoutOrder={order}
         specialtyId={specialtyId}
         onSaveLayoutOrder={setOrder}
+        sourceDocumentsOpenRequest={sourceDocumentsOpenRequest}
       />
 
       <div className="transition-[padding-left] duration-300 lg:pl-[var(--dashboard-sidebar-width,280px)]">
-        <header className="sticky top-0 z-40 border-b border-[rgba(224,231,243,0.9)] bg-[radial-gradient(circle_at_top_left,rgba(247,250,255,0.95),rgba(255,255,255,0.98)_34%),linear-gradient(180deg,rgba(255,255,255,0.98),rgba(249,251,255,0.96))] shadow-[0_10px_28px_rgba(148,163,184,0.08)] backdrop-blur-xl">
-          <div className="mx-auto w-full max-w-[1280px] px-5 py-6 md:px-8 md:py-7">
+        <header className="sticky top-0 z-40 border-b border-[hsl(214,22%,88%)] bg-[rgba(255,255,255,0.97)] backdrop-blur-xl">
+          <div className="mx-auto w-full max-w-[1280px] px-5 py-4 md:px-8 md:py-5">
             <div className="min-w-0 flex-1">
-              <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
-                <h1
-                  className={`min-w-0 pt-1 md:pt-2 font-bold tracking-[-0.045em] text-[hsl(222,28%,16%)] transition-all ${
-                    isScrolled ? "text-[30px] leading-[1.02]" : "text-[38px] leading-[0.96] md:text-[48px]"
-                  }`}
-                >
-                  {patient.name}
-                </h1>
+              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                <div className="flex min-w-0 items-center gap-4">
+                  <div
+                    className={`hidden shrink-0 items-center justify-center rounded-full bg-[hsl(220,22%,94%)] text-[hsl(221,46%,22%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.85)] transition-all sm:flex ${
+                      isScrolled ? "h-10 w-10 self-center" : "h-12 w-12"
+                    }`}
+                  >
+                    <UserRound
+                      className={isScrolled ? "h-5 w-5" : "h-6 w-6"}
+                      strokeWidth={1.9}
+                    />
+                  </div>
 
-                <div className="flex shrink-0 flex-wrap items-stretch justify-end gap-3">
+                  <div className="min-w-0 pl-14 sm:pl-0">
+                    <h1
+                      className={`min-w-0 font-semibold tracking-[-0.04em] text-[hsl(222,28%,16%)] transition-all ${
+                        isScrolled
+                          ? "text-xl leading-tight"
+                          : "text-2xl leading-tight"
+                      }`}
+                    >
+                      {patient.name}
+                    </h1>
+
+                    <div
+                      className={`mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs leading-6 text-[hsl(220,16%,52%)] md:text-sm ${
+                        isScrolled ? "hidden" : ""
+                      }`}
+                    >
+                      <span>Personas kods: <span className="font-semibold text-[hsl(222,24%,24%)]">{patient.personalCode}</span></span>
+                      <span className="text-[hsl(220,16%,80%)]" aria-hidden="true">•</span>
+                      <span>Vecums: <span className="font-semibold text-[hsl(222,24%,24%)]">{patient.age} gadi</span></span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="flex w-full shrink-0 flex-wrap items-stretch justify-between gap-1 sm:w-auto sm:justify-end sm:gap-3">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setSourceDocumentsOpenRequest((current) => current + 1)
+                    }
+                    className={`inline-flex items-center rounded-[8px] border border-transparent bg-transparent text-left font-semibold text-[hsl(220,18%,34%)] transition-colors hover:border-[rgba(194,206,226,0.72)] hover:bg-[hsl(210,28%,96%)] focus:outline-none focus:ring-2 focus:ring-[hsl(214,36%,78%)] ${
+                      isScrolled
+                        ? "h-11 w-11 justify-center p-0"
+                        : "min-h-11 flex-1 gap-2 px-3 text-xs sm:flex-none md:text-sm"
+                    }`}
+                    aria-label="Skatit izmantotos dokumentus"
+                    title="Skatit izmantotos dokumentus"
+                  >
+                    <span
+                      className={`flex shrink-0 items-center justify-center rounded-[7px] text-[hsl(220,16%,38%)] ${
+                        isScrolled ? "h-8 w-8" : "h-8 w-8"
+                      }`}
+                    >
+                      <FileText size={18} strokeWidth={1.9} />
+                    </span>
+                    <span
+                      className={`leading-4 ${isScrolled ? "hidden" : "block"}`}
+                    >
+                      <span className="block text-sm font-semibold tracking-[-0.02em] text-[hsl(220,18%,30%)]">
+                        Dokumenti
+                      </span>
+                      <span className="mt-0.5 block text-xs font-normal text-[hsl(220,16%,52%)]">
+                        {usedDocumentsCount} avoti
+                      </span>
+                    </span>
+                  </button>
+
                   <button
                     type="button"
                     onClick={() => !isRefreshing && setIsRefreshing(true)}
-                    className={`inline-flex items-center rounded-[8px] border border-[rgba(214,223,237,0.95)] bg-white text-left font-semibold text-[hsl(222,24%,22%)] transition-colors hover:border-[rgba(194,206,226,1)] hover:bg-[hsl(210,40%,99%)] focus:outline-none focus:ring-2 focus:ring-[hsl(214,36%,78%)] ${
+                    className={`inline-flex items-center rounded-[8px] border border-transparent bg-transparent text-left font-semibold text-[hsl(220,18%,34%)] transition-colors hover:border-[rgba(194,206,226,0.72)] hover:bg-[hsl(210,28%,96%)] focus:outline-none focus:ring-2 focus:ring-[hsl(214,36%,78%)] ${
                       isScrolled
                         ? "h-11 w-11 justify-center p-0"
-                        : "min-h-[56px] min-w-[158px] gap-2 px-3 py-2.5 text-[12px] md:min-w-[166px] md:text-[13px]"
+                        : "min-h-11 flex-1 gap-2 px-3 text-xs sm:flex-none md:text-sm"
                     }`}
                     aria-label="Atjaunot datus"
                   >
                     <span
-                      className={`flex shrink-0 items-center justify-center rounded-[7px] border border-[rgba(223,229,240,0.95)] bg-[hsl(210,40%,99%)] text-[hsl(221,22%,24%)] ${
-                        isScrolled ? "h-8 w-8 border-0 bg-transparent" : "h-8 w-8"
+                      className={`flex shrink-0 items-center justify-center rounded-[7px] text-[hsl(220,16%,38%)] ${
+                        isScrolled ? "h-8 w-8" : "h-8 w-8"
                       }`}
                     >
                       <RefreshCw
@@ -874,90 +813,34 @@ const Index = () => {
                       />
                     </span>
                     <span
-                      className={`leading-[1.12] ${isScrolled ? "hidden" : "block"}`}
+                      className={`leading-4 ${isScrolled ? "hidden" : "block"}`}
                     >
-                      <span className="block text-[13px] font-semibold tracking-[-0.02em] text-[hsl(222,24%,22%)] md:text-[14px]">
+                      <span className="block text-sm font-semibold tracking-[-0.02em] text-[hsl(220,18%,30%)]">
                         {isRefreshing ? "Atjauno datus..." : "Atjaunot datus"}
                       </span>
-                      <span className="mt-0.5 block text-[10px] font-medium text-[hsl(220,16%,52%)] md:text-[11px]">
-                        Pēdējo reizi: {formatRefreshTimestamp(lastRefreshedAt)}
+                      <span className="mt-0.5 block text-xs font-normal text-[hsl(220,16%,52%)]">
+                        {formatRefreshDate(lastRefreshedAt)} {formatRefreshTime(lastRefreshedAt)}
                       </span>
                     </span>
                   </button>
                 </div>
               </div>
 
-              <div
-                className={`overflow-hidden transition-[max-height,opacity,margin] duration-200 ease-out ${
-                  isScrolled
-                    ? "mt-0 max-h-0 opacity-0 pointer-events-none"
-                    : "mt-4 max-h-20 opacity-100"
-                }`}
-                aria-hidden={isScrolled}
-              >
-                <div className="flex flex-wrap items-center text-[12px] leading-6 text-[hsl(220,16%,52%)] md:text-[13px]">
-                  <span className="font-medium text-[hsl(220,16%,52%)]">
-                    Personas kods
-                  </span>
-
-                  <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
-                    {patient.personalCode}
-                  </span>
-
-                  <InfoDivider />
-
-                  <span className="font-medium text-[hsl(220,16%,52%)]">Vecums</span>
-
-                  <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
-                    {patient.age} gadi
-                  </span>
-
-                  {phone && (
-                    <>
-                      <InfoDivider />
-
-                      <Phone className="ml-0.5 h-3.5 w-3.5 text-[hsl(220,18%,56%)]" />
-
-                      <span className="ml-1.5 font-medium text-[hsl(220,16%,52%)]">
-                        Telefona nr.
-                      </span>
-
-                      <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
-                        {phone}
-                      </span>
-                    </>
-                  )}
-
-                  {email && (
-                    <>
-                      <InfoDivider />
-
-                      <Mail className="ml-0.5 h-3.5 w-3.5 text-[hsl(220,18%,56%)]" />
-
-                      <span className="ml-1.5 font-medium text-[hsl(220,16%,52%)]">
-                        E-pasts
-                      </span>
-
-                      <span className="ml-1.5 font-semibold text-[hsl(222,24%,24%)]">
-                        {email}
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
             </div>
           </div>
         </header>
 
-        <main className="px-4 py-5 md:px-6">
-          <div className="mx-auto grid w-full max-w-[1280px] auto-rows-auto items-stretch gap-4 lg:grid-cols-3">
+        <main className="px-4 py-6 md:px-6 lg:px-8">
+          <div className="mx-auto grid w-full max-w-[1280px] items-stretch gap-5 lg:grid-cols-3 lg:gap-6">
             {visibleItems.map((item) => (
               <div
                 key={item.key}
                 id={`dashboard-card-${item.key}`}
-                className={`relative min-w-0 ${resolvedLayoutClasses[item.key]}`}
+                className={`relative flex min-w-0 ${resolvedLayoutClasses[item.key]}`}
               >
-                <div className="h-full">{item.element}</div>
+                <div className="flex h-full w-full [&>div]:h-full [&>section]:h-full">
+                  {item.element}
+                </div>
               </div>
             ))}
           </div>

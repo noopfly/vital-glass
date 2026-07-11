@@ -14,6 +14,8 @@ import {
 
 import { cn } from "@/lib/utils";
 import { Patient } from "@/types/patient";
+import { DashboardCardHeader } from "@/components/DashboardCardHeader";
+import { DashboardListFooter } from "@/components/DashboardListFooter";
 
 type PreventionStatus = "done" | "overdue" | "upcoming";
 
@@ -101,7 +103,7 @@ const annualCheckupItems: PreventionGroupItem[] = [
     status: "overdue",
     dateLabel: "Nokavēta kopš 01.01.2026",
     actionLabel: "Jāieplāno vizīte",
-  },  
+  },
 ];
 
 const scoreInputs = [
@@ -117,7 +119,7 @@ const mutedColor = "text-[#68738C]";
 const accentColor = "#23314D";
 
 const sectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,36%,18%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
+  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,16%,38%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
 
 function formatProgressLabel(items: PreventionGroupItem[]) {
   const completedCount = items.filter((item) => item.status === "done").length;
@@ -141,10 +143,10 @@ function getMissingSummary(items: PreventionGroupItem[]) {
   }
 
   if (missingItems.length === 1) {
-    return `trūkst: ${missingItems[0].label}`;
+    return `${missingItems[0].label}`;
   }
 
-  return `trūkst: ${missingItems[0].label} +${missingItems.length - 1}`;
+  return `${missingItems[0].label} +${missingItems.length - 1}`;
 }
 
 function getVisibleSummaryGroups(groups: PreventionGroup[]) {
@@ -244,7 +246,7 @@ function ScoreCard({
           <div className="min-w-0 flex-1">
             <p
               className={cn(
-                "whitespace-nowrap text-[14px] font-semibold tracking-[-0.02em]",
+                "whitespace-nowrap text-sm font-semibold tracking-[-0.02em]",
                 titleColor,
               )}
             >
@@ -253,7 +255,7 @@ function ScoreCard({
 
             <p
               className={cn(
-                "mt-4 text-[44px] font-semibold leading-none tracking-[-0.06em]",
+                "mt-4 text-3xl font-semibold leading-none tracking-[-0.06em]",
                 titleColor,
               )}
             >
@@ -265,7 +267,7 @@ function ScoreCard({
                 type="button"
                 onClick={onOpenDetails}
                 className={cn(
-                  "mt-3 inline-flex items-center gap-1 whitespace-nowrap text-[11px] font-medium transition hover:text-[#23314D]",
+                  "mt-3 inline-flex items-center gap-1 whitespace-nowrap text-xs font-normal transition hover:text-[#23314D]",
                   mutedColor,
                 )}
               >
@@ -273,7 +275,7 @@ function ScoreCard({
                 <ArrowUpRight className="h-3.5 w-3.5 shrink-0" strokeWidth={1.9} />
               </button>
             ) : (
-              <p className={cn("mt-3 whitespace-nowrap text-[11px] font-medium", mutedColor)}>
+              <p className={cn("mt-3 whitespace-nowrap text-xs font-normal", mutedColor)}>
                 Aprēķināts 05.02.2025
               </p>
             )}
@@ -284,7 +286,7 @@ function ScoreCard({
               <HeartPulse className="h-6 w-6 text-[#2F9A53]" strokeWidth={1.9} />
             </div>
 
-            <span className="mt-2 inline-flex min-w-[74px] items-center justify-center rounded-full border border-[#BEE5C7] bg-[#F8FFFA] px-2 py-0.5 text-[10px] font-semibold text-[#2F9A53] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
+            <span className="mt-2 inline-flex min-w-[74px] items-center justify-center rounded-full border border-[#BEE5C7] bg-[#F8FFFA] px-2 py-0.5 text-xs font-semibold text-[#2F9A53] shadow-[inset_0_1px_0_rgba(255,255,255,0.92)]">
               Zems risks
             </span>
           </div>
@@ -298,7 +300,7 @@ function ScoreCard({
             onClick={onToggle}
             className="flex w-full items-center justify-between px-5 py-3 text-left transition hover:bg-[#F7F8FC]"
           >
-            <span className={cn("text-[12px] font-semibold tracking-[-0.02em]", titleColor)}>
+            <span className={cn("text-xs font-semibold tracking-[-0.02em]", titleColor)}>
               Aprēķina dati
             </span>
 
@@ -316,8 +318,8 @@ function ScoreCard({
                   key={item.label}
                   className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 border-t border-[#F0F2F7] px-3 py-2 first:border-t-0"
                 >
-                  <span className={cn("text-[10px]", titleColor)}>{item.label}</span>
-                  <span className={cn("text-[10px]", mutedColor)}>{item.value}</span>
+                  <span className={cn("text-xs", titleColor)}>{item.label}</span>
+                  <span className={cn("text-xs", mutedColor)}>{item.value}</span>
                 </div>
               ))}
             </div>
@@ -352,17 +354,18 @@ function PreventionGroupSummaryRow({
 
         <div className="min-w-0">
           <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-            <p className={cn("min-w-fit text-[12px] font-semibold", titleColor)}>
+            <p className={cn("min-w-fit text-xs font-semibold", titleColor)}>
               {group.title}
             </p>
 
             <div className="flex min-w-0 justify-end">
-              {missingSummary ? (
-                <span className="inline-flex max-w-full items-center rounded-full border border-[#F0DEC5] bg-[#FFF8F0] px-2.5 py-0.5 text-[8.5px] font-semibold leading-4 text-[#B26A2B]">
-                  <span className="min-w-0 truncate">{missingSummary}</span>
-                </span>
-              ) : (
-                <span className="inline-flex shrink-0 items-center rounded-full border border-[#D9EBDD] bg-[#F7FCF8] px-2.5 py-0.5 text-[8.5px] font-semibold leading-4 text-[#3E8C55]">
+                {missingSummary ? (
+                  <span className="inline-flex max-w-full items-center rounded-full border border-[#F0DEC5] bg-[#FFF8F0] px-2 py-0.5 text-[10px] font-semibold leading-4 text-[#B26A2B]">
+                    <CircleAlert className="h-3 w-3 text-[#B26A2B] mr-1" strokeWidth={1.6} />
+                    <span className="min-w-0 truncate">{missingSummary}</span>
+                  </span>
+                ) : (
+                <span className="inline-flex shrink-0 items-center rounded-full border border-[#D9EBDD] bg-[#F7FCF8] px-2.5 py-0.5 text-xs font-semibold leading-4 text-[#3E8C55]">
                   viss veikts
                 </span>
               )}
@@ -380,7 +383,7 @@ function PreventionGroupSummaryRow({
               />
             </div>
 
-            <p className="whitespace-nowrap text-right text-[10px] font-medium text-[#68738C]">
+            <p className="whitespace-nowrap text-right text-xs font-normal text-[#68738C]">
               {group.progressLabel}
             </p>
           </div>
@@ -419,17 +422,18 @@ function PreventionGroupExpandableRow({
 
           <div className="min-w-0">
             <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-              <p className={cn("min-w-fit text-[12px] font-semibold", titleColor)}>
+              <p className={cn("min-w-fit text-xs font-semibold", titleColor)}>
                 {group.title}
               </p>
 
               <div className="flex min-w-0 justify-end">
                 {missingSummary ? (
-                  <span className="inline-flex max-w-full items-center rounded-full border border-[#F0DEC5] bg-[#FFF8F0] px-2.5 py-0.5 text-[8.5px] font-semibold leading-4 text-[#B26A2B]">
+                  <span className="inline-flex max-w-full items-center rounded-full border border-[#F0DEC5] bg-[#FFF8F0] px-2 py-0.5 text-[10px] font-semibold leading-4 text-[#B26A2B]">
+                    <CircleAlert className="h-3 w-3 text-[#B26A2B] mr-1" strokeWidth={1.6} />
                     <span className="min-w-0 truncate">{missingSummary}</span>
                   </span>
                 ) : (
-                  <span className="inline-flex shrink-0 items-center rounded-full border border-[#D9EBDD] bg-[#F7FCF8] px-2.5 py-0.5 text-[8.5px] font-semibold leading-4 text-[#3E8C55]">
+                  <span className="inline-flex shrink-0 items-center rounded-full border border-[#D9EBDD] bg-[#F7FCF8] px-2.5 py-0.5 text-xs font-semibold leading-4 text-[#3E8C55]">
                     viss veikts
                   </span>
                 )}
@@ -447,7 +451,7 @@ function PreventionGroupExpandableRow({
                 />
               </div>
 
-              <p className="whitespace-nowrap text-right text-[10px] font-medium text-[#68738C]">
+              <p className="whitespace-nowrap text-right text-xs font-normal text-[#68738C]">
                 {group.progressLabel}
               </p>
             </div>
@@ -482,16 +486,16 @@ function PreventionGroupExpandableRow({
                 </span>
 
                 <div className="min-w-0">
-                  <p className={cn("truncate text-[11px] font-medium", titleColor)}>
+                  <p className={cn("whitespace-normal break-words text-xs font-normal", titleColor)}>
                     {item.label}
                   </p>
 
                   {item.actionLabel && item.status !== "done" ? (
-                    <p className="mt-0.5 truncate text-[10px] font-medium text-[#23314D]">
+                    <p className="mt-0.5 whitespace-normal break-words text-xs font-normal text-[#23314D]">
                       {item.actionLabel}
                     </p>
                   ) : (
-                    <p className={cn("mt-0.5 truncate text-[9.5px]", mutedColor)}>
+                    <p className={cn("mt-0.5 whitespace-normal break-words text-xs", mutedColor)}>
                       {item.dateLabel}
                     </p>
                   )}
@@ -500,7 +504,7 @@ function PreventionGroupExpandableRow({
                 <div className="text-right">
                   <span
                     className={cn(
-                      "inline-flex rounded-full border px-1.5 py-0.5 text-[8.5px] font-semibold",
+                      "inline-flex rounded-full border px-1.5 py-0.5 text-[11px] font-semibold",
                       status.pillClass,
                     )}
                   >
@@ -508,7 +512,7 @@ function PreventionGroupExpandableRow({
                   </span>
 
                   {item.actionLabel && item.status !== "done" && (
-                    <p className={cn("mt-1 text-[9.5px]", mutedColor)}>{item.dateLabel}</p>
+                    <p className={cn("mt-1 text-xs", mutedColor)}>{item.dateLabel}</p>
                   )}
                 </div>
               </div>
@@ -595,15 +599,14 @@ function PreventionFullViewModal({
               <Shield
                 className="h-[18px] w-[18px]"
                 strokeWidth={1.8}
-                style={{ color: accentColor }}
               />
             </div>
 
             <div className="min-w-0">
-              <p className="truncate text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
+              <p className="whitespace-normal break-words text-sm font-semibold text-[hsl(220,18%,30%)]">
                 Profilakse
               </p>
-              <p className="truncate text-xs text-heading">
+              <p className="whitespace-normal break-words text-xs font-normal text-[hsl(220,16%,52%)]">
                 Risks, skrīningi un vakcinācijas
               </p>
             </div>
@@ -727,27 +730,12 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
 
   return (
     <>
-      <section className="flex h-full min-h-[420px] flex-col overflow-hidden rounded-[6px] border border-[rgba(220,228,236,0.96)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="mb-5 flex shrink-0 items-center justify-between gap-3">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className={sectionIconClass}>
-              <Shield
-                className="h-[18px] w-[18px]"
-                strokeWidth={1.8}
-                style={{ color: accentColor }}
-              />
-            </div>
-
-            <div className="min-w-0">
-              <p className="truncate text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
-                Profilakse
-              </p>
-              <p className="truncate text-xs text-heading">
-                Risks, skrīningi un vakcinācijas
-              </p>
-            </div>
-          </div>
-        </div>
+      <section className="clinical-panel flex h-full flex-col">
+        <DashboardCardHeader
+          title="Profilakse"
+          infoLabel="Informācija par profilaksi"
+          infoDescription="Pacienta riska faktori, skrīningu statuss un vakcinācijas"
+        />
 
         <div className="flex flex-1 flex-col gap-3">
           <ScoreCard onOpenDetails={() => handleOpenFullView(null, { scoreExpanded: true })} />
@@ -760,22 +748,17 @@ export default function PreventionCard({ patient }: { patient: Patient }) {
                 onClick={() => handleOpenFullView(group.id)}
               />
             ))}
+
+            <div className="border-t border-[#E8EBF3]">
+              <DashboardListFooter
+                label={"Skatīt pilno pārskatu"}
+                onClick={() => handleOpenFullView()}
+              />
+            </div>
           </div>
         </div>
 
-        <div className="mt-3 flex shrink-0 items-center justify-between gap-4 border-t border-[hsl(214,22%,88%)] pt-3">
-          <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
-            {visibleSummaryGroups.length} no {displayedPreventionGroups.length}
-          </p>
-
-          <button
-            type="button"
-            onClick={() => handleOpenFullView()}
-            className="inline-flex items-center text-xs font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
-          >
-            Skatīt pilnu pārskatu →
-          </button>
-        </div>
+        
       </section>
 
       <PreventionFullViewModal

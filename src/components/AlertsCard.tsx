@@ -1,12 +1,12 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { AlertTriangle, FlaskConical, Pill, X } from "lucide-react";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+import { DashboardCardHeader } from "@/components/DashboardCardHeader";
+import { DashboardListFooter } from "@/components/DashboardListFooter";
 
-type AlertType =
-  | "dangerousCombination"
-  | "duplicatePrescription"
-  | "criticalLabResult";
+type AlertType = "dangerousCombination" | "duplicatePrescription" | "criticalLabResult";
+type AlertSeverity = "critical" | "warning";
 
 interface AlertItem {
   id: string;
@@ -14,6 +14,7 @@ interface AlertItem {
   description: string;
   occurredAt: string;
   type: AlertType;
+  severity: AlertSeverity;
 }
 
 interface LaboratoryReportResult {
@@ -31,18 +32,18 @@ const medicationAlerts: AlertItem[] = [
   {
     id: "med-1",
     title: "Bīstama mijiedarbība: varfarīns + ibuprofēns",
-    description:
-      "Paaugstināts asiņošanas risks. Ieteicama terapijas pārskatīšana.",
+    description: "Paaugstināts asiņošanas risks. Ieteicama terapijas pārskatīšana.",
     occurredAt: "2026-05-05T08:45:00",
     type: "dangerousCombination",
+    severity: "warning",
   },
   {
     id: "med-2",
     title: "Iespējama dublēšanās: divi antikoagulanti",
-    description:
-      "Vienlaikus aktīvas līdzīgas darbības zāles: apiksabāns un rivaroksabāns.",
+    description: "Vienlaikus aktīvas līdzīgas darbības zāles: apiksabāns un rivaroksabāns.",
     occurredAt: "2026-05-05T08:10:00",
     type: "duplicatePrescription",
+    severity: "warning",
   },
 ];
 
@@ -65,22 +66,26 @@ const laboratoryReports: LaboratoryReportResult[] = [
     normalReference: "4,0–10,0 × 10⁹/L",
     criticalMarker: "LL",
   },
-  {
-    id: "lab-3",
-    indicatorName: "ALAT",
-    value: 78,
-    unit: "U/L",
-    resultDate: "2026-06-10T11:05:00",
-    normalReference: "7-56 U/L",
-  },
 ];
 
 const criticalInterpretationCodes = new Set(["LL", "HH", "AA"]);
 
+const alertIcon: Record<AlertType, typeof AlertTriangle> = {
+  dangerousCombination: AlertTriangle,
+  duplicatePrescription: Pill,
+  criticalLabResult: FlaskConical,
+};
+
+const severityClass: Record<AlertSeverity, string> = {
+  critical: "text-[hsl(0,54%,40%)]",
+  warning: "text-[hsl(34,55%,32%)]",
+};
+
 function formatAlertDate(value: string) {
   return new Intl.DateTimeFormat("lv-LV", {
     day: "2-digit",
-    month: "short",
+    month: "2-digit",
+    year: "numeric",
   }).format(new Date(value));
 }
 
@@ -101,282 +106,120 @@ function getCriticalLabAlerts(reports: LaboratoryReportResult[]): AlertItem[] {
     })
     .map((report) => {
       const marker = report.criticalMarker?.toUpperCase() ?? report.interpretationCode?.toUpperCase() ?? "";
-      const formattedValue = `${formatLabValue(report.value)} ${report.unit}`;
-      const criticalDirection = marker === "LL" ? "Zem kritiskās robežas" : "Virs kritiskās robežas";
-      const titleIndicatorName = report.indicatorName.toLowerCase();
+      const direction = marker === "LL" ? "Zem kritiskās robežas" : "Virs kritiskās robežas";
 
       return {
         id: `critical-lab-${report.id}`,
-        title: `Kritiska novirze: ${titleIndicatorName} ${formattedValue}`,
-        description: `${criticalDirection}. Norma: ${report.normalReference}.`,
+        title: `${report.indicatorName}: ${formatLabValue(report.value)} ${report.unit}`,
+        description: `${direction}. Norma: ${report.normalReference}.`,
         occurredAt: report.resultDate,
         type: "criticalLabResult",
+        severity: "critical",
       };
     });
 }
 
-const iconStyles: Record<AlertType, string> = {
-  dangerousCombination: "text-[hsl(34,52%,42%)]",
-  duplicatePrescription: "text-[hsl(34,52%,42%)]",
-  criticalLabResult: "text-[hsl(28,78%,46%)]",
-};
-
-const dateStyles: Record<AlertType, string> = {
-  dangerousCombination: "bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
-  duplicatePrescription: "bg-[hsl(40,56%,94%)] text-[hsl(34,52%,42%)]",
-  criticalLabResult: "bg-[hsl(32,72%,95%)] text-[hsl(28,78%,46%)]",
-};
-
-const iconMap: Record<AlertType, typeof AlertTriangle> = {
-  dangerousCombination: AlertTriangle,
-  duplicatePrescription: Pill,
-  criticalLabResult: FlaskConical,
-};
-
-const alertSectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(236,221,197,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,245,240,0.96))] text-[hsl(34,52%,42%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
-
-const compactAlertRowGap = 0;
-
-interface AlertRowProps {
-  alert: AlertItem;
-  compact?: boolean;
-  connected?: boolean;
-}
-
-function AlertRow({
-  alert,
-  compact = false,
-  connected = false,
-}: AlertRowProps) {
-  const Icon = iconMap[alert.type];
-  const usesConnectedLayout = compact || connected;
+function AlertRow({ alert, showDescription = false }: { alert: AlertItem; showDescription?: boolean }) {
+  const Icon = alertIcon[alert.type];
 
   return (
-    <div
-      data-alert-row
-      className={
-        usesConnectedLayout
-          ? "bg-white transition-colors hover:bg-[hsl(214,20%,98%)]"
-          : "rounded-[6px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] p-4"
-      }
-    >
-      <div
-        className={`grid grid-cols-[auto_minmax(0,1fr)_auto] items-start gap-x-3 ${
-          compact ? "gap-y-1.5" : "gap-y-0.5"
-        } ${usesConnectedLayout ? "px-4 py-4" : ""}`}
-      >
-        <div
-          className={`${compact ? "" : "row-span-2 "}flex ${
-            compact ? "h-5 w-5" : "h-6 w-6"
-          } shrink-0 items-center justify-center self-center ${
-            iconStyles[alert.type]
-          }`}
-        >
-          <Icon size={compact ? 16 : 18} strokeWidth={2.2} />
+    <article className="px-4 py-3">
+      <div className={`flex gap-3 ${showDescription ? "items-center" : "items-start"}`}>
+        <Icon
+          size={18}
+          className={`${showDescription ? "" : "mt-0.5"} shrink-0 ${severityClass[alert.severity]}`}
+          aria-hidden="true"
+        />
+        <div className="min-w-0 flex-1">
+          <p className="whitespace-normal break-words text-xs font-semibold text-text-dark">{alert.title}</p>
+          {showDescription ? (
+            <p className="mt-1 text-xs leading-4 text-[hsl(215,14%,42%)]">{alert.description}</p>
+          ) : null}
         </div>
-
-        <p
-          className={`min-w-0 font-semibold text-[hsl(222,28%,20%)] ${
-            compact ? "line-clamp-2 text-[12px] leading-4" : "text-sm"
-          }`}
-        >
-          {alert.title}
-        </p>
-
-        <div className="flex shrink-0 items-start gap-1.5">
-          <span
-            className={`rounded-full font-medium ${dateStyles[alert.type]} ${
-              compact ? "px-2.5 py-1 text-[10px]" : "px-3 py-1 text-[11px]"
-            }`}
-          >
-            {formatAlertDate(alert.occurredAt)}
-          </span>
-        </div>
-
-        {!compact && (
-          <p
-            className={`col-[2/4] text-sm text-[hsl(214,14%,42%)] ${
-              connected ? "leading-6" : ""
-            }`}
-          >
-            {alert.description}
-          </p>
-        )}
+        <time className="shrink-0 self-center text-xs leading-4 text-[hsl(215,14%,48%)]" dateTime={alert.occurredAt}>
+          {formatAlertDate(alert.occurredAt)}
+        </time>
       </div>
-    </div>
+    </article>
   );
 }
 
 const AlertsCard = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [visibleAlertCount, setVisibleAlertCount] = useState(3);
-  const listContainerRef = useRef<HTMLDivElement | null>(null);
 
-  const sortedAlerts = useMemo(() => {
-    const combinedAlerts = [...medicationAlerts, ...getCriticalLabAlerts(laboratoryReports)];
+  const alerts = useMemo(
+    () =>
+      [...medicationAlerts, ...getCriticalLabAlerts(laboratoryReports)].sort((left, right) => {
+        const severityDifference = Number(left.severity === "critical") - Number(right.severity === "critical");
+        if (severityDifference !== 0) return -severityDifference;
+        return new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime();
+      }),
+    [],
+  );
 
-    return combinedAlerts.sort(
-      (left, right) =>
-        new Date(right.occurredAt).getTime() - new Date(left.occurredAt).getTime(),
-    );
-  }, []);
-
-  const visibleAlerts = sortedAlerts.slice(0, visibleAlertCount);
-
-  useLayoutEffect(() => {
-    const element = listContainerRef.current;
-    if (!element) return undefined;
-
-    const updateVisibleAlertCount = () => {
-      const firstRow = element.querySelector("[data-alert-row]");
-      if (!(firstRow instanceof HTMLElement)) return;
-
-      const nextCount = Math.max(
-        1,
-        Math.floor(
-          (element.clientHeight + compactAlertRowGap) /
-            (firstRow.offsetHeight + compactAlertRowGap),
-        ),
-      );
-
-      setVisibleAlertCount(nextCount);
-    };
-
-    updateVisibleAlertCount();
-
-    if (typeof ResizeObserver === "undefined") return undefined;
-
-    const observer = new ResizeObserver(() => {
-      updateVisibleAlertCount();
-    });
-
-    observer.observe(element);
-
-    return () => observer.disconnect();
-  }, [sortedAlerts.length]);
+  const visibleAlerts = alerts.slice(0, 3);
+  const remainingAlerts = alerts.length - visibleAlerts.length;
 
   return (
     <>
-      <section className="flex h-full w-full flex-col overflow-hidden rounded-[6px] border border-[hsl(214,22%,88%)] bg-white p-5 shadow-[0_8px_18px_rgba(29,53,87,0.05)]">
-        <div className="flex items-center justify-between pb-4">
-          <div className="flex items-center gap-3">
-            <div className={alertSectionIconClass}>
-              <AlertTriangle size={20} />
-            </div>
+      <section className="clinical-panel flex h-full w-full flex-col">
+        <DashboardCardHeader
+          title="Brīdinājumi"
+          infoLabel="Informācija par brīdinājumiem"
+          infoDescription="Medikamentu riski un kritiski analīžu rezultāti"
+        />
 
-            <div>
-              <p className="text-[14px] font-semibold uppercase tracking-[0.12em] text-heading">
-                Brīdinājumi
-              </p>
-
-              <p className="text-xs text-text-dark">
-                Medikamentu riski un kritiski analīžu rezultāti
-              </p>
-            </div>
-          </div>
-
-          <div className="flex h-7 min-w-7 shrink-0 items-center justify-center rounded-full bg-[hsl(34,86%,52%)] px-2 text-[13px] font-semibold leading-none text-white">
-            {sortedAlerts.length}
-          </div>
-        </div>
-
-        <div
-          ref={listContainerRef}
-          className="-mt-3 flex min-h-0 flex-1 flex-col justify-center"
-        >
-          {visibleAlerts.length === 0 ? (
-            <div className="rounded-[10px] border border-dashed border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] px-4 py-5 text-center">
-              <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
-                Nav aktīvu brīdinājumu
-              </p>
-              <p className="mt-1 text-xs text-[hsl(214,14%,50%)]">
-                Šobrīd nav neviena aktīva medikamentu drošības vai kritisku analīžu
-                brīdinājuma.
-              </p>
-            </div>
-          ) : (
-            <div className="divide-y divide-[hsl(214,22%,90%)] overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white">
-              {visibleAlerts.map((alert) => (
-                <AlertRow key={alert.id} alert={alert} compact connected />
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="mt-3 flex items-center justify-between border-t border-[hsl(214,22%,88%)] pt-3">
-          <p className="text-[11px] font-medium text-[hsl(214,14%,50%)]">
-            {visibleAlerts.length} no {sortedAlerts.length}
-          </p>
-          <button
-            type="button"
+        <div className="clinical-list mt-1">
+          {visibleAlerts.map((alert) => (
+            <AlertRow key={alert.id} alert={alert} />
+          ))}
+          <DashboardListFooter
+            label={
+              remainingAlerts === 1
+                ? "Vēl 1 brīdinājums"
+                : `Skatīt visus ${alerts.length} brīdinājumus`
+            }
             onClick={() => setIsOpen(true)}
-            className="ml-auto inline-flex items-center justify-center text-[12px] font-semibold text-[hsl(220,36%,18%)] transition hover:opacity-70"
-          >
-            Skatīt visus brīdinājumus →
-          </button>
+          />
         </div>
       </section>
 
-      {isOpen && (
-        <CenteredOverlay
-          onClose={() => {
-            setIsOpen(false);
-          }}
-          overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
-          contentClassName="max-w-3xl"
-        >
-          <div className="relative mx-auto w-full overflow-hidden rounded-[14px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_24px_64px_rgba(15,23,42,0.12)]">
-            <div className="border-b border-[hsl(214,22%,88%)] px-6 py-5">
-              <button
-                type="button"
-                onClick={() => {
-                  setIsOpen(false);
-                }}
-                className="absolute right-5 top-5 flex h-9 w-9 items-center justify-center rounded-[10px] bg-[hsl(214,20%,96%)] text-[hsl(215,14%,55%)] transition hover:text-[hsl(215,22%,28%)]"
-                aria-label="Aizvērt"
+      {isOpen ? (
+        <CenteredOverlay onClose={() => setIsOpen(false)} overlayClassName="bg-[rgba(15,23,42,0.32)] backdrop-blur-sm motion-safe:animate-in motion-safe:fade-in motion-safe:duration-200">
+          <section role="dialog" aria-modal="true" aria-label={"Br\u012bdin\u0101jumi"} className="mx-auto max-h-[calc(100vh-3rem)] w-full max-w-4xl overflow-y-auto rounded-[12px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.16)] motion-safe:animate-in motion-safe:fade-in motion-safe:slide-in-from-bottom-2 motion-safe:duration-200">
+            <div className="border-b border-[hsl(214,22%,90%)] px-5 py-5 sm:px-6 [&>button]:hidden">
+              <DashboardCardHeader
+                title={"Br\u012bdin\u0101jumi"}
+                infoLabel={"Inform\u0101cija par br\u012bdin\u0101jumiem"}
+                infoDescription={"Medikamentu riski un kritiski anal\u012b\u017eu rezult\u0101ti"}
               >
-                <X className="h-4 w-4" />
+                <button
+                  type="button"
+                  onClick={() => setIsOpen(false)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-[hsl(215,18%,42%)] transition hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] focus-visible:ring-offset-2"
+                  aria-label={"Aizv\u0113rt"}
+                >
+                  <X size={25} strokeWidth={1.8} />
+                </button>
+              </DashboardCardHeader>
+              <div className="hidden">
+                <h2 id="all-alerts-title" className="text-2xl font-semibold tracking-[-0.035em] text-text-dark">Visi brīdinājumi</h2>
+                <p className="mt-1 text-sm leading-5 text-heading">Detalizēts medikamentu risku un kritisku analīžu rezultātu pārskats.</p>
+              </div>
+              <button type="button" onClick={() => setIsOpen(false)} className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-[hsl(215,18%,42%)] transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] focus-visible:ring-offset-2" aria-label="Aizvērt">
+                <X size={25} strokeWidth={1.8} />
               </button>
-
-              <div className="flex items-center gap-3 pr-12">
-                <div className={alertSectionIconClass}>
-                  <AlertTriangle size={20} />
-                </div>
-
-                <div>
-                  <h3 className="text-lg font-semibold text-[hsl(222,28%,20%)]">
-                    Brīdinājumi
-                  </h3>
-
-                  <p className="text-sm text-[hsl(214,14%,42%)]">
-                    Medikamentu riski un kritiski analīžu rezultāti
-                  </p>
-                </div>
+            </div>
+            <div className="px-5 py-5 sm:px-6">
+              <div className="overflow-hidden rounded-[8px] border border-[hsl(214,22%,88%)] divide-y divide-[hsl(214,22%,90%)]">
+                {alerts.map((alert) => (
+                  <AlertRow key={alert.id} alert={alert} showDescription />
+                ))}
               </div>
             </div>
-
-            <div className="max-h-[70vh] space-y-3 overflow-y-auto px-6 py-5">
-              {sortedAlerts.length === 0 ? (
-                <div className="rounded-[10px] border border-dashed border-[hsl(214,20%,88%)] bg-[hsl(214,20%,98%)] px-5 py-8 text-center">
-                  <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
-                    Nav aktīvu brīdinājumu
-                  </p>
-                  <p className="mt-1 text-sm text-[hsl(214,14%,42%)]">
-                    Šeit parādīsies medikamentu riski un kritiski analīžu rezultāti.
-                  </p>
-                </div>
-              ) : (
-                <div className="divide-y divide-[hsl(214,22%,90%)] overflow-hidden rounded-[10px] border border-[hsl(214,22%,88%)] bg-white">
-                  {sortedAlerts.map((alert) => (
-                    <AlertRow key={alert.id} alert={alert} connected />
-                  ))}
-                </div>
-              )}
-            </div>
-          </div>
+          </section>
         </CenteredOverlay>
-      )}
+      ) : null}
     </>
   );
 };

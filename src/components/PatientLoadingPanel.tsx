@@ -108,32 +108,35 @@ export default function PatientLoadingPanel({
   }, [elapsedMs]);
 
   return (
-    <div
+    <section
       className={cn(
-        "relative w-full max-w-[680px]",
-        variant === "page" ? "rounded-none" : "rounded-none",
+        "clinical-panel relative w-full max-w-[680px]",
+        variant === "page" && "shadow-none",
       )}
+      aria-live="polite"
     >
-      <div className="mx-auto flex max-w-[540px] flex-col items-center px-5 py-5 text-center md:px-7 md:py-6">
-        
-        <h1 className="mt-3 text-[22px] font-semibold tracking-[-0.03em] text-[hsl(219,36%,18%)] md:text-[26px]">
+      <div className="mx-auto flex max-w-[540px] flex-col items-center px-1 py-1 text-center md:px-2 md:py-2">
+        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[hsl(214,28%,96%)] text-[hsl(220,36%,22%)]">
+          <HeartPulse className="h-5 w-5" aria-hidden="true" />
+        </span>
+        <p className="mt-4 text-xs font-semibold text-[hsl(215,14%,47%)]">
+          Pacienta profils
+        </p>
+        <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[hsl(222,28%,18%)] md:text-2xl">
           Tiek apkopoti pacienta dati
         </h1>
 
         <div className="mt-2 text-center">
-          <p className="text-[12px] font-medium leading-5 text-[hsl(214,16%,50%)]">
-            Pacients
-          </p>
-          <p className="mt-1 text-[22px] font-semibold tracking-[-0.03em] text-[hsl(219,30%,24%)] md:text-[28px]">
+          <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
             {patient.name}
           </p>
-          <p className="mt-1 text-[12px] font-medium leading-5 text-[hsl(214,16%,50%)]">
+          <p className="mt-1 text-xs leading-4 text-[hsl(215,14%,47%)] tabular-nums">
             {patient.personalCode}
           </p>
         </div>
 
         <div className="mt-4 w-full text-left">
-          <div className="flex items-center justify-between text-[11px] font-medium uppercase tracking-[0.18em] text-[hsl(214,14%,48%)]">
+          <div className="flex items-center justify-between text-xs font-normal text-[hsl(214,14%,48%)]">
             <span>Progress</span>
             <span>{progressValue}%</span>
           </div>
@@ -143,7 +146,7 @@ export default function PatientLoadingPanel({
             className="mt-2 h-1.5 rounded-full bg-[hsl(216,18%,90%)] [&>div]:bg-[linear-gradient(90deg,hsl(220,38%,22%)_0%,hsl(217,38%,28%)_100%)]"
           />
 
-          <div className="mt-3 overflow-hidden rounded-[12px] border border-[rgba(214,221,229,0.96)] bg-[rgba(255,255,255,0.98)]">
+          <div className="mt-3 overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white">
             {loadingSteps.map((step, index) => {
               const StepIcon = step.icon;
               const isCompleted =
@@ -174,7 +177,7 @@ export default function PatientLoadingPanel({
                     <div className="shrink-0">
                       <div
                         className={cn(
-                          "flex h-7 w-7 items-center justify-center rounded-full border",
+                          "flex h-9 w-9 items-center justify-center rounded-md border",
                           isCompleted
                             ? "border-[rgba(174,223,186,0.96)] bg-[rgba(232,248,236,0.98)] text-[hsl(148,54%,34%)]"
                             : isActive
@@ -193,7 +196,7 @@ export default function PatientLoadingPanel({
                     <div className="min-w-0 flex-1 text-left">
                       <p
                         className={cn(
-                          "truncate text-[13px] font-semibold",
+                          "whitespace-normal break-words text-sm font-semibold",
                           isCompleted || isActive
                             ? "text-[hsl(219,30%,22%)]"
                             : "text-[hsl(214,12%,50%)]",
@@ -204,7 +207,7 @@ export default function PatientLoadingPanel({
 
                       <p
                         className={cn(
-                          "mt-0.5 text-[11px] leading-4",
+                          "mt-0.5 text-xs leading-4",
                           isCompleted || isActive
                             ? "text-[hsl(214,14%,54%)]"
                             : "text-[hsl(214,12%,66%)]",
@@ -218,7 +221,7 @@ export default function PatientLoadingPanel({
                   <div className="shrink-0">
                     <span
                       className={cn(
-                        "inline-flex rounded-[8px] px-2.5 py-1 text-[9px] font-semibold uppercase tracking-[0.16em]",
+                        "inline-flex rounded-md px-2.5 py-1 text-xs font-semibold",
                         isCompleted
                           ? "bg-[rgba(228,247,233,0.98)] text-[hsl(148,54%,34%)]"
                           : isActive
@@ -240,7 +243,7 @@ export default function PatientLoadingPanel({
             type="button"
             onClick={onContinue}
             disabled={!isComplete}
-            className="h-10 w-full rounded-[12px] bg-[linear-gradient(180deg,hsl(220,36%,18%)_0%,hsl(218,34%,24%)_100%)] text-sm font-semibold text-white shadow-[0_10px_20px_rgba(29,53,87,0.16)] transition-all duration-500 hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-45"
+            className="h-11 w-full rounded-md bg-[hsl(220,36%,18%)] text-sm font-semibold text-white transition-colors duration-200 hover:bg-[hsl(220,36%,22%)] disabled:cursor-not-allowed disabled:opacity-45"
           >
             Tālāk
           </Button>
@@ -249,13 +252,13 @@ export default function PatientLoadingPanel({
             <button
               type="button"
               onClick={onCancel}
-              className="inline-flex text-[15px] font-medium text-[hsl(219,20%,42%)] underline underline-offset-4 transition hover:text-[hsl(219,30%,24%)]"
+              className="inline-flex text-sm font-normal text-[hsl(219,20%,42%)] underline underline-offset-4 transition hover:text-[hsl(219,30%,24%)]"
             >
               Atcelt
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </section>
   );
 }

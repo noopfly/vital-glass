@@ -1,4 +1,4 @@
-﻿import * as React from "react";
+import * as React from "react";
 import { CircleX, Search, ShieldCheck } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
@@ -218,12 +218,12 @@ export default function SearchPage({
       >
         {/* STATUS */}
         <div
-          className={`absolute right-8 flex items-center gap-2 text-[13px] font-medium text-[hsl(214,18%,52%)] ${
+          className={`absolute right-8 flex items-center gap-2 text-sm font-normal text-[hsl(214,18%,52%)] ${
             variant === "prakses-asistents" ? "top-6" : "top-6"
           }`}
         >
           <span className="h-2.5 w-2.5 rounded-full bg-[hsl(136,36%,34%)]" />
-          E-veselība pieslēgta
+          E-veseliba pieslegta
         </div>
 
         <div className="flex w-full max-w-5xl flex-col items-center px-6 text-center">
@@ -234,7 +234,7 @@ export default function SearchPage({
                 alt="Prakses asistents"
                 className="h-auto w-full max-w-[190px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:max-w-[220px]"
               />
-              <div className="flex shrink-0 items-center gap-2 text-[12px] font-semibold text-[hsl(214,18%,48%)]">
+              <div className="flex shrink-0 items-center gap-2 text-xs font-semibold text-[hsl(214,18%,48%)]">
                 <span aria-hidden="true">x</span>
                 <img
                   src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
@@ -275,21 +275,21 @@ export default function SearchPage({
                   autoFocus
                   value={query}
                   onChange={handleQueryChange}
-                  placeholder="Ievadiet personas kodu..."
+                  placeholder="Ievadiet personas kodu"
                   aria-label="Personas kods"
-                  className="h-14 w-full rounded-full border border-[hsl(214,20%,86%)] bg-white py-0 pl-5 pr-14 text-[16px] font-medium tracking-[0.02em] text-[hsl(214,42%,17%)] shadow-[0_12px_32px_rgba(29,53,87,0.08)] outline-none transition placeholder:font-normal placeholder:text-[hsl(214,14%,62%)] focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08),0_12px_32px_rgba(29,53,87,0.08)]"
+                  className="h-14 w-full rounded-full border border-[hsl(214,20%,86%)] bg-white py-0 pl-5 pr-14 text-sm font-normal tracking-[0.02em] text-[hsl(214,42%,17%)] shadow-[0_12px_32px_rgba(29,53,87,0.08)] outline-none transition placeholder:font-normal placeholder:text-[hsl(214,14%,62%)] focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08),0_12px_32px_rgba(29,53,87,0.08)]"
                 />
 
                 <button
                   type="submit"
-                  aria-label="Meklēt pacientu"
+                  aria-label="Meklet pacientu"
                   className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-[10px] text-[hsl(214,26%,38%)] transition hover:bg-[hsl(214,24%,95%)] hover:text-[hsl(218,46%,16%)]"
                 >
                   <Search className="h-5 w-5" />
                 </button>
               </div>
 
-              <div className="mt-6 flex items-center justify-center gap-2 text-[12px] font-medium text-[#8A8F98]">
+              <div className="mt-6 flex items-center justify-center gap-2 text-xs font-normal text-[#8A8F98]">
   <ShieldCheck className="h-30 w-4 shrink-0 text-[#9AA0AA]" />
   <span>Dati tiek apstrādāti droši un atbilstoši GDPR prasībām</span>
 </div>
@@ -299,7 +299,7 @@ export default function SearchPage({
               <div className="mt-6 flex justify-center">
                 <div className="inline-flex items-center gap-3 px-2 py-1 text-[hsl(0,72%,60%)]">
                   <CircleX className="h-6 w-6 shrink-0" />
-                  <p className="text-[13px] font-medium">{error}</p>
+                  <p className="text-sm font-normal">{error}</p>
                 </div>
               </div>
             )}
@@ -309,7 +309,7 @@ export default function SearchPage({
 
       {/* FIXED LOADING OVERLAY */}
       {loadingPatient && (
-        <div className="fixed bottom-0 right-0 top-0 z-50 flex items-center justify-center bg-[#f5f7fa] p-6 lg:left-[var(--dashboard-sidebar-width,280px)]">
+        <div className="fixed bottom-0 right-0 top-0 z-50 flex items-center justify-center bg-[hsl(210,32%,96%)] p-4 sm:p-6 lg:left-[var(--dashboard-sidebar-width,280px)]">
           <PatientLoadingPanel
             patient={loadingPatient}
             variant="overlay"
@@ -324,7 +324,7 @@ export default function SearchPage({
             }}
             onContinue={() => {
               setLoadingPatientComplete(false);
-              navigate("/components", {
+              navigate("/clinical-dashboard", {
                 state: { patient: loadingPatient, layoutOrder, specialtyId },
               });
             }}
