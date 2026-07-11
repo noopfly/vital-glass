@@ -111,63 +111,63 @@ type ModulePreviewDefinition = {
 };
 
 const steps: StepDefinition[] = [
-  { title: "01", subtitle: "Specialitate" },
+  { title: "01", subtitle: "Specialitāte" },
   { title: "02", subtitle: "Darba panelis" },
 ];
 
 const moduleOptions: ModuleOption[] = [
   {
     id: "patient-card",
-    title: "Pacienta kliniskais profils",
-    description: "Pamatinformacija, diagnozes un primarie riski",
+    title: "Pacienta klīniskais profils",
+    description: "Pamatiinformācija, diagnozes un primārie riski",
     icon: UserRound,
   },
   {
     id: "prevention",
     title: "Profilakse",
-    description: "SCORE2 risks, skriningi un vakcinacijas progress",
+    description: "SCORE2 risks, skrīningi un vakcinācijas process",
     icon: Shield,
   },
   {
     id: "health-trends",
-    title: "Kliniskie raditaji",
-    description: "Laboratorijas rezultatu un merijumu dinamika",
+    title: "Kliniskie rādītāji",
+    description: "Laboratorijas rezultātu un mērījumu dinamika",
     icon: Activity,
   },
   {
     id: "imaging",
-    title: "Atteldiagnostika",
-    description: "RTG, CT un citu izmeklejumu parskats",
+    title: "Attēldiagnostika",
+    description: "RTG, CT un citu izmeklējumu pārskats",
     icon: ImageIcon,
   },
   {
     id: "medications",
     title: "Medikamenti",
-    description: "Aktualie medikamenti, devas un mijiedarbibas",
+    description: "Aktuālie medikamenti, devas un mijiedarbības",
     icon: Pill,
   },
   {
     id: "alerts",
-    title: "Bridinajumi",
-    description: "Izmainas, kavejumi un kritiskie signali",
+    title: "Brīdinājumi",
+    description: "Izmaiņas, kavējumi un kritiskie signāli",
     icon: AlertTriangle,
   },
   {
     id: "timeline",
-    title: "Notikumu laika linija",
-    description: "Hronologisks pacienta notikumu parskats",
+    title: "Notikumu laika līnija",
+    description: "Hronoloģisks pacienta notikumu pārskats",
     icon: CalendarClock,
   },
   {
     id: "body-model",
-    title: "Kermena parskats",
-    description: "Anatomiskais skats ar atradnem un regioniem",
+    title: "Kermeņa pārskats",
+    description: "Anatomiskais skats ar atradnēm un reģioniem",
     icon: UserRound,
   },
   {
     id: "referrals",
-    title: "E-nosutijumi",
-    description: "Aktivie un vesturiskie e-nosutijumi",
+    title: "E-nosūtījumi",
+    description: "Aktīvie un vēsturiskie e-nosūtījumi",
     icon: FileText,
   },
 
@@ -199,7 +199,7 @@ const familyRegistrationModules: ModuleId[] = [
 const specialtyOptions: SpecialtyOption[] = [
   {
     id: "family-medicine",
-    title: "Gimenes arsts",
+    title: "Ģimenes ārsts",
     icon: Stethoscope,
     modules: familyRegistrationModules,
   },
@@ -217,7 +217,7 @@ const specialtyOptions: SpecialtyOption[] = [
   },
   {
     id: "vascular-surgery",
-    title: "Asinsvadu kirurgs",
+    title: "Asinsvadu ķirurgs",
     icon: HeartPulse,
     modules: sharedRegistrationModules,
   },
@@ -235,7 +235,7 @@ const specialtyOptions: SpecialtyOption[] = [
   },
   {
     id: "pulmonology",
-    title: "Pulmonologs",
+    title: "Pulmologs",
     icon: Wind,
     modules: sharedRegistrationModules,
   },
@@ -253,7 +253,7 @@ const specialtyOptions: SpecialtyOption[] = [
   },
   {
     id: "orthopedics",
-    title: "Ortopeds",
+    title: "Ortopēds",
     icon: Bone,
     modules: sharedRegistrationModules,
   },
@@ -303,7 +303,7 @@ const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> =
 const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   prevention: {
     note: "Profilakse",
-    summary: "SCORE2 risks, skriningi un vakcinacijas progress.",
+    summary: "SCORE2 risks, skrīningi un vakcinācijas process.",
     pattern: "prevention",
     colSpan: 1,
     rowSpan: 1,
@@ -312,8 +312,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "patient-card": {
-    note: "Pacienta kliniskais profils",
-    summary: "Personas dati, diagnozes un primarie riski.",
+    note: "Pacienta klīniskais profils",
+    summary: "Personas dati, diagnozes un primārie riski.",
     pattern: "profile",
     colSpan: 3,
     rowSpan: 1,
@@ -322,8 +322,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "health-trends": {
-    note: "Kliniskie raditaji",
-    summary: "Pulss, glikoze, asinsspiediens un citi raditaji dinamika.",
+    note: "Kliniskie rādītāji",
+    summary: "Pulss, glikoze, asinsspiediens un citu rādītāju dinamika.",
     pattern: "trend",
     colSpan: 2,
     rowSpan: 1,
@@ -332,8 +332,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   imaging: {
-    note: "Atteldiagnostika",
-    summary: "RTG un CT atradnes ar jaunako aprakstu.",
+    note: "Attēldiagnostika",
+    summary: "RTG un CT atradnes ar jaunāko aprakstu.",
     pattern: "imaging",
     colSpan: 1,
     rowSpan: 1,
@@ -343,7 +343,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
   },
   medications: {
     note: "Medikamenti",
-    summary: "Aktualie medikamenti, devas un mijiedarbibu signali.",
+    summary: "Aktuālie medikamenti, devas un mijiedarbību signāli.",
     pattern: "table",
     colSpan: 1,
     rowSpan: 1,
@@ -352,7 +352,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   alerts: {
-    note: "Bridinajumi",
+    note: "Brīdinājumi",
     summary: "Medikamentu riski un kritiski analīžu rezultāti",
     pattern: "alerts",
     colSpan: 1,
@@ -372,8 +372,8 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   "body-model": {
-    note: "Kermena parskats",
-    summary: "Anatomiskais skats ar atradnem un saistitajiem regioniem.",
+    note: "Ķermeņa pārskats",
+    summary: "Anatomiskais skats ar atradnēm un saistītajiem reģioniem.",
     pattern: "body",
     colSpan: 1,
     rowSpan: 1,
@@ -382,7 +382,7 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },
   referrals: {
-    note: "E-nosutijumi",
+    note: "E-nosūtījumi",
     summary: "Nosūtījumi un iepriekšējās speciālistu konsultācijas.",
     pattern: "table",
     colSpan: 1,
@@ -825,7 +825,7 @@ export default function RegistrationPage() {
     const nextErrors: Record<string, string> = {};
 
     if (step === 0 && !form.specialty) {
-      nextErrors.specialty = "Izvelieties specialitati, lai turpinatu.";
+      nextErrors.specialty = "Izvēlieties specialitāti, lai turpinātu.";
     }
 
     setErrors(nextErrors);
@@ -863,7 +863,7 @@ export default function RegistrationPage() {
       .map((item) => moduleIdToDashboardComponentKey[item]);
 
     toast.success("Profils sagatavots", {
-      description: `Sakuma panelis ir pielagots specialitātei “${selectedSpecialty.title}”.`,
+      description: `Sākuma panelis ir pielāgots specialitātei “${selectedSpecialty.title}”.`,
     });
     writeStoredDashboardSpecialty(selectedSpecialty.id);
     writeStoredDashboardLayoutOrder(selectedLayoutOrder);
@@ -963,12 +963,12 @@ export default function RegistrationPage() {
                 </p>
 
                 <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.06em] text-[hsl(219,40%,16%)]">
-                  Izvelieties savu specialitati
+                  Izvēlieties savu specialitāti
                 </h1>
 
                 <p className="mt-5 max-w-[820px] whitespace-nowrap text-sm leading-7 text-[hsl(214,16%,46%)]">
-                  Mes pielagosim pacienta parskatu jusu darba prioritatem. Šos
-                  iestatijumus varesiet mainit jebkura bridi.
+                  Mēs pielāgosim pacienta pārskatu jūsu darba prioritātēm. Šos
+                  iestatījumus varēsiet mainīt jebkurā brīdī.
                 </p>
               </div>
 
@@ -1029,7 +1029,7 @@ export default function RegistrationPage() {
 
               {!filteredSpecialties.length && (
                 <div className="mt-8 rounded-[14px] border border-dashed border-[rgba(214,222,230,0.96)] bg-white px-5 py-8 text-sm text-[hsl(214,16%,50%)]">
-                  Neatradam nevienu specialitati pec ievadita meklejuma.
+                  Neatradām nevienu specialitāti pēc ievadītā meklējuma.
                 </div>
               )}
 
@@ -1049,20 +1049,20 @@ export default function RegistrationPage() {
                 </p>
 
                 <h1 className="mt-4 text-3xl font-semibold leading-tight tracking-[-0.06em] text-[hsl(219,40%,16%)]">
-                  Iekartojiet savu darba paneli
+                  Iekārtojiet savu darba paneli
                 </h1>
 
                 <p className="mt-5 max-w-[820px] whitespace-nowrap text-sm leading-7 text-[hsl(214,16%,46%)]">
                   {selectedSpecialty ? (
                     <>
-                      Sakuma saturs ir pielagots specialitatei{" "}
+                      Sākuma saturs ir pielāgots specialitātei{" "}
                       <strong className="font-semibold text-[hsl(219,30%,22%)]">
                         {selectedSpecialty.title}
                       </strong>
-                      . Sakartojiet komponentes sev ertakaja seciba un izkartojuma. <strong className="font-semibold text-[hsl(219,30%,22%)]">Vēlāk šo izkārtojumu var mainīt.</strong>
+                      . Sakārtojiet komponentes sev ērtiākajā secībā un izkārtojumā. <strong className="font-semibold text-[hsl(219,30%,22%)]">Vēlāk šo izkārtojumu var mainīt.</strong>
                     </>
                   ) : (
-                    "Sakartojiet komponentes sev ertakaja seciba."
+                    "Sakārtojiet komponentes sev ērtiākajā secībā."
                   )}
                 </p>
               </div>
@@ -1071,7 +1071,7 @@ export default function RegistrationPage() {
                 <div className="rounded-[20px] border border-[rgba(219,226,235,0.96)] bg-white p-5 shadow-[0_18px_42px_rgba(29,53,87,0.06)]">
                   <div>
                     <p className="text-sm font-semibold text-[hsl(219,30%,22%)]">
-                      Sakartojiet parskatu pec nozimiguma
+                      Sakārtojiet pārskatu pēc nozīmīguma
                     </p>
 
                     <p className="mt-2 text-sm leading-5 text-[hsl(214,16%,48%)]">
@@ -1236,10 +1236,10 @@ export default function RegistrationPage() {
                       <div className="flex items-center justify-between">
                         <div className="space-y-0.5">
                           <p className="text-sm font-semibold text-[hsl(219,30%,22%)]">
-                            Vards Uzvards
+                            Vārds Uzvārds
                           </p>
                           <p className="text-xs text-[hsl(214,14%,58%)]">
-                            Kontaktinformacija
+                            Kontaktinformācija
                           </p>
                         </div>
                         <div className="h-9 w-9 rounded-[12px] bg-[hsl(214,20%,94%)]" />
@@ -1287,7 +1287,7 @@ export default function RegistrationPage() {
                     disabled={!form.specialty}
                     className="h-12 min-w-[168px] self-end rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-sm font-semibold text-white transition hover:opacity-95 disabled:opacity-45"
                   >
-                    Turpinat
+                    Turpināt
                     <ArrowRight className="h-5 w-5" />
                   </Button>
                 </>
@@ -1300,14 +1300,14 @@ export default function RegistrationPage() {
                     className="h-11 border border-transparent px-0 text-sm font-semibold text-[hsl(214,18%,44%)] hover:bg-transparent hover:text-[hsl(219,36%,18%)]"
                   >
                     <ArrowLeft className="h-4 w-4" />
-                    Atpakal
+                    Atpakaļ
                   </Button>
                   <Button
                     type="button"
                     onClick={handleSubmit}
                     className="h-12 min-w-[168px] rounded-[10px] bg-[linear-gradient(180deg,hsl(220,36%,18%),hsl(218,34%,24%))] px-6 text-sm font-semibold text-white transition hover:opacity-95"
                   >
-                    Sakt darbu
+                    Sākt darbu
                     <ArrowRight className="h-5 w-5" />
                   </Button>
                 </>
