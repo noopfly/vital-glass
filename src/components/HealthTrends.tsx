@@ -1018,12 +1018,19 @@ function TrendsList({
   compact?: boolean;
 }) {
   return (
-    <div className="clinical-list">
+    <div
+      className={
+        compact
+          ? "clinical-list"
+          : "divide-y divide-[hsl(214,22%,90%)] bg-white"
+      }
+    >
       {results.map((result) => (
         <button
           key={result.id}
+          type="button"
           onClick={() => onToggleExpanded(result.id)}
-          className={`grid w-full cursor-pointer items-center gap-x-4 gap-y-1 text-left transition-colors duration-200 md:gap-x-5 md:grid-cols-[4px_minmax(120px,1fr)_124px_minmax(116px,auto)_auto] ${
+          className={`grid w-full cursor-pointer items-center gap-x-4 gap-y-1 text-left transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)] md:gap-x-5 md:grid-cols-[4px_minmax(120px,1fr)_124px_minmax(116px,auto)_auto] ${
             compact
               ? "px-4 py-3"
               : "px-4 py-3.5"
@@ -1142,7 +1149,13 @@ function HealthTrendsContent({
         />
       ) : null}
 
-      <div className="min-h-0 flex-1 overflow-hidden">
+      <div
+        className={
+          compact
+            ? "mt-3 flex-1 overflow-y-auto pr-1"
+            : "min-h-0 flex-1 overflow-hidden"
+        }
+      >
         <TrendsList
           results={results}
           expandedId={expandedId}

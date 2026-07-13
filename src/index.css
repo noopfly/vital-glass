@@ -146,6 +146,7 @@
   .clinical-list {
     @apply overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white divide-y divide-[hsl(214,22%,90%)];
   }
+
 }
 
 @media (prefers-reduced-motion: reduce) {

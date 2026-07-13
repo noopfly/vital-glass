@@ -96,34 +96,6 @@ export function getDefaultDashboardLayoutOrderForSpecialty(
     : [...defaultDashboardLayoutOrder];
 }
 
-function getMedicationColumnSpan(
-  visibleKeys: readonly DashboardComponentKey[],
-): 1 | 2 {
-  let occupiedColumns = 0;
-
-  for (let index = 0; index < visibleKeys.length; index += 1) {
-    const key = visibleKeys[index];
-    const columnSpan = dashboardGridColumnSpans[key];
-
-    if (occupiedColumns + columnSpan > 3) {
-      occupiedColumns = 0;
-    }
-
-    if (key === "medicationTable") {
-      const nextKey = visibleKeys[index + 1];
-      const nextColumnSpan = nextKey ? dashboardGridColumnSpans[nextKey] : undefined;
-
-      return nextColumnSpan && occupiedColumns + columnSpan + nextColumnSpan <= 3
-        ? 1
-        : 2;
-    }
-
-    occupiedColumns += columnSpan;
-  }
-
-  return 1;
-}
-
 export function getDashboardLayoutClasses(
   visibleKeys: readonly DashboardComponentKey[],
 ): Record<DashboardComponentKey, string> {
@@ -137,12 +109,6 @@ export function getDashboardLayoutClasses(
 
     if (occupiedColumns + columnSpan > 3) {
       occupiedColumns = 0;
-    }
-
-    if (key === "medicationTable") {
-      classes.medicationTable = getMedicationColumnSpan(visibleKeys) === 2
-        ? "lg:col-span-2"
-        : "lg:col-span-1";
     }
 
     if (key === "eventTimeline") {

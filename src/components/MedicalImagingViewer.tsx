@@ -4,8 +4,9 @@ import {
   CircleCheck,
   ChevronLeft,
   ChevronRight,
+  ArrowUpRight,
   ExternalLink,
-  LoaderCircle,
+  ImageOff,
   Maximize2,
   TriangleAlert,
   X,
@@ -238,19 +239,28 @@ const MedicalImagingViewer = () => {
                 />
               </button>
             ) : (
-                <div
-                  className="flex min-h-36 items-center justify-center rounded-[8px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)]"
-                  role="status"
-                  aria-label="Attēls tiek ielādēts"
-                >
-                  <LoaderCircle
-                    size={22}
-                    strokeWidth={1.8}
-                    className="animate-spin text-heading motion-reduce:animate-none"
+              <a
+                href={activeStudy.datamedUrl ?? "https://www.datamed.lv"}
+                target="_blank"
+                rel="noreferrer"
+                className="group flex min-h-24 flex-col items-center justify-center gap-2 rounded-[8px] border border-[hsl(214,22%,88%)] bg-[hsl(214,20%,98%)] px-6 text-xs font-semibold text-[hsl(220,22%,18%)] transition-colors hover:bg-[hsl(214,25%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] focus-visible:ring-offset-2"
+              >
+                <ImageOff
+                  size={18}
+                  strokeWidth={1.6}
+                  className="text-[hsl(220,16%,42%)] transition-colors group-hover:text-[hsl(220,22%,18%)]"
+                  aria-hidden="true"
+                />
+                <span className="relative inline-flex pb-0.5">
+                  <span className="border-b border-current">Skatīt izmeklējumu</span>
+                  <ArrowUpRight
+                    size={11}
+                    strokeWidth={2}
+                    className="absolute -right-3 -top-1 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
                     aria-hidden="true"
                   />
-                  <span className="sr-only">Attēls tiek ielādēts</span>
-                </div>
+                </span>
+              </a>
             )}
           </section>
 

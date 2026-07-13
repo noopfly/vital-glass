@@ -3,7 +3,6 @@ import type { CSSProperties, ComponentType } from "react";
 import {
   Activity,
   ChevronDown,
-  ChevronRight,
   ChevronUp,
   Dna,
   FlaskConical,
@@ -539,8 +538,6 @@ function DiagnosisCallout({
   organ,
   problem,
   layout,
-  categoryColor,
-  Icon,
   onClick,
   onHoverStart,
   onHoverEnd,
@@ -548,8 +545,6 @@ function DiagnosisCallout({
   organ: OrganData;
   problem: OrganProblem;
   layout: PersistentCalloutLayout;
-  categoryColor: string;
-  Icon: ComponentType<{ className?: string; style?: CSSProperties }>;
   onClick: () => void;
   onHoverStart: () => void;
   onHoverEnd: () => void;
@@ -585,27 +580,12 @@ function DiagnosisCallout({
           }}
           aria-label={`${organ.label}: ${problem.title}. Atvērt detalizētu informāciju.`}
         >
-          <div className="flex w-full items-start gap-2">
-            <span
-              className="mt-0.5 flex shrink-0 items-center justify-center rounded-[5px] border"
-              style={{
-                width: 20,
-                height: 20,
-                backgroundColor: categoryCfg.tint,
-                borderColor: `${categoryColor}1f`,
-                color: categoryColor,
-              }}
-            >
-              <Icon className="h-2.5 w-2.5 stroke-[1.8]" />
-            </span>
-
+          <div className="flex w-full items-start">
             <span className="min-w-0 flex-1">
               <span className="block whitespace-normal break-words text-xs font-semibold leading-4 text-[hsl(220,42%,16%)]">
                 {problem.title}
               </span>
             </span>
-
-            <ChevronRight className="mt-0.5 h-3 w-3 shrink-0 text-[hsl(216,15%,58%)]" />
           </div>
         </button>
 
@@ -651,7 +631,6 @@ function OrganHotspot({
     : null;
 
   const categoryCfg = featuredProblem ? CATEGORY_CONFIG[featuredProblem.category] : null;
-  const Icon = categoryCfg?.Icon;
 
   return (
     <div
@@ -662,7 +641,7 @@ function OrganHotspot({
         zIndex: isExpanded ? 90 : isActive ? 80 : 20,
       }}
     >
-      {featuredProblem && persistentCalloutLayout && connector && categoryCfg && Icon && (
+      {featuredProblem && persistentCalloutLayout && connector && categoryCfg && (
         <>
           <svg
             className="pointer-events-none absolute z-20 overflow-visible"
@@ -690,8 +669,6 @@ function OrganHotspot({
             organ={organ}
             problem={featuredProblem}
             layout={persistentCalloutLayout}
-            categoryColor={categoryCfg.color}
-            Icon={Icon}
             onClick={onClick}
             onHoverStart={onHoverStart}
             onHoverEnd={onHoverEnd}
@@ -780,7 +757,7 @@ function ProblemAccordion({
       >
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
+            <p className="text-xs font-semibold text-[hsl(222,28%,20%)]">
               {problem.title}
             </p>
 

@@ -31,6 +31,7 @@ interface Medication {
   startDate: string;
   endDate: string;
   prescribedBy: string;
+  prescriberSpecialty: string;
   interactions: Interaction[];
   duplicate: DuplicateAlert | null;
 }
@@ -46,6 +47,7 @@ const medications: Medication[] = [
     startDate: "12.01.2024",
     endDate: "—",
     prescribedBy: "Dr. Anna Kalniņa",
+    prescriberSpecialty: "ģimenes ārste",
     interactions: [],
     duplicate: null,
   },
@@ -59,6 +61,7 @@ const medications: Medication[] = [
     startDate: "03.04.2024",
     endDate: "—",
     prescribedBy: "Dr. Jānis Ozols",
+    prescriberSpecialty: "kardiologs",
     interactions: [
       {
         with: "Amlodipīns",
@@ -82,6 +85,7 @@ const medications: Medication[] = [
     startDate: "18.02.2024",
     endDate: "—",
     prescribedBy: "Dr. Jānis Ozols",
+    prescriberSpecialty: "kardiologs",
     interactions: [
       {
         with: "Atorvastatīns",
@@ -101,6 +105,7 @@ const medications: Medication[] = [
     startDate: "02.10.2023",
     endDate: "09.10.2023",
     prescribedBy: "Dr. Līga Bērziņa",
+    prescriberSpecialty: "infektoloģe",
     interactions: [],
     duplicate: null,
   },
@@ -114,6 +119,7 @@ const medications: Medication[] = [
     startDate: "15.08.2023",
     endDate: "15.11.2023",
     prescribedBy: "Dr. Anna Kalniņa",
+    prescriberSpecialty: "ģimenes ārste",
     interactions: [],
     duplicate: null,
   },
@@ -152,7 +158,7 @@ const headingClass =
   "text-xs font-semibold text-heading";
 
 const compactTableGridClass =
-  "md:grid-cols-[minmax(0,1.4fr)_0.85fr_0.95fr_auto_auto]";
+  "md:grid-cols-[minmax(0,1.25fr)_minmax(0,0.85fr)_minmax(0,1fr)_minmax(0,1fr)]";
 
 const fullTableGridClass =
   "md:grid-cols-[minmax(0,1.8fr)_0.85fr_0.9fr_1fr_1fr_1fr_1fr_1.15fr]";
@@ -306,7 +312,7 @@ function MedicationRow({
 
   return (
     <div
-      className={`grid min-h-14 w-full gap-x-3 gap-y-1 px-4 py-3 text-left transition-colors hover:bg-[hsl(214,20%,99%)] md:items-center ${hasSignals ? "cursor-help" : ""} ${tableGridClass}`}
+      className={`medication-table-row grid min-h-14 w-full gap-x-3 gap-y-1 px-4 py-3 text-left transition-colors hover:bg-[hsl(214,20%,99%)] md:items-center ${hasSignals ? "cursor-help" : ""} ${tableGridClass}`}
       onMouseEnter={(event) => {
         if (!hasSignals) return;
         onActivate(medication.id, event);
@@ -321,7 +327,7 @@ function MedicationRow({
       }}
     >
       <div className="min-w-0">
-        <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.name}</p>
+        <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>{columnLabels.name}</p>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-1.5 text-xs font-semibold leading-4 text-text-dark">
             <span className="whitespace-normal break-words">{medication.name}</span>
@@ -356,22 +362,24 @@ function MedicationRow({
       </div>
 
       <div>
-        <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.dose}</p>
+        <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>{columnLabels.dose}</p>
         <p className="text-xs text-heading">{medication.dose}</p>
       </div>
 
       <div>
-        <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.frequency}</p>
+        <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>{columnLabels.frequency}</p>
         <p className="text-xs text-heading">
           {medication.frequency}
         </p>
       </div>
 
-      <div className={`flex self-start pt-0.5 md:self-auto md:pt-0 ${isFullMode ? "md:justify-start" : "md:justify-end"}`}>
+      <div
+        className={`medication-status-cell flex self-start pt-0.5 md:self-stretch md:items-center md:pt-0 ${isFullMode ? "md:justify-start" : "md:justify-end"}`}
+      >
         <div
-          className={`flex flex-col ${isFullMode ? "items-start" : "items-end"}`}
+          className={`medication-status-content flex items-center gap-2 md:flex-col md:gap-0 ${isFullMode ? "md:items-start" : "md:items-end"}`}
         >
-          <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.status}</p>
+          <p className={`medication-column-label md:hidden ${headingClass}`}>{columnLabels.status}</p>
           <span
             className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-semibold ${statusBadgeClassName}`}
           >
@@ -382,7 +390,9 @@ function MedicationRow({
 
       {mode === "full" && (
         <div>
-          <p className={`mb-1 md:hidden ${headingClass}`}>{columnLabels.issuance}</p>
+          <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>
+            {columnLabels.issuance}
+          </p>
           <p className="text-xs text-heading">{medication.startDate}</p>
         </div>
       )}
@@ -390,7 +400,7 @@ function MedicationRow({
       {mode === "full" && (
         <>
           <div>
-            <p className={`mb-1 md:hidden ${headingClass}`}>
+            <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>
               {columnLabels.startDate}
             </p>
             <p className="text-xs tabular-nums text-heading">
@@ -399,7 +409,7 @@ function MedicationRow({
           </div>
 
           <div>
-            <p className={`mb-1 md:hidden ${headingClass}`}>
+            <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>
               {columnLabels.endDate}
             </p>
             <p className="text-xs tabular-nums text-heading">
@@ -408,11 +418,11 @@ function MedicationRow({
           </div>
 
           <div className="min-w-0">
-            <p className={`mb-1 md:hidden ${headingClass}`}>
+            <p className={`medication-column-label mb-1 md:hidden ${headingClass}`}>
               {columnLabels.prescribedBy}
             </p>
             <p className="whitespace-normal break-words text-xs text-heading">
-              {medication.prescribedBy}
+              {medication.prescribedBy} ({medication.prescriberSpecialty})
             </p>
           </div>
         </>
@@ -502,15 +512,43 @@ function MedicationTableContent({
       />
     ));
 
+  const historicalDisclosure = historicalMedications.length > 0 ? (
+    <>
+      <button
+        type="button"
+        onClick={() => setIsHistoricalOpen((current) => !current)}
+        aria-expanded={isHistoricalOpen}
+        className="flex min-h-11 w-full items-center justify-between bg-[hsl(214,38%,97%)] px-4 py-2 text-left text-xs font-semibold text-[hsl(222,28%,20%)] transition-colors duration-200 hover:bg-[hsl(214,38%,95%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)]"
+      >
+        <span>Vēsturiskie medikamenti ({historicalMedications.length})</span>
+        <ChevronDown
+          size={20}
+          className={`text-[hsl(214,28%,42%)] transition-transform ${isHistoricalOpen ? "rotate-180" : ""}`}
+          aria-hidden="true"
+        />
+      </button>
+
+      {isHistoricalOpen ? (
+        <div
+          className={`divide-y divide-[hsl(214,22%,90%)] ${
+            isFullMode ? "" : "border-t border-[hsl(214,22%,88%)]"
+          }`}
+        >
+          {renderMedicationRows(historicalMedications)}
+        </div>
+      ) : null}
+    </>
+  ) : null;
+
   return (
-    <div ref={containerRef} className="relative overflow-visible">
+    <div ref={containerRef} className="medication-table-container relative overflow-visible">
       <div className="overflow-hidden rounded-[8px] border border-[hsl(214,22%,88%)] bg-white">
-        <div className={`hidden gap-x-2.5 border-b border-[hsl(214,22%,88%)] bg-[hsl(214,20%,96%)] px-4 py-2.5 md:grid ${tableGridClass}`}>
-          <p className={headingClass}>{columnLabels.name}</p>
-          <p className={headingClass}>{columnLabels.dose}</p>
-          <p className={headingClass}>{columnLabels.frequency}</p>
+        <div className={`medication-table-header hidden gap-x-2.5 border-b border-[hsl(214,22%,88%)] bg-[hsl(214,20%,96%)] px-4 py-2.5 md:grid ${tableGridClass}`}>
+          <p className={`${headingClass} whitespace-nowrap`}>{columnLabels.name}</p>
+          <p className={`${headingClass} whitespace-nowrap`}>{columnLabels.dose}</p>
+          <p className={`${headingClass} whitespace-nowrap`}>{columnLabels.frequency}</p>
           <div className={`flex items-center ${isFullMode ? "md:justify-start" : "md:justify-center"}`}>
-            <p className={headingClass}>{columnLabels.status}</p>
+            <p className={`${headingClass} whitespace-nowrap`}>{columnLabels.status}</p>
           </div>
           {isFullMode ? (
             <div className="flex items-center md:justify-start">
@@ -537,21 +575,17 @@ function MedicationTableContent({
             />
           ) : null}
 
-          {historicalMedications.length > 0 ? (
-          <button
-            type="button"
-            onClick={() => setIsHistoricalOpen((current) => !current)}
-            aria-expanded={isHistoricalOpen}
-            className="flex min-h-11 w-full items-center justify-between bg-[hsl(214,38%,97%)] px-4 py-2 text-left text-xs font-semibold text-[hsl(222,28%,20%)] transition-colors duration-200 hover:bg-[hsl(214,38%,95%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)]"
-          >
-            <span>Vēsturiskie medikamenti ({historicalMedications.length})</span>
-            <ChevronDown size={20} className={`text-[hsl(214,28%,42%)] transition-transform ${isHistoricalOpen ? "rotate-180" : ""}`} aria-hidden="true" />
-          </button>
-          ) : null}
-
-          {isHistoricalOpen ? renderMedicationRows(historicalMedications) : null}
+          {isFullMode ? historicalDisclosure : null}
         </div>
       </div>
+
+      {!isFullMode && historicalDisclosure ? (
+        <div className="mt-4 border-t border-[hsl(214,22%,90%)] pt-4">
+          <div className="overflow-hidden rounded-[8px] border border-[hsl(214,22%,88%)] bg-white">
+            {historicalDisclosure}
+          </div>
+        </div>
+      ) : null}
 
       {hoveredMedication ? (
         <MedicationSignalOverlay medication={hoveredMedication} overlayPosition={overlayPosition} />
@@ -565,7 +599,7 @@ const MedicationTable = () => {
 
   return (
     <>
-      <section className="clinical-panel relative z-20 flex h-full !overflow-visible flex-col">
+      <section className="clinical-panel relative z-20 flex h-full w-full !overflow-visible flex-col">
         <DashboardCardHeader
           title="Medikamenti"
           infoLabel="Informācija par medikamentiem"

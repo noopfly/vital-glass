@@ -63,4 +63,18 @@ describe("dashboard layout presets", () => {
       "lg:col-span-3",
     );
   });
+
+  it("keeps the medication table at a single dashboard column", () => {
+    expect(
+      getDashboardLayoutClasses([
+        "patientCard",
+        "healthTrends",
+        "alertsCard",
+        "medicalImagingViewer",
+        "humanBodyModel",
+        "medicationTable",
+        "referralHistory",
+      ]).medicationTable,
+    ).toBe("lg:col-span-1");
+  });
 });
