@@ -110,153 +110,142 @@ export default function PatientLoadingPanel({
   return (
     <section
       className={cn(
-        "clinical-panel relative w-full max-w-[680px]",
-        variant === "page" && "shadow-none",
+        "w-full max-w-2xl overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white",
+        variant === "overlay" && "shadow-[0_16px_34px_rgba(30,64,91,0.08)]",
       )}
       aria-live="polite"
     >
-      <div className="mx-auto flex max-w-[540px] flex-col items-center px-1 py-1 text-center md:px-2 md:py-2">
-        <span className="flex h-10 w-10 items-center justify-center rounded-md bg-[hsl(214,28%,96%)] text-[hsl(220,36%,22%)]">
-          <HeartPulse className="h-5 w-5" aria-hidden="true" />
-        </span>
-        <p className="mt-4 text-xs font-semibold text-[hsl(215,14%,47%)]">
-          Pacienta profils
-        </p>
-        <h1 className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[hsl(222,28%,18%)] md:text-2xl">
-          Tiek apkopoti pacienta dati
-        </h1>
-
-        <div className="mt-2 text-center">
-          <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
-            {patient.name}
-          </p>
-          <p className="mt-1 text-xs leading-4 text-[hsl(215,14%,47%)] tabular-nums">
-            {patient.personalCode}
-          </p>
+      <div className="px-5 py-5 sm:px-7 sm:py-6">
+        <div className="flex items-center gap-4">
+          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-[hsl(216,24%,94%)] text-[hsl(217,38%,22%)]">
+            <HeartPulse className="h-7 w-7" aria-hidden="true" />
+          </div>
+          <div className="min-w-0">
+            <h1 className="text-2xl font-semibold tracking-[-0.04em] text-[hsl(217,40%,18%)]">
+              Tiek apkopoti pacienta dati
+            </h1>
+            <p className="mt-1 text-sm leading-5 text-[hsl(214,18%,52%)]">
+              Pacienta profils&nbsp;·&nbsp;
+              <span className="font-semibold text-[hsl(217,36%,22%)]">
+                {patient.name}
+              </span>
+              <span className="tabular-nums">&nbsp;·&nbsp;{patient.personalCode}</span>
+            </p>
+          </div>
         </div>
 
-        <div className="mt-4 w-full text-left">
-          <div className="flex items-center justify-between text-xs font-normal text-[hsl(214,14%,48%)]">
+        <div className="mt-6">
+          <div className="flex items-center justify-between text-xs text-[hsl(214,18%,52%)]">
             <span>Progress</span>
-            <span>{progressValue}%</span>
+            <span className="tabular-nums">{progressValue}%</span>
           </div>
-
           <Progress
             value={progressValue}
-            className="mt-2 h-1.5 rounded-full bg-[hsl(216,18%,90%)] [&>div]:bg-[linear-gradient(90deg,hsl(220,38%,22%)_0%,hsl(217,38%,28%)_100%)]"
+            className="mt-2 h-1.5 rounded-full bg-[hsl(216,18%,90%)] [&>div]:bg-[hsl(217,38%,22%)]"
           />
-
-          <div className="mt-3 overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white">
-            {loadingSteps.map((step, index) => {
-              const StepIcon = step.icon;
-              const isCompleted =
-                elapsedMs >=
-                loadingSteps
-                  .slice(0, index + 1)
-                  .reduce((sum, current) => sum + current.durationMs, 0);
-              const isActive = !isCompleted && index === currentStepIndex;
-              const isVisible = isComplete || index <= currentStepIndex;
-
-              if (!isVisible) {
-                return null;
-              }
-
-              return (
-                <div
-                  key={step.title}
-                  className={cn(
-                    "flex items-center justify-between gap-3 border-b px-4 py-3 text-left transition-all duration-500 last:border-b-0",
-                    isCompleted
-                      ? "border-[rgba(196,220,205,0.96)] bg-[rgba(247,250,248,0.92)]"
-                      : isActive
-                        ? "border-[rgba(226,232,238,0.96)] bg-white"
-                        : "border-[rgba(232,237,242,0.96)] bg-[rgba(251,252,253,0.96)] text-[hsl(214,12%,56%)]",
-                  )}
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-3">
-                    <div className="shrink-0">
-                      <div
-                        className={cn(
-                          "flex h-9 w-9 items-center justify-center rounded-md border",
-                          isCompleted
-                            ? "border-[rgba(174,223,186,0.96)] bg-[rgba(232,248,236,0.98)] text-[hsl(148,54%,34%)]"
-                            : isActive
-                              ? "border-[rgba(199,210,223,0.96)] bg-[hsl(220,22%,95%)] text-[hsl(219,36%,24%)]"
-                              : "border-[rgba(221,228,236,0.92)] bg-[hsl(214,18%,97%)] text-[hsl(214,10%,68%)]",
-                        )}
-                      >
-                        {isActive ? (
-                          <Loader2 className="h-3 w-3 animate-spin" />
-                        ) : (
-                          <StepIcon className="h-3 w-3" />
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="min-w-0 flex-1 text-left">
-                      <p
-                        className={cn(
-                          "whitespace-normal break-words text-sm font-semibold",
-                          isCompleted || isActive
-                            ? "text-[hsl(219,30%,22%)]"
-                            : "text-[hsl(214,12%,50%)]",
-                        )}
-                      >
-                        {step.title}
-                      </p>
-
-                      <p
-                        className={cn(
-                          "mt-0.5 text-xs leading-4",
-                          isCompleted || isActive
-                            ? "text-[hsl(214,14%,54%)]"
-                            : "text-[hsl(214,12%,66%)]",
-                        )}
-                      >
-                        {step.detail}
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="shrink-0">
-                    <span
-                      className={cn(
-                        "inline-flex rounded-md px-2.5 py-1 text-xs font-semibold",
-                        isCompleted
-                          ? "bg-[rgba(228,247,233,0.98)] text-[hsl(148,54%,34%)]"
-                          : isActive
-                            ? "bg-[hsl(220,22%,95%)] text-[hsl(219,36%,24%)]"
-                            : "bg-[hsl(214,18%,97%)] text-[hsl(214,10%,68%)]",
-                      )}
-                    >
-                      {isCompleted ? "Pabeigts" : isActive ? "Notiek" : "Gaida"}
-                    </span>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
 
-        <div className="mt-4 w-full">
+        <div className="mt-5 overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white">
+          {loadingSteps.map((step, index) => {
+            const StepIcon = step.icon;
+            const isCompleted =
+              elapsedMs >=
+              loadingSteps
+                .slice(0, index + 1)
+                .reduce((sum, current) => sum + current.durationMs, 0);
+            const isActive = !isCompleted && index === currentStepIndex;
+            const isVisible = isComplete || index <= currentStepIndex;
+
+            if (!isVisible) {
+              return null;
+            }
+
+            return (
+              <div
+                key={step.title}
+                className={cn(
+                  "flex items-start gap-3 px-4 py-3 transition-colors duration-200 motion-reduce:transition-none",
+                  index > 0 && "border-t border-[hsl(214,22%,90%)]",
+                  isCompleted && "bg-[hsl(151,40%,98%)]",
+                  isActive && "bg-white",
+                  !isCompleted && !isActive && "bg-[hsl(210,40%,99%)]",
+                )}
+              >
+                <div
+                  className={cn(
+                    "flex h-10 w-10 shrink-0 items-center justify-center rounded-md border",
+                    isCompleted &&
+                      "border-[hsl(151,30%,78%)] bg-[hsl(151,40%,94%)] text-[hsl(154,44%,30%)]",
+                    isActive &&
+                      "border-[hsl(214,22%,84%)] bg-[hsl(216,24%,94%)] text-[hsl(217,38%,22%)]",
+                    !isCompleted &&
+                      !isActive &&
+                      "border-[hsl(214,22%,88%)] bg-white text-[hsl(214,16%,58%)]",
+                  )}
+                >
+                  {isActive ? (
+                    <Loader2 className="h-5 w-5 animate-spin" aria-hidden="true" />
+                  ) : (
+                    <StepIcon className="h-5 w-5" aria-hidden="true" />
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <p
+                    className={cn(
+                      "text-sm font-semibold leading-5",
+                      isCompleted || isActive
+                        ? "text-[hsl(217,36%,22%)]"
+                        : "text-[hsl(214,18%,48%)]",
+                    )}
+                  >
+                    {step.title}
+                  </p>
+                  <p
+                    className={cn(
+                      "mt-1 text-xs leading-4",
+                      isCompleted || isActive
+                        ? "text-[hsl(214,18%,52%)]"
+                        : "text-[hsl(214,16%,58%)]",
+                    )}
+                  >
+                    {step.detail}
+                  </p>
+                </div>
+
+                <span
+                  className={cn(
+                    "mt-1 shrink-0 rounded-md px-2.5 py-1 text-xs font-semibold",
+                    isCompleted && "bg-[hsl(151,40%,92%)] text-[hsl(154,44%,30%)]",
+                    isActive && "bg-[hsl(216,24%,94%)] text-[hsl(217,38%,22%)]",
+                    !isCompleted &&
+                      !isActive &&
+                      "bg-[hsl(214,18%,96%)] text-[hsl(214,16%,58%)]",
+                  )}
+                >
+                  {isCompleted ? "Pabeigts" : isActive ? "Notiek" : "Gaida"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+
+        <div className="mt-5 flex flex-col-reverse gap-3 border-t border-[hsl(214,22%,90%)] pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="h-11 self-start text-sm text-[hsl(214,18%,48%)] underline underline-offset-4 transition hover:text-[hsl(217,36%,22%)] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[rgba(30,54,86,0.16)] motion-reduce:transition-none"
+          >
+            Atcelt
+          </button>
           <Button
             type="button"
             onClick={onContinue}
             disabled={!isComplete}
-            className="h-11 w-full rounded-md bg-[hsl(220,36%,18%)] text-sm font-semibold text-white transition-colors duration-200 hover:bg-[hsl(220,36%,22%)] disabled:cursor-not-allowed disabled:opacity-45"
+            className="h-11 w-full rounded-md bg-[hsl(217,38%,22%)] px-6 text-sm font-semibold text-white transition-colors duration-200 hover:bg-[hsl(217,38%,18%)] disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
           >
             Tālāk
           </Button>
-
-          <div className="mt-4 flex justify-end">
-            <button
-              type="button"
-              onClick={onCancel}
-              className="inline-flex text-sm font-normal text-[hsl(219,20%,42%)] underline underline-offset-4 transition hover:text-[hsl(219,30%,24%)]"
-            >
-              Atcelt
-            </button>
-          </div>
         </div>
       </div>
     </section>

@@ -1,19 +1,11 @@
 import * as React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import {
-  CalendarDays,
-  ChevronLeft,
-  ChevronRight,
-  CircleAlert,
-  ClipboardCheck,
-  Clock3,
-  RefreshCcw,
-  Trash2,
-  UserPlus,
-} from "lucide-react";
+import { CircleAlert, ClipboardCheck, Clock3, ListPlus } from "lucide-react";
 
 import DashboardSidebar from "@/components/DashboardSidebar";
-import { Button } from "@/components/ui/button";
+import { DayListDateNavigation } from "@/components/day-list/DayListDateNavigation";
+import { DayListPatientForm } from "@/components/day-list/DayListPatientForm";
+import { DayListPatientQueue } from "@/components/day-list/DayListPatientQueue";
 import { patients } from "@/data/patients";
 import {
   type DayListEntry,
@@ -38,7 +30,7 @@ import {
   type SpecialtyId,
 } from "@/lib/specialties";
 import { cn } from "@/lib/utils";
-import { Patient } from "@/types/patient";
+import { type Patient } from "@/types/patient";
 
 type DayListLocationState = {
   patient?: Patient;
@@ -48,20 +40,8 @@ type DayListLocationState = {
 
 const maxParallelPreloads = 2;
 const estimatedMinutesPerPatient = 5;
-const personalCodeGroupSizes = [6, 5] as const;
-const personalCodeLength =
-  personalCodeGroupSizes[0] + personalCodeGroupSizes[1];
-
+const personalCodeLength = 11;
 const pageBg = "bg-[hsl(210,32%,96%)]";
-
-const panelClass =
-  "relative overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white";
-
-const sectionLabelClass =
-  "text-sm font-semibold text-[hsl(222,28%,20%)]";
-
-const tableGridClass =
-  "grid grid-cols-2 items-center gap-x-4 gap-y-3 md:grid-cols-[1.55fr_1.15fr_0.9fr_1.45fr_0.8fr_0.85fr] md:gap-4";
 
 function formatClock(date: Date) {
   return new Intl.DateTimeFormat("lv-LV", {
@@ -72,14 +52,7 @@ function formatClock(date: Date) {
 
 function formatPersonalCode(raw: string) {
   const digits = raw.replace(/[^\d]/g, "").slice(0, personalCodeLength);
-
-  if (digits.length <= personalCodeGroupSizes[0]) {
-    return digits;
-  }
-
-  return `${digits.slice(0, personalCodeGroupSizes[0])}-${digits.slice(
-    personalCodeGroupSizes[0],
-  )}`;
+  return digits.length <= 6 ? digits : `${digits.slice(0, 6)}-${digits.slice(6)}`;
 }
 
 function getPersonalCodeDigits(raw: string) {
@@ -114,30 +87,15 @@ function formatNumericDate(date: Date) {
   }).format(date);
 }
 
-function formatMonthDate(date: Date) {
-  return capitalize(
-    new Intl.DateTimeFormat("lv-LV", {
-      day: "numeric",
-      month: "long",
-    }).format(date),
-  );
-}
-
 function formatWeekday(date: Date) {
-  return capitalize(
-    new Intl.DateTimeFormat("lv-LV", {
-      weekday: "long",
-    }).format(date),
-  );
+  return capitalize(new Intl.DateTimeFormat("lv-LV", { weekday: "long" }).format(date));
 }
 
 function getRelativeDayLabel(dateKey: string, todayKey: string) {
   const difference = getDayNumber(dateKey) - getDayNumber(todayKey);
-
   if (difference === -1) return "Vakar";
   if (difference === 0) return "Šodiena";
   if (difference === 1) return "Rīt";
-
   return formatWeekday(parseDateKey(dateKey));
 }
 
@@ -146,32 +104,28 @@ function getStatusMeta(status: DayListEntry["status"]) {
     case "ready":
       return {
         label: "Gatavs",
-        badgeClass:
-          "border-[hsl(151,35%,88%)] bg-[hsl(151,42%,94%)] text-[hsl(154,44%,31%)]",
+        badgeClass: "border-[hsl(151,35%,88%)] bg-[hsl(151,42%,94%)] text-[hsl(154,44%,31%)]",
         dotClass: "bg-[hsl(154,48%,40%)]",
         progressClass: "bg-[hsl(220,36%,18%)]",
       };
     case "loading":
       return {
         label: "Notiek",
-        badgeClass:
-          "border-[hsl(216,42%,88%)] bg-[hsl(216,48%,95%)] text-[hsl(217,42%,38%)]",
+        badgeClass: "border-[hsl(216,42%,88%)] bg-[hsl(216,48%,95%)] text-[hsl(217,42%,38%)]",
         dotClass: "bg-[hsl(216,48%,50%)]",
         progressClass: "bg-[hsl(220,36%,18%)]",
       };
     case "waiting":
       return {
         label: "Rindā",
-        badgeClass:
-          "border-[hsl(42,44%,86%)] bg-[hsl(42,62%,95%)] text-[hsl(36,48%,36%)]",
+        badgeClass: "border-[hsl(42,44%,86%)] bg-[hsl(42,62%,95%)] text-[hsl(36,48%,36%)]",
         dotClass: "bg-[hsl(38,62%,48%)]",
         progressClass: "bg-[hsl(38,62%,50%)]",
       };
     case "error":
       return {
         label: "Kļūda",
-        badgeClass:
-          "border-[hsl(0,54%,89%)] bg-[hsl(0,68%,97%)] text-[hsl(0,58%,48%)]",
+        badgeClass: "border-[hsl(0,54%,89%)] bg-[hsl(0,68%,97%)] text-[hsl(0,58%,48%)]",
         dotClass: "bg-[hsl(0,58%,50%)]",
         progressClass: "bg-[hsl(0,58%,50%)]",
       };
@@ -179,13 +133,7 @@ function getStatusMeta(status: DayListEntry["status"]) {
 }
 
 function createQueuedEntry(patientId: string): DayListEntry {
-  return {
-    patientId,
-    status: "waiting",
-    progress: 0,
-    updatedAt: null,
-    attempts: 0,
-  };
+  return { patientId, status: "waiting", progress: 0, updatedAt: null, attempts: 0 };
 }
 
 export default function DayListPage() {
@@ -193,311 +141,142 @@ export default function DayListPage() {
   const navigate = useNavigate();
   const routeState = location.state as DayListLocationState | undefined;
   const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
-
-  const activePatient =
-    routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
-
+  const activePatient = routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
   const todayKey = React.useMemo(() => formatDayListDateKey(new Date()), []);
   const [selectedDateKey, setSelectedDateKey] = React.useState(todayKey);
-
-  const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(
-    () =>
-      filterDashboardLayoutOrderBySpecialty(
-        normalizeDashboardLayoutOrder(
-          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
-        ),
-        specialtyId,
-      ),
+  const [layoutOrder, setLayoutOrder] = React.useState<DashboardComponentKey[]>(() =>
+    filterDashboardLayoutOrderBySpecialty(
+      normalizeDashboardLayoutOrder(routeState?.layoutOrder ?? readStoredDashboardLayoutOrder()),
+      specialtyId,
+    ),
   );
-
   const [codeQuery, setCodeQuery] = React.useState("");
   const [error, setError] = React.useState("");
-  const [dayListsByDate, setDayListsByDate] =
-    React.useState<DayListEntriesByDate>(() => readStoredDayLists(todayKey));
-
-  const inputRefs = React.useRef<Array<HTMLInputElement | null>>([]);
-
-  const selectedDate = React.useMemo(
-    () => parseDateKey(selectedDateKey),
-    [selectedDateKey],
+  const [dayListsByDate, setDayListsByDate] = React.useState<DayListEntriesByDate>(() =>
+    readStoredDayLists(todayKey),
   );
 
-  const previousDate = React.useMemo(
-    () => addCalendarDays(selectedDate, -1),
-    [selectedDate],
-  );
-
-  const nextDate = React.useMemo(
-    () => addCalendarDays(selectedDate, 1),
-    [selectedDate],
-  );
-
-  const entries = React.useMemo(
-    () => dayListsByDate[selectedDateKey] ?? [],
-    [dayListsByDate, selectedDateKey],
-  );
-
+  const selectedDate = React.useMemo(() => parseDateKey(selectedDateKey), [selectedDateKey]);
+  const previousDate = React.useMemo(() => addCalendarDays(selectedDate, -1), [selectedDate]);
+  const nextDate = React.useMemo(() => addCalendarDays(selectedDate, 1), [selectedDate]);
+  const entries = React.useMemo(() => dayListsByDate[selectedDateKey] ?? [], [dayListsByDate, selectedDateKey]);
   const patientMap = React.useMemo(
-    () =>
-      Object.fromEntries(
-        patients.map((patient) => [patient.id, patient]),
-      ) as Record<string, Patient>,
+    () => Object.fromEntries(patients.map((patient) => [patient.id, patient])) as Record<string, Patient>,
     [],
   );
-
-  const queuedPatientIds = React.useMemo(
-    () => new Set(entries.map((entry) => entry.patientId)),
-    [entries],
-  );
-
+  const queuedPatientIds = React.useMemo(() => new Set(entries.map((entry) => entry.patientId)), [entries]);
   const recentPatients = React.useMemo(
-    () =>
-      [
-        activePatient,
-        ...patients.filter((patient) => patient.id !== activePatient.id),
-      ]
-        .filter((patient, index, array) => {
-          return array.findIndex((item) => item.id === patient.id) === index;
-        })
-        .slice(0, 5),
+    () => [activePatient, ...patients.filter((patient) => patient.id !== activePatient.id)]
+      .filter((patient, index, all) => all.findIndex((item) => item.id === patient.id) === index)
+      .slice(0, 5),
     [activePatient],
   );
 
-  const personalCodeDigits = React.useMemo(() => {
-    const digits = getPersonalCodeDigits(codeQuery).split("");
-
-    return Array.from(
-      { length: personalCodeLength },
-      (_, index) => digits[index] ?? "",
-    );
-  }, [codeQuery]);
-
+  React.useEffect(() => { writeStoredLastViewedPatientId(activePatient.id); }, [activePatient]);
   React.useEffect(() => {
-    writeStoredLastViewedPatientId(activePatient.id);
-  }, [activePatient]);
-
-  React.useEffect(() => {
-    setLayoutOrder(
-      filterDashboardLayoutOrderBySpecialty(
-        normalizeDashboardLayoutOrder(
-          routeState?.layoutOrder ?? readStoredDashboardLayoutOrder(),
-        ),
-        specialtyId,
-      ),
-    );
+    setLayoutOrder(filterDashboardLayoutOrderBySpecialty(
+      normalizeDashboardLayoutOrder(routeState?.layoutOrder ?? readStoredDashboardLayoutOrder()), specialtyId,
+    ));
   }, [routeState?.layoutOrder, specialtyId]);
-
-  React.useEffect(() => {
-    setError("");
-  }, [selectedDateKey]);
-
-  React.useEffect(() => {
-    writeStoredDayLists(dayListsByDate);
-  }, [dayListsByDate]);
+  React.useEffect(() => { setError(""); }, [selectedDateKey]);
+  React.useEffect(() => { writeStoredDayLists(dayListsByDate); }, [dayListsByDate]);
 
   React.useEffect(() => {
     setDayListsByDate((current) => {
       const currentEntries = current[selectedDateKey] ?? [];
-      const loadingCount = currentEntries.filter(
-        (entry) => entry.status === "loading",
-      ).length;
-
-      let freeSlots = maxParallelPreloads - loadingCount;
-
-      if (freeSlots <= 0) {
-        return current;
-      }
-
+      let freeSlots = maxParallelPreloads - currentEntries.filter((entry) => entry.status === "loading").length;
+      if (freeSlots <= 0) return current;
       let changed = false;
-
       const nextEntries = currentEntries.map((entry) => {
-        if (entry.status !== "waiting" || freeSlots <= 0) {
-          return entry;
-        }
-
+        if (entry.status !== "waiting" || freeSlots <= 0) return entry;
         freeSlots -= 1;
         changed = true;
-
-        return {
-          ...entry,
-          status: "loading" as const,
-          progress: Math.max(entry.progress, 12),
-          attempts: entry.attempts + 1,
-        };
+        return { ...entry, status: "loading" as const, progress: Math.max(entry.progress, 12), attempts: entry.attempts + 1 };
       });
-
-      if (!changed) {
-        return current;
-      }
-
-      return {
-        ...current,
-        [selectedDateKey]: nextEntries,
-      };
+      return changed ? { ...current, [selectedDateKey]: nextEntries } : current;
     });
   }, [entries, selectedDateKey]);
 
   React.useEffect(() => {
-    if (!entries.some((entry) => entry.status === "loading")) {
-      return undefined;
-    }
-
+    if (!entries.some((entry) => entry.status === "loading")) return undefined;
     const intervalId = window.setInterval(() => {
       setDayListsByDate((current) => {
         const currentEntries = current[selectedDateKey] ?? [];
         let changed = false;
-
         const nextEntries = currentEntries.map((entry) => {
-          if (entry.status !== "loading") {
-            return entry;
-          }
-
-          const increment =
-            8 + ((Number(entry.patientId) * 3 + entry.progress) % 11);
-          const nextProgress = Math.min(100, entry.progress + increment);
-
+          if (entry.status !== "loading") return entry;
+          const increment = 8 + ((Number(entry.patientId) * 3 + entry.progress) % 11);
+          const progress = Math.min(100, entry.progress + increment);
           changed = true;
-
-          if (nextProgress >= 100) {
-            return {
-              ...entry,
-              status: "ready" as const,
-              progress: 100,
-              updatedAt: formatClock(new Date()),
-            };
-          }
-
-          return {
-            ...entry,
-            progress: nextProgress,
-          };
+          return progress >= 100
+            ? { ...entry, status: "ready" as const, progress: 100, updatedAt: formatClock(new Date()) }
+            : { ...entry, progress };
         });
-
-        if (!changed) {
-          return current;
-        }
-
-        return {
-          ...current,
-          [selectedDateKey]: nextEntries,
-        };
+        return changed ? { ...current, [selectedDateKey]: nextEntries } : current;
       });
     }, 900);
-
     return () => window.clearInterval(intervalId);
   }, [entries, selectedDateKey]);
 
   const stats = React.useMemo(() => {
     const ready = entries.filter((entry) => entry.status === "ready").length;
-    const loading = entries.filter(
-      (entry) => entry.status === "loading",
-    ).length;
-    const waiting = entries.filter(
-      (entry) => entry.status === "waiting",
-    ).length;
-    const errorCount = entries.filter(
-      (entry) => entry.status === "error",
-    ).length;
-    const remaining = loading + waiting;
-
+    const remaining = entries.filter((entry) => entry.status === "loading" || entry.status === "waiting").length;
+    const errorCount = entries.filter((entry) => entry.status === "error").length;
     return {
       ready,
-      remaining,
-      estimatedMinutes:
-        remaining === 0
-          ? 0
-          : Math.ceil(remaining / maxParallelPreloads) *
-            estimatedMinutesPerPatient,
+      estimatedMinutes: remaining === 0 ? 0 : Math.ceil(remaining / maxParallelPreloads) * estimatedMinutesPerPatient,
       errorCount,
     };
   }, [entries]);
 
-  const updateCodeQueryFromDigits = React.useCallback(
-    (nextDigits: string[]) => {
-      setCodeQuery(formatPersonalCode(nextDigits.join("")));
-      if (error) {
-        setError("");
-      }
-    },
-    [error],
-  );
+  const updateEntriesForSelectedDate = React.useCallback((updater: (items: DayListEntry[]) => DayListEntry[]) => {
+    setDayListsByDate((current) => ({ ...current, [selectedDateKey]: updater(current[selectedDateKey] ?? []) }));
+  }, [selectedDateKey]);
 
-  const updateEntriesForSelectedDate = React.useCallback(
-    (updater: (entries: DayListEntry[]) => DayListEntry[]) => {
-      setDayListsByDate((current) => ({
-        ...current,
-        [selectedDateKey]: updater(current[selectedDateKey] ?? []),
-      }));
-    },
-    [selectedDateKey],
-  );
-
-  const addPatientToSelectedDate = React.useCallback(
-    (patient: Patient) => {
-      if (queuedPatientIds.has(patient.id)) {
-        setError("Šis pacients jau ir pievienots šīs dienas sarakstam.");
-        return;
-      }
-
-      updateEntriesForSelectedDate((current) => [
-        createQueuedEntry(patient.id),
-        ...current,
-      ]);
-
-      setCodeQuery("");
-      setError("");
-    },
-    [queuedPatientIds, updateEntriesForSelectedDate],
-  );
+  const addPatientToSelectedDate = React.useCallback((patient: Patient) => {
+    if (queuedPatientIds.has(patient.id)) {
+      setError("Šis pacients jau ir pievienots šīs dienas sarakstam.");
+      return;
+    }
+    updateEntriesForSelectedDate((current) => [createQueuedEntry(patient.id), ...current]);
+    setCodeQuery("");
+    setError("");
+  }, [queuedPatientIds, updateEntriesForSelectedDate]);
 
   const handleAddPatientByCode = () => {
     const trimmedQuery = codeQuery.trim();
     const queryDigits = getPersonalCodeDigits(trimmedQuery);
-
-    if (!trimmedQuery) {
-      setError("Ievadiet personas kodu.");
-      return;
-    }
-
-    if (queryDigits.length < personalCodeLength) {
-      setError("Ievadiet pilnu pacienta personas kodu.");
-      return;
-    }
-
-    const patient = patients.find(
-      (item) => getPersonalCodeDigits(item.personalCode) === queryDigits,
-    );
-
-    if (!patient) {
-      setError("Pacients netika atrasts.");
-      return;
-    }
-
+    if (!trimmedQuery) return setError("Ievadiet personas kodu.");
+    if (queryDigits.length < personalCodeLength) return setError("Ievadiet pilnu pacienta personas kodu.");
+    const patient = patients.find((item) => getPersonalCodeDigits(item.personalCode) === queryDigits);
+    if (!patient) return setError("Pacients netika atrasts.");
     addPatientToSelectedDate(patient);
   };
 
-  const handleRetry = (patientId: string) => {
-    updateEntriesForSelectedDate((current) =>
-      current.map((entry) =>
-        entry.patientId === patientId
-          ? {
-              ...entry,
-              status: "waiting",
-              progress: 0,
-              updatedAt: null,
-            }
-          : entry,
-      ),
-    );
-  };
+  const handleRetry = (patientId: string) => updateEntriesForSelectedDate((current) =>
+    current.map((entry) => entry.patientId === patientId
+      ? { ...entry, status: "waiting", progress: 0, updatedAt: null }
+      : entry),
+  );
+  const handleRemove = (patientId: string) => updateEntriesForSelectedDate((current) =>
+    current.filter((entry) => entry.patientId !== patientId),
+  );
 
-  const handleRemove = (patientId: string) => {
-    updateEntriesForSelectedDate((current) =>
-      current.filter((entry) => entry.patientId !== patientId),
-    );
-  };
-
-  const headerDayLabel = getRelativeDayLabel(selectedDateKey, todayKey);
+  const dayStatusItems = [
+    { icon: ClipboardCheck, label: "Gatavi", value: `${stats.ready} / ${entries.length}`, valueClass: "text-[hsl(220,56%,46%)]" },
+    { icon: Clock3, label: "Atlikušais laiks", value: `~ ${stats.estimatedMinutes} min`, valueClass: "text-[hsl(220,42%,18%)]" },
+    { icon: CircleAlert, label: "Kļūdas", value: `${stats.errorCount}`, valueClass: stats.errorCount > 0 ? "text-[hsl(0,62%,50%)]" : "text-[hsl(218,18%,42%)]" },
+  ];
+  const navigationDays = [previousDate, selectedDate, nextDate].map((date, index) => {
+    const dateKey = formatDayListDateKey(date);
+    return {
+      dateKey,
+      dateLabel: formatNumericDate(date),
+      dayLabel: getRelativeDayLabel(dateKey, todayKey),
+      entryCount: dayListsByDate[dateKey]?.length ?? 0,
+      position: (index === 0 ? "previous" : index === 1 ? "selected" : "next") as "previous" | "selected" | "next",
+    };
+  });
 
   return (
     <div className={cn("min-h-screen overflow-y-auto", pageBg)}>
@@ -512,516 +291,61 @@ export default function DayListPage() {
         onSaveLayoutOrder={setLayoutOrder}
       />
 
-      <main className="min-h-screen px-4 pb-6 pt-16 sm:px-5 lg:pb-6 lg:pt-6 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+24px)] lg:pr-8">
-        <section className="mx-auto flex w-full max-w-[1280px] flex-col gap-6">
-          <header>
-            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_minmax(500px,600px)] lg:items-start">
-              <div className="flex min-w-0 flex-col justify-center">
-                <h1 className="max-w-[700px] text-2xl font-semibold leading-tight tracking-[-0.05em] text-[hsl(217,40%,18%)] xl:text-3xl">
-                  {registeredDoctorAccount.name} dienas saraksts
-                </h1>
-
-                <div className="mt-3 flex flex-wrap items-center gap-2 text-sm text-[hsl(215,14%,47%)]">
-                  <span>{headerDayLabel}</span>
-                  <span className="text-[hsl(217,18%,64%)]">·</span>
-                  <span>{formatNumericDate(selectedDate)}</span>
-                  <CalendarDays className="h-4 w-4 text-[hsl(217,18%,64%)]" />
-                </div>
-
-                <p className="mt-3 max-w-[620px] text-sm leading-6 text-[hsl(214,18%,44%)]">
-                  Pievienojiet šīs dienas pacientus, lai dati būtu gatavi pirms
-                  vizītes.
+      <div className="transition-[padding-left] duration-300 lg:pl-[var(--dashboard-sidebar-width,280px)]">
+        <header className="sticky top-0 z-40 border-b border-[hsl(214,22%,88%)] bg-[rgba(255,255,255,0.97)] backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-5 py-4 md:px-8">
+            <div className="flex min-w-0 items-center gap-4">
+              <span className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[hsl(220,22%,94%)] text-[hsl(221,46%,22%)] sm:flex">
+                <ListPlus className="h-5 w-5" strokeWidth={1.9} />
+              </span>
+              <div className="min-w-0 pl-14 sm:pl-0">
+                <h1 className="text-2xl font-semibold leading-tight tracking-[-0.04em] text-[hsl(222,28%,16%)]">Dienas saraksts</h1>
+                <p className="mt-1 flex flex-wrap items-center gap-x-2 text-sm leading-5 text-[hsl(220,16%,52%)]">
+                  <span>{registeredDoctorAccount.name}</span>
                 </p>
               </div>
-
-              <div className="grid overflow-hidden rounded-lg border border-[hsl(214,22%,88%)] bg-white sm:grid-cols-3 lg:self-start">
-                {[
-                  {
-                    icon: ClipboardCheck,
-                    label: "Gatavi",
-                    value: `${stats.ready} / ${entries.length}`,
-                    valueClass: "text-[hsl(220,56%,46%)]",
-                  },
-                  {
-                    icon: Clock3,
-                    label: "Atlikušais laiks",
-                    value: `~ ${stats.estimatedMinutes} min`,
-                    valueClass: "text-[hsl(220,42%,18%)]",
-                  },
-                  {
-                    icon: CircleAlert,
-                    label: "Kļūdas",
-                    value: `${stats.errorCount}`,
-                    valueClass:
-                      stats.errorCount > 0
-                        ? "text-[hsl(0,62%,50%)]"
-                        : "text-[hsl(218,18%,42%)]",
-                  },
-                ].map(({ icon: Icon, label, value, valueClass }) => (
-                  <div
-                    key={label}
-                    className="flex min-h-[76px] flex-col justify-between border-b border-[hsl(214,22%,90%)] px-4 py-3 last:border-b-0 sm:border-b-0 sm:border-l sm:first:border-l-0"
-                  >
-                    <div className="flex items-center gap-2 text-[hsl(218,17%,48%)]">
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-[hsl(214,28%,96%)]">
-                        <Icon className="h-[15px] w-[15px]" strokeWidth={2} />
-                      </span>
-                      <span className="text-xs font-semibold leading-tight">
-                        {label}
-                      </span>
-                    </div>
-
-                    <div className="mt-2">
-                      <p
-                        className={cn(
-                          "text-xl font-semibold leading-none tracking-[-0.04em]",
-                          valueClass,
-                        )}
-                      >
-                        {value}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
             </div>
-          </header>
-
-          <div className={cn(panelClass, "overflow-hidden")}>
-            <section className="px-4 py-4 sm:px-5 xl:px-6">
-              <div className="mb-3 flex items-center justify-between gap-3">
-                <p className={sectionLabelClass}>Dienas izvēle</p>
-                <span className="text-xs text-[hsl(215,14%,47%)]">
-                  Saraksts: {formatMonthDate(selectedDate)}
-                </span>
-              </div>
-              <div className="grid gap-2.5 md:grid-cols-[1fr_1.08fr_1fr]">
-                {[
-                  {
-                    date: previousDate,
-                    label: getRelativeDayLabel(
-                      formatDayListDateKey(previousDate),
-                      todayKey,
-                    ),
-                    icon: ChevronLeft,
-                    iconPlacement: "left" as const,
-                    action: () =>
-                      setSelectedDateKey(formatDayListDateKey(previousDate)),
-                    active: false,
-                  },
-                  {
-                    date: selectedDate,
-                    label: headerDayLabel,
-                    icon: CalendarDays,
-                    iconPlacement: "left" as const,
-                    action: () =>
-                      setSelectedDateKey(formatDayListDateKey(selectedDate)),
-                    active: true,
-                  },
-                  {
-                    date: nextDate,
-                    label: getRelativeDayLabel(
-                      formatDayListDateKey(nextDate),
-                      todayKey,
-                    ),
-                    icon: ChevronRight,
-                    iconPlacement: "right" as const,
-                    action: () =>
-                      setSelectedDateKey(formatDayListDateKey(nextDate)),
-                    active: false,
-                  },
-                ].map(
-                  ({
-                    date,
-                    label,
-                    icon: Icon,
-                    action,
-                    active,
-                    iconPlacement,
-                  }) => {
-                    const dateKey = formatDayListDateKey(date);
-                    const dayEntryCount = dayListsByDate[dateKey]?.length ?? 0;
-                   
-                    return (
-                      <button
-                        key={`${label}-${dateKey}`}
-                        type="button"
-                        onClick={action}
-                        className={cn(
-                          "flex min-h-11 items-center justify-between gap-3 rounded-lg border px-3.5 py-3 text-left transition-colors duration-200",
-                          active
-                            ? "border-[hsl(220,36%,18%)] bg-[hsl(220,36%,18%)] text-white"
-                            : "border-[rgba(214,223,231,0.82)] bg-white text-[hsl(218,30%,24%)] hover:border-[rgba(189,202,215,0.96)] hover:bg-[hsl(214,28%,98%)]",
-                        )}
-                      >
-                        {iconPlacement !== "right" && (
-                          <div
-                            className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                              active
-                                ? "bg-[rgba(255,255,255,0.1)]"
-                                : "bg-[hsl(214,24%,96%)] text-[hsl(217,22%,42%)]",
-                            )}
-                          >
-                            <Icon className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-
-                        <div className="min-w-0 flex-1">
-                          <p
-                            className={cn(
-                              "text-xs font-semibold",
-                              active
-                                ? "text-[rgba(255,255,255,0.88)]"
-                                : "text-[hsl(214,14%,44%)]",
-                            )}
-                          >
-                            {label}
-                          </p>
-                          <p className="mt-0.5 text-sm font-semibold tracking-[-0.03em]">
-                            {formatNumericDate(date)}
-                          </p>
-                          <p
-                            className={cn(
-                              "mt-1 text-xs font-normal",
-                              active
-                                ? "text-[rgba(255,255,255,0.7)]"
-                                : "text-[hsl(214,15%,52%)]",
-                            )}
-                          >
-                          </p>
-                        </div>
-
-                        {iconPlacement === "right" && (
-                          <div
-                            className={cn(
-                              "flex h-8 w-8 shrink-0 items-center justify-center rounded-md",
-                              active
-                                ? "bg-[rgba(255,255,255,0.1)]"
-                                : "bg-[hsl(214,24%,96%)] text-[hsl(217,22%,42%)]",
-                            )}
-                          >
-                            <Icon className="h-3.5 w-3.5" />
-                          </div>
-                        )}
-                      </button>
-                    );
-                  },
-                )}
-              </div>
-            </section>
-
-            <form
-              className="relative flex flex-col gap-4 border-t border-[hsl(214,22%,90%)] bg-[hsl(214,38%,98%)] px-4 py-4 sm:px-5 xl:px-6"
-              onSubmit={(event) => {
-                event.preventDefault();
-                handleAddPatientByCode();
-              }}
-            >
-              <div className="min-w-0">
-                <p className={sectionLabelClass}>Pievienot pacientu</p>
-
-                <div className="mt-3 flex min-w-0 flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto py-1">
-                      {personalCodeDigits.map((digit, index) => {
-                        const showDivider =
-                          index === personalCodeGroupSizes[0] - 1;
-
-                        return (
-                          <React.Fragment key={index}>
-                            <input
-                              ref={(node) => {
-                                inputRefs.current[index] = node;
-                              }}
-                              type="text"
-                              inputMode="numeric"
-                              autoFocus={index === 0}
-                              maxLength={1}
-                              value={digit}
-                              onChange={(event) => {
-                                const nextValue = event.target.value
-                                  .replace(/[^\d]/g, "")
-                                  .slice(-1);
-
-                                const nextDigits = [...personalCodeDigits];
-                                nextDigits[index] = nextValue;
-                                updateCodeQueryFromDigits(nextDigits);
-
-                                if (
-                                  nextValue &&
-                                  index < personalCodeLength - 1
-                                ) {
-                                  inputRefs.current[index + 1]?.focus();
-                                  inputRefs.current[index + 1]?.select();
-                                }
-                              }}
-                              onKeyDown={(event) => {
-                                if (event.key === "Backspace") {
-                                  event.preventDefault();
-
-                                  const nextDigits = [...personalCodeDigits];
-
-                                  if (nextDigits[index]) {
-                                    nextDigits[index] = "";
-                                    updateCodeQueryFromDigits(nextDigits);
-                                    return;
-                                  }
-
-                                  if (index > 0) {
-                                    nextDigits[index - 1] = "";
-                                    updateCodeQueryFromDigits(nextDigits);
-                                    inputRefs.current[index - 1]?.focus();
-                                  }
-
-                                  return;
-                                }
-
-                                if (event.key === "ArrowLeft" && index > 0) {
-                                  event.preventDefault();
-                                  inputRefs.current[index - 1]?.focus();
-                                  return;
-                                }
-
-                                if (
-                                  event.key === "ArrowRight" &&
-                                  index < personalCodeLength - 1
-                                ) {
-                                  event.preventDefault();
-                                  inputRefs.current[index + 1]?.focus();
-                                  return;
-                                }
-
-                                const allowedKeys = ["Delete", "Tab", "Enter"];
-
-                                if (
-                                  !/\d/.test(event.key) &&
-                                  !allowedKeys.includes(event.key)
-                                ) {
-                                  event.preventDefault();
-                                }
-                              }}
-                              onPaste={(event) => {
-                                event.preventDefault();
-
-                                const pastedDigits = event.clipboardData
-                                  .getData("text")
-                                  .replace(/[^\d]/g, "")
-                                  .slice(0, personalCodeLength - index)
-                                  .split("");
-
-                                if (pastedDigits.length === 0) return;
-
-                                const nextDigits = [...personalCodeDigits];
-
-                                pastedDigits.forEach((value, offset) => {
-                                  nextDigits[index + offset] = value;
-                                });
-
-                                updateCodeQueryFromDigits(nextDigits);
-
-                                const nextFocusIndex = Math.min(
-                                  index + pastedDigits.length,
-                                  personalCodeLength - 1,
-                                );
-
-                                inputRefs.current[nextFocusIndex]?.focus();
-                              }}
-                              className="h-11 w-11 shrink-0 rounded-md border border-[hsl(214,22%,84%)] bg-white text-center text-sm font-normal text-[hsl(220,38%,24%)] outline-none transition focus:border-[hsl(216,46%,58%)] focus:ring-2 focus:ring-[rgba(59,130,246,0.12)]"
-                              aria-label={`Personas koda cipars ${index + 1}`}
-                            />
-
-                            {showDivider && (
-                              <span className="px-1 text-sm font-normal text-[hsl(218,14%,50%)]">
-                                -
-                              </span>
-                            )}
-                          </React.Fragment>
-                        );
-                      })}
-                    </div>
-
-                    <p
-                      className={cn(
-                        "mt-2 text-xs",
-                        error
-                          ? "font-normal text-[hsl(0,60%,48%)]"
-                          : "text-[hsl(218,16%,52%)]",
-                      )}
-                    >
-                      {error || "Ievadiet personas kodu"}
-                    </p>
+            <div className="hidden overflow-hidden rounded-md border border-[hsl(214,22%,88%)] bg-white lg:grid lg:grid-cols-3">
+              {dayStatusItems.map(({ icon: Icon, label, value, valueClass }) => (
+                <div key={label} className="flex min-w-[142px] flex-col justify-center border-l border-[hsl(214,22%,90%)] px-4 py-2.5 first:border-l-0">
+                  <div className="flex items-center gap-1.5 text-[hsl(218,17%,48%)]">
+                    <Icon className="h-3.5 w-3.5" strokeWidth={2} />
+                    <span className="text-xs font-semibold leading-4">{label}</span>
                   </div>
-
-                  <Button
-                    type="submit"
-                    className="h-11 w-full rounded-md bg-[hsl(220,36%,18%)] px-4 text-sm font-semibold text-white hover:bg-[hsl(220,36%,22%)] lg:mt-0.5 lg:w-auto lg:min-w-[180px]"
-                  >
-                    <UserPlus className="mr-2 h-3.5 w-3.5" strokeWidth={2.2} />
-                    Pievienot pacientu
-                  </Button>
+                  <p className={cn("mt-1 text-lg font-semibold leading-none tracking-[-0.04em] tabular-nums", valueClass)}>{value}</p>
                 </div>
-              </div>
-            </form>
-
-            <section className="relative border-t border-[hsl(214,26%,90%)] bg-white">
-              <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[hsl(214,26%,90%)] px-5 py-4 sm:px-6 xl:px-7">
-                <div className="flex items-center gap-3">
-                  <p className="text-sm font-semibold text-[hsl(222,28%,20%)]">
-                    Pacienti {formatMonthDate(selectedDate)}
-                  </p>
-
-                  <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-full bg-[hsl(220,46%,96%)] px-2 text-xs font-semibold text-[hsl(220,48%,46%)]">
-                    {entries.length}
-                  </span>
-                </div>
-              </div>
-
-              <div className="overflow-x-auto">
-                <div className="min-w-0">
-                  <div
-                    className={cn(
-                      tableGridClass,
-                      "hidden border-b border-[hsl(214,22%,90%)] bg-[hsl(214,38%,98%)] px-6 py-3 text-xs font-semibold text-[hsl(215,14%,47%)] md:grid xl:px-7",
-                    )}
-                  >
-                    <span>Pacients</span>
-                    <span>Personas kods</span>
-                    <span>Statuss</span>
-                    <span className="pl-1">Progress</span>
-                    <span className="text-center">Atjaunots</span>
-                    <span>Darbības</span>
-                  </div>
-
-                  <div className="bg-white">
-                    {entries.length === 0 ? (
-                      <div className="px-6 py-12 text-center xl:px-7">
-                        <div className="mx-auto max-w-[520px]">
-                          <p className="text-xl font-semibold tracking-[-0.03em] text-[hsl(219,30%,22%)]">
-                            Šī diena pagaidām ir tukša
-                          </p>
-                          <p className="mt-3 text-sm leading-6 text-[hsl(214,16%,48%)]">
-                            Pievienojiet pacientus ar personas kodu.
-                          </p>
-                        </div>
-                      </div>
-                    ) : (
-                      entries.map((entry, index) => {
-                        const patient = patientMap[entry.patientId];
-
-                        if (!patient) {
-                          return null;
-                        }
-
-                        const statusMeta = getStatusMeta(entry.status);
-                        const progressValue =
-                          entry.status === "error" ? 0 : entry.progress;
-
-                        return (
-                          <div
-                            key={`${selectedDateKey}-${entry.patientId}`}
-                            onClick={() =>
-                              navigate("/clinical-dashboard", {
-                                state: { patient, layoutOrder, specialtyId },
-                              })
-                            }
-                            className={cn(
-                              tableGridClass,
-                              "cursor-pointer px-5 py-4 text-sm transition-colors duration-200 hover:bg-[hsl(214,36%,98%)] md:px-6 xl:px-7",
-                              index > 0 && "border-t border-[hsl(214,26%,91%)]",
-                              entry.status === "error" &&
-                                "bg-[linear-gradient(90deg,rgba(254,242,242,0.62),white_32%)]",
-                            )}
-                          >
-                            <div className="min-w-0">
-                              <p className="whitespace-normal break-words text-sm font-normal tracking-[-0.015em] text-[hsl(220,38%,20%)]">
-                                {patient.name}
-                              </p>
-                            </div>
-
-                            <span className="font-normal text-[hsl(218,15%,47%)]">
-                              {patient.personalCode}
-                            </span>
-
-                            <span
-                              className={cn(
-                                "inline-flex w-fit items-center gap-1.5 rounded-[6px] border px-2.5 py-1 text-xs font-normal",
-                                statusMeta.badgeClass,
-                              )}
-                            >
-                              <span
-                                className={cn(
-                                  "h-1.5 w-1.5 rounded-full",
-                                  statusMeta.dotClass,
-                                )}
-                              />
-                              {statusMeta.label}
-                            </span>
-
-                            <div className="flex items-center gap-3 pr-2">
-                              <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-[hsl(216,28%,92%)]">
-                                <div
-                                  className={cn(
-                                    "h-full rounded-full transition-[width]",
-                                    statusMeta.progressClass,
-                                  )}
-                                  style={{ width: `${progressValue}%` }}
-                                />
-                              </div>
-
-                              <span className="w-10 text-right text-xs font-normal text-[hsl(218,15%,47%)]">
-                                {entry.status === "error"
-                                  ? "-"
-                                  : `${progressValue}%`}
-                              </span>
-                            </div>
-
-                            <span className="text-center font-normal text-[hsl(218,15%,47%)]">
-                              {entry.updatedAt ?? "-"}
-                            </span>
-
-                            <div className="flex items-center gap-2">
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  handleRetry(entry.patientId);
-                                }}
-                                aria-label={`Atkārtot ${patient.name}`}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-md text-[hsl(216,44%,48%)] transition hover:bg-[hsl(214,28%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
-                              >
-                                <RefreshCcw
-                                  className="h-[14px] w-[14px]"
-                                  strokeWidth={2}
-                                />
-                              </button>
-
-                              <button
-                                type="button"
-                                onClick={(event) => {
-                                  event.stopPropagation();
-                                  handleRemove(entry.patientId);
-                                }}
-                                aria-label={`Noņemt ${patient.name}`}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-md text-[hsl(0,56%,50%)] transition hover:bg-[hsl(0,72%,98%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
-                              >
-                                <Trash2
-                                  className="h-[14px] w-[14px]"
-                                  strokeWidth={2}
-                                />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })
-                    )}
-                  </div>
-                </div>
-              </div>
-            </section>
+              ))}
+            </div>
           </div>
-        </section>
-      </main>
+        </header>
+
+        <main className="min-h-screen px-4 py-6 sm:px-5 md:px-6 lg:px-8">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-5">
+            <DayListDateNavigation
+              days={navigationDays}
+              onSelectDay={setSelectedDateKey}
+            />
+            <DayListPatientForm
+              codeQuery={codeQuery}
+              error={error}
+              onCodeChange={(value) => {
+                setCodeQuery(formatPersonalCode(value));
+                if (error) setError("");
+              }}
+              onSubmit={handleAddPatientByCode}
+            />
+            <DayListPatientQueue
+              entries={entries}
+              selectedDateKey={selectedDateKey}
+              patientMap={patientMap}
+              getStatusMeta={getStatusMeta}
+              onOpenPatient={(patient) => navigate("/clinical-dashboard", { state: { patient, layoutOrder, specialtyId } })}
+              onRetry={handleRetry}
+              onRemove={handleRemove}
+            />
+          </div>
+        </main>
+      </div>
     </div>
   );
 }

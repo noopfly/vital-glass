@@ -211,7 +211,7 @@ const AlertsCard = () => {
               </button>
             </div>
             <div className="px-5 py-5 sm:px-6">
-              <div className="overflow-hidden rounded-[8px] border border-[hsl(214,22%,88%)] divide-y divide-[hsl(214,22%,90%)]">
+              <div className="divide-y divide-[hsl(214,22%,90%)] bg-white">
                 {alerts.map((alert) => (
                   <AlertRow key={alert.id} alert={alert} showDescription />
                 ))}
