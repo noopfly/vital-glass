@@ -6,7 +6,6 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  ChevronUp,
   ListFilter,
   Hospital,
   Scissors,
@@ -16,6 +15,7 @@ import {
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
 import { DashboardCardHeader } from "@/components/DashboardCardHeader";
+import { DashboardListFooter } from "@/components/DashboardListFooter";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -174,10 +174,10 @@ const typeConfig: Record<
     label: "Laboratorija",
     icon: <Beaker size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(196,20%,78%)] bg-[hsl(192,30%,95%)] shadow-sm",
+      "border-[hsl(196,20%,78%)] bg-[hsl(192,30%,95%)]",
     dotInnerClass: "bg-[hsl(196,34%,36%)]",
     activeDotOuterClass:
-      "border-[hsl(196,20%,78%)] bg-[hsl(192,30%,95%)] shadow-sm",
+      "border-[hsl(196,20%,78%)] bg-[hsl(192,30%,95%)]",
     activeDotInnerClass: "bg-[hsl(196,34%,36%)]",
     textClass: "text-[hsl(196,30%,34%)]",
     badgeClass:
@@ -192,10 +192,10 @@ const typeConfig: Record<
     label: "Ambulatorā vizīte",
     icon: <Stethoscope size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(152,24%,78%)] bg-[hsl(150,32%,95%)] shadow-sm",
+      "border-[hsl(152,24%,78%)] bg-[hsl(150,32%,95%)]",
     dotInnerClass: "bg-[hsl(152,36%,38%)]",
     activeDotOuterClass:
-      "border-[hsl(152,24%,78%)] bg-[hsl(150,32%,95%)] shadow-sm",
+      "border-[hsl(152,24%,78%)] bg-[hsl(150,32%,95%)]",
     activeDotInnerClass: "bg-[hsl(152,36%,38%)]",
     textClass: "text-[hsl(152,38%,31%)]",
     badgeClass:
@@ -210,10 +210,10 @@ const typeConfig: Record<
     label: "Stacionārs",
     icon: <Hospital size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,95%)] shadow-sm",
+      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,95%)]",
     dotInnerClass: "bg-[hsl(0,38%,46%)]",
     activeDotOuterClass:
-      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,95%)] shadow-sm",
+      "border-[hsl(0,28%,80%)] bg-[hsl(0,42%,95%)]",
     activeDotInnerClass: "bg-[hsl(0,38%,46%)]",
     textClass: "text-[hsl(0,42%,40%)]",
     badgeClass:
@@ -228,10 +228,10 @@ const typeConfig: Record<
     label: "Procedūra",
     icon: <Scissors size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,95%)] shadow-sm",
+      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,95%)]",
     dotInnerClass: "bg-[hsl(36,50%,42%)]",
     activeDotOuterClass:
-      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,95%)] shadow-sm",
+      "border-[hsl(38,30%,80%)] bg-[hsl(40,52%,95%)]",
     activeDotInnerClass: "bg-[hsl(36,50%,42%)]",
     textClass: "text-[hsl(34,50%,36%)]",
     badgeClass:
@@ -246,10 +246,10 @@ const typeConfig: Record<
     label: "Attēldiagnostika",
     icon: <Activity size={12} strokeWidth={1.8} />,
     dotOuterClass:
-      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,95%)] shadow-sm",
+      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,95%)]",
     dotInnerClass: "bg-[hsl(220,28%,40%)]",
     activeDotOuterClass:
-      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,95%)] shadow-sm",
+      "border-[hsl(220,24%,80%)] bg-[hsl(220,36%,95%)]",
     activeDotInnerClass: "bg-[hsl(220,28%,40%)]",
     textClass: "text-[hsl(220,28%,34%)]",
     badgeClass:
@@ -292,6 +292,8 @@ function TimelineContent({
   expanded = false,
 }: TimelineContentProps) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+  const eventCardRefs = useRef(new Map<string, HTMLElement>());
+  const revealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
 
@@ -320,17 +322,44 @@ function TimelineContent({
     }
   };
 
+  const toggleEventAndReveal = (eventId: string) => {
+    const isOpening = activeEventId !== eventId;
+    onToggleEvent(eventId);
+
+    if (!isOpening) return;
+
+    if (revealTimerRef.current) {
+      clearTimeout(revealTimerRef.current);
+    }
+
+    revealTimerRef.current = setTimeout(() => {
+      const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+      eventCardRefs.current.get(eventId)?.scrollIntoView({
+        behavior: prefersReducedMotion ? "auto" : "smooth",
+        block: "nearest",
+        inline: "nearest",
+      });
+    }, 200);
+  };
+
   useEffect(() => {
     updateScrollState();
   }, [filteredEvents, activeEventId, expanded]);
+
+  useEffect(() => () => {
+    if (revealTimerRef.current) {
+      clearTimeout(revealTimerRef.current);
+    }
+  }, []);
 
   return (
     <div
       data-timeline-container
       onClick={handleCardClick}
-      className={`clinical-panel-interactive flex w-full flex-col ${
+      className={`clinical-panel flex w-full flex-col ${
         expanded
-          ? "min-h-[640px]"
+          ? "min-h-[28rem] overflow-visible"
           : "h-full cursor-pointer"
       }`}
     >
@@ -347,12 +376,12 @@ function TimelineContent({
               <button
                 type="button"
                 onClick={(event) => event.stopPropagation()}
-                className="group inline-flex min-h-9 cursor-pointer items-center gap-2 rounded-md border border-[hsl(214,22%,84%)] bg-white px-3 text-sm font-normal text-text-dark shadow-sm transition hover:border-[hsl(220,36%,16%)] hover:bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(196,50%,42%)] focus-visible:ring-offset-2"
+                className="group inline-flex min-h-10 cursor-pointer items-center gap-2 rounded-md border border-[hsl(214,22%,84%)] bg-white px-3 text-sm font-normal text-text-dark transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] focus-visible:ring-offset-2"
                 aria-label="Filtrēt notikumu veidus"
               >
                 <ListFilter size={16} aria-hidden="true" />
                 <span>Notikumu veidi</span>
-                <span className="text-xs text-[hsl(214,18%,52%)] transition-colors group-hover:text-white">
+                <span className="text-xs text-heading">
                   ({selectedTypes.length}/{allTypes.length})
                 </span>
                 <ChevronDown size={16} aria-hidden="true" />
@@ -360,7 +389,7 @@ function TimelineContent({
             </DropdownMenuTrigger>
             <DropdownMenuContent
               align="end"
-              className="w-60 p-1.5"
+              className="z-[100] w-60 p-1"
               onClick={(event) => event.stopPropagation()}
             >
               {allTypes.map((type) => {
@@ -372,9 +401,9 @@ function TimelineContent({
                     checked={selectedTypes.includes(type)}
                     onSelect={(event) => event.preventDefault()}
                     onCheckedChange={() => onToggleType(type)}
-                    className="group cursor-pointer gap-2 py-2 text-sm hover:!bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] hover:!text-white focus:!bg-[linear-gradient(180deg,hsl(220,36%,16%),hsl(218,34%,22%))] focus:!text-white"
+                    className="group cursor-pointer gap-2 py-1.5 text-xs leading-4 hover:!bg-[hsl(214,20%,96%)] hover:!text-text-dark focus:!bg-[hsl(214,20%,96%)] focus:!text-text-dark"
                   >
-                    <span className={`${config.textClass} group-hover:text-white group-focus:text-white`}>
+                    <span className={config.textClass}>
                       {config.icon}
                     </span>
                     {config.label}
@@ -388,12 +417,12 @@ function TimelineContent({
       </DashboardCardHeader>
 
       {filteredEvents.length === 0 ? (
-        <div className="flex min-h-[110px] flex-1 items-center justify-center rounded-[10px] border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-[12px] text-heading">
+        <div className="flex min-h-[110px] flex-1 items-center justify-center rounded-lg border border-dashed border-[hsl(211,24%,86%)] bg-[hsl(214,20%,98%)] px-4 text-center text-sm text-heading">
           Nav atlasītu notikumu veidu.
         </div>
       ) : (
-        <div className={`relative flex-1 ${expanded ? "flex items-center -mt-20" : "pt-8"}`}>
-          <div className={`relative w-full ${expanded ? "mt-10" : ""}`}>
+        <div className="relative min-h-0 flex-1 pt-4">
+          <div className="relative w-full">
             {canScrollLeft ? (
               <div className="pointer-events-none absolute inset-y-0 left-0 z-20 w-10 rounded-l-xl bg-gradient-to-r from-[rgba(255,255,255,0.94)] via-[rgba(255,255,255,0.75)] to-transparent" />
             ) : null}
@@ -409,8 +438,8 @@ function TimelineContent({
                   event.stopPropagation();
                   scrollByAmount("left");
                 }}
-                className={`absolute left-1 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[hsl(210,24%,86%)] bg-white/95 text-[hsl(215,18%,44%)] shadow-sm transition hover:bg-white hover:text-text-dark ${
-                  expanded ? "top-[128px]" : "top-[88px]"
+                className={`absolute left-1 z-30 inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(210,24%,86%)] bg-white text-[hsl(215,18%,44%)] transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] hover:text-text-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] ${
+                  "top-16"
                 }`}
                 aria-label="Ritināt pa kreisi"
               >
@@ -425,8 +454,8 @@ function TimelineContent({
                   event.stopPropagation();
                   scrollByAmount("right");
                 }}
-                className={`absolute right-1 z-30 inline-flex h-8 w-8 items-center justify-center rounded-full border border-[hsl(210,24%,86%)] bg-white/95 text-[hsl(215,18%,44%)] shadow-sm transition hover:bg-white hover:text-text-dark ${
-                  expanded ? "top-[128px]" : "top-[88px]"
+                className={`absolute right-1 z-30 inline-flex h-10 w-10 items-center justify-center rounded-md border border-[hsl(210,24%,86%)] bg-white text-[hsl(215,18%,44%)] transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] hover:text-text-dark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] ${
+                  "top-16"
                 }`}
                 aria-label="Ritināt pa labi"
               >
@@ -439,42 +468,31 @@ function TimelineContent({
               onScroll={updateScrollState}
               className="overflow-x-auto pb-3 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             >
-              <div className={`relative min-w-max px-3 pr-12 ${expanded ? "pt-12" : "pt-2"}`}>
+              <div className="relative min-w-max px-3 pr-10 pt-1">
                 <div
-                  className={`absolute left-5 right-5 h-px bg-[hsl(220,22%,90%)] ${
-                    expanded ? "top-[95px]" : "top-[47px]"
-                  }`}
+                  className="absolute left-5 right-5 top-10 h-px bg-[hsl(220,22%,90%)]"
                 />
 
-                <div className="flex items-start gap-6">
+                <div className="flex items-start gap-3">
                   {filteredEvents.map((event) => {
                     const config = typeConfig[event.type];
                     const active = activeEventId === event.id;
 
                     return (
-                      <div
+                      <article
                         key={event.id}
-                        role="button"
-                        tabIndex={0}
-                        onClick={(eventClick) => {
-                          eventClick.stopPropagation();
-                          onToggleEvent(event.id);
-                        }}
-                        onKeyDown={(eventKey) => {
-                          if (eventKey.key === "Enter" || eventKey.key === " ") {
-                            eventKey.preventDefault();
-                            eventKey.stopPropagation();
-                            onToggleEvent(event.id);
+                        ref={(element) => {
+                          if (element) {
+                            eventCardRefs.current.set(event.id, element);
+                          } else {
+                            eventCardRefs.current.delete(event.id);
                           }
                         }}
-                        aria-expanded={active}
-                        className={`relative shrink-0 cursor-pointer transition-all duration-200 ${
-                          active ? "w-[300px]" : "w-[186px]"
-                        }`}
+                        className="relative w-64 shrink-0"
                       >
                         <div className="relative flex flex-col items-center">
                           <p
-                            className={`mb-3 text-[11px] font-semibold tracking-[0.03em] ${
+                            className={`mb-2 text-xs font-semibold tabular-nums ${
                               active
                                 ? "text-[hsl(220,24%,36%)]"
                                 : "text-[hsl(215,18%,40%)]"
@@ -484,59 +502,54 @@ function TimelineContent({
                           </p>
 
                           <div
-                            className={`relative z-10 flex items-center justify-center rounded-full border transition-all ${
+                            className={`relative z-10 flex items-center justify-center rounded-full border transition-[width,height,background-color,border-color] duration-200 ease-out motion-reduce:transition-none ${
                               active
-                                ? `h-8 w-8 ${config.activeDotOuterClass}`
-                                : `h-5 w-5 ${config.dotOuterClass}`
+                                ? `h-6 w-6 ${config.activeDotOuterClass}`
+                                : `h-6 w-6 ${config.dotOuterClass}`
                             }`}
                           >
                             <span
                               className={`rounded-full ${
                                 active
-                                  ? `h-3.5 w-3.5 ${config.activeDotInnerClass}`
-                                  : `h-2 w-2 ${config.dotInnerClass}`
+                                  ? `h-2.5 w-2.5 ${config.activeDotInnerClass}`
+                                  : `h-2.5 w-2.5 ${config.dotInnerClass}`
                               }`}
                             />
                           </div>
 
                           <div
-                            className={`w-px transition-all ${
+                            className={`w-px transition-[height,background-color] duration-200 ease-out motion-reduce:transition-none ${
                               active
-                                ? `h-9 ${config.activeConnectorClass}`
+                                ? `h-5 ${config.activeConnectorClass}`
                                 : "h-5 bg-[hsl(210,18%,80%)]"
                             }`}
                           />
                         </div>
 
                         <div
-                          className={`relative w-full text-left transition-all duration-300 ease-out ${
+                          className={`relative w-full text-left transition-[border-color,background-color] duration-200 ${
                             active
-                              ? `rounded-[10px] border ${config.activeBorderClass} bg-white px-5 py-5 shadow-sm`
-                              : "rounded-[10px] border border-[hsl(210,22%,88%)] bg-white px-2.5 py-3 shadow-sm hover:bg-white"
+                              ? `rounded-lg border ${config.activeBorderClass} bg-white px-3 py-3`
+                          : "rounded-lg border border-[hsl(210,22%,88%)] bg-white px-3 py-3 transition-colors duration-200 hover:bg-[hsl(214,20%,99%)]"
                           }`}
                         >
-                          {active ? (
-                            <button
-                              type="button"
-                              onClick={(eventClick) => {
-                                eventClick.stopPropagation();
-                                onToggleEvent(event.id);
-                              }}
-                              aria-label="Sakļaut detaļas"
-                              className={`absolute right-4 top-4 inline-flex h-8 w-8 items-center justify-center rounded-full transition ${config.activeTextClass} ${config.activeBackgroundClass}`}
-                            >
-                              <ChevronUp size={12} />
-                            </button>
-                          ) : null}
-
-                          <div className={active ? "mb-4 pr-10" : "mb-2"}>
+                          <button
+                            type="button"
+                            onClick={(eventClick) => {
+                              eventClick.stopPropagation();
+                              toggleEventAndReveal(event.id);
+                            }}
+                            aria-expanded={active}
+                            className="relative block w-full cursor-pointer rounded-md text-left focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] focus-visible:ring-offset-2"
+                          >
+                          <div className="pr-10">
                             <div className="min-w-0">
-                              <div className={`flex items-center gap-1.5 ${active ? "mb-4" : "mb-1"}`}>
+                              <div className="mb-2 flex items-center gap-1.5">
                                 <span
-                                  className={`inline-flex items-center gap-1.5 rounded-xl border ${
+                                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${
                                     active
-                                      ? `${config.activeBorderClass} ${config.activeBackgroundClass} px-3 py-1.5 text-[11px] font-semibold ${config.activeTextClass}`
-                                      : `${config.badgeClass} px-1.5 py-0.5 text-[9px] font-medium`
+                                      ? `${config.activeBorderClass} ${config.activeBackgroundClass} ${config.activeTextClass}`
+                                      : config.badgeClass
                                   }`}
                                 >
                                   <span className={active ? config.activeTextClass : config.textClass}>
@@ -546,78 +559,56 @@ function TimelineContent({
                                 </span>
                               </div>
 
-                              <h3
-                                className={`font-semibold text-text-dark ${
-                                  active
-                                    ? "text-[15px] leading-[22px]"
-                                    : "text-[12px] leading-[16px]"
-                                }`}
-                              >
+                              <h3 className="text-sm font-semibold leading-5 text-text-dark">
                                 {event.title}
                               </h3>
 
-                              <p
-                                className={`${
-                                  active
-                                    ? "mt-1.5 text-[12px] leading-[20px] text-[hsl(214,18%,54%)]"
-                                    : "mt-0.5 line-clamp-2 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
-                                }`}
-                              >
+                              <p className={`mt-1 text-xs leading-4 text-heading ${active ? "" : "line-clamp-2"}`}>
                                 {event.summary}
                               </p>
 
-                              <div
-                                className={`flex items-start gap-2 ${
-                                  active
-                                    ? "mt-2 text-[12px] leading-[20px] text-[hsl(214,18%,50%)]"
-                                    : "mt-2 border-t border-[rgba(214,223,232,0.55)] pt-1.5 text-[10px] leading-[14px] text-[hsl(214,18%,40%)]"
-                                }`}
-                              >
+                              <div className="mt-2 flex items-start gap-2 border-t border-[hsl(214,22%,90%)] pt-2 text-xs leading-4 text-heading">
                                 <Building2
-                                  size={active ? 14 : 12}
-                                  className="mt-[2px] shrink-0 text-[hsl(214,18%,52%)]"
+                                  size={14}
+                                  className="mt-px shrink-0 text-[hsl(214,18%,52%)]"
                                 />
                                 <span>{event.facility}</span>
                               </div>
                             </div>
                           </div>
-
-                          {!active ? (
-                            <button
-                              type="button"
-                              onClick={(eventClick) => {
-                                eventClick.stopPropagation();
-                                onToggleEvent(event.id);
-                              }}
-                              aria-label="Izvērst detaļas"
-                              className="absolute right-2.5 top-3 inline-flex h-5 w-5 items-center justify-center rounded-md text-heading transition hover:bg-[hsl(210,30%,97%)] hover:text-text-dark"
+                            <span
+                              className={`absolute right-0 top-0 inline-flex h-10 w-10 items-center justify-center rounded-md text-heading transition-transform duration-200 motion-reduce:transition-none ${
+                                active ? "rotate-180" : "rotate-0"
+                              }`}
+                              aria-hidden="true"
                             >
-                              <ChevronDown size={12} />
-                            </button>
-                          ) : null}
+                              <ChevronDown size={16} />
+                            </span>
+                          </button>
 
                           <div
-                            className={`overflow-hidden transition-all duration-300 ease-out ${
+                            className={`grid transition-[grid-template-rows,margin,padding,opacity] duration-300 ease-out motion-reduce:transition-none ${
                               active && (event.details?.length || event.originalDocumentUrl)
-                                ? "mt-5 max-h-[320px] border-t pt-5 opacity-100"
-                                : "mt-0 max-h-0 border-t-0 pt-0 opacity-0"
+                                ? "mt-3 grid-rows-[1fr] border-t pt-3 opacity-100"
+                                : "mt-0 grid-rows-[0fr] border-t-0 pt-0 opacity-0"
                             } ${active ? config.activeBorderClass : "border-transparent"}`}
                           >
+                            <div className="min-h-0 overflow-hidden">
                             {active && (event.details?.length || event.originalDocumentUrl) ? (
                               <>
-                                <p className="mb-4 text-[11px] font-semibold text-[hsl(214,14%,50%)]">
+                                <p className="mb-2 text-xs font-semibold leading-4 text-heading">
                                   Kopsavilkums
                                 </p>
 
                                 {event.details?.length ? (
-                                  <ul className="space-y-1">
+                                  <ul className="space-y-1.5">
                                     {event.details.map((detail, index) => (
                                       <li
                                         key={`${event.id}-${index}`}
-                                        className="flex items-start gap-2 text-[12px] leading-[20px]"
+                                        className="flex items-start gap-2 text-xs leading-4"
                                       >
                                         <span
-                                          className={`mt-[8px] h-1.5 w-1.5 shrink-0 rounded-full ${config.detailDotClass}`}
+                                          className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${config.detailDotClass}`}
                                         />
                                         <span className="text-text-dark">{detail}</span>
                                       </li>
@@ -630,18 +621,19 @@ function TimelineContent({
                                     href={event.originalDocumentUrl}
                                     target="_blank"
                                     rel="noreferrer"
-                                    className={`mt-5 inline-flex items-center gap-1 text-[12px] font-semibold transition hover:opacity-80 ${config.activeTextClass}`}
+                                    className={`mt-3 inline-flex min-h-10 max-w-full items-center gap-1.5 rounded-md px-2 py-2 text-left text-xs font-semibold leading-4 transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] ${config.activeTextClass}`}
                                     onClick={(eventClick) => eventClick.stopPropagation()}
                                   >
-                                    {event.originalDocumentLabel ?? "Skatīt oriģinālo dokumentu"}
-                                    <span aria-hidden="true">→</span>
+                                    <span>{event.originalDocumentLabel ?? "Skatīt oriģinālo dokumentu"}</span>
+                                    <ChevronRight className="shrink-0" size={14} aria-hidden="true" />
                                   </a>
                                 ) : null}
                               </>
                             ) : null}
+                            </div>
                           </div>
                         </div>
-                      </div>
+                      </article>
                     );
                   })}
 
@@ -657,7 +649,273 @@ function TimelineContent({
   );
 }
 
+function EventTypeBadge({ event }: { event: TimelineEvent }) {
+  const config = typeConfig[event.type];
+
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-semibold ${config.badgeClass}`}>
+      {config.icon}
+      {config.label}
+    </span>
+  );
+}
+
+function ClinicalEventRow({
+  event,
+  onOpen,
+}: {
+  event: TimelineEvent;
+  onOpen: () => void;
+}) {
+  const config = typeConfig[event.type];
+
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      className="grid min-h-16 w-full grid-cols-[4px_minmax(0,1fr)_auto] gap-x-3 gap-y-2 px-4 py-3 text-left transition-colors duration-200 hover:bg-[hsl(214,20%,99%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)] md:grid-cols-[4px_minmax(0,1fr)_auto_auto] md:items-center md:gap-x-4"
+    >
+      <span className={`row-span-2 h-full min-h-11 w-1 rounded-full ${config.detailDotClass}`} aria-hidden="true" />
+      <div className="min-w-0">
+        <p className="whitespace-normal break-words text-sm font-semibold leading-5 text-text-dark">
+          {event.title}
+        </p>
+        <p className="mt-1 whitespace-normal break-words text-xs leading-4 text-heading">
+          {event.summary}
+        </p>
+      </div>
+      <div className="col-start-2 flex flex-wrap items-center gap-x-2 gap-y-1 md:col-start-auto md:justify-end">
+        <EventTypeBadge event={event} />
+        <time className="text-xs leading-4 text-heading tabular-nums" dateTime={event.date}>
+          {formatDate(event.date)}
+        </time>
+      </div>
+      <ChevronRight className="col-start-3 row-start-1 self-center text-[hsl(214,28%,42%)] md:col-start-auto" size={18} aria-hidden="true" />
+    </button>
+  );
+}
+
+function EventDetailOverlay({
+  event,
+  onClose,
+}: {
+  event: TimelineEvent;
+  onClose: () => void;
+}) {
+  const config = typeConfig[event.type];
+
+  return (
+    <CenteredOverlay
+      onClose={onClose}
+      overlayClassName="bg-[rgba(15,23,42,0.32)]"
+      contentClassName="max-w-4xl"
+    >
+      <section
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="event-detail-title"
+        className="mx-auto max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-lg border border-[hsl(214,22%,88%)] bg-white"
+      >
+        <header className="relative border-b border-[hsl(214,22%,90%)] px-5 py-5 sm:px-6">
+          <div className="flex min-w-0 items-start gap-3 pr-12">
+            <span className={`mt-0.5 h-12 w-1 shrink-0 rounded-full ${config.detailDotClass}`} aria-hidden="true" />
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h3 id="event-detail-title" className="text-2xl font-semibold leading-tight tracking-[-0.035em] text-text-dark">
+                  {event.title}
+                </h3>
+                <EventTypeBadge event={event} />
+              </div>
+              <p className="mt-2 text-sm leading-5 text-heading">{event.summary}</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="absolute right-5 top-5 flex h-10 w-10 items-center justify-center rounded-md text-[hsl(215,14%,55%)] transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] hover:text-[hsl(215,22%,28%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] sm:right-6"
+            aria-label="Aizvērt notikuma detaļas"
+          >
+            <X size={20} />
+          </button>
+        </header>
+
+        <div className="p-5 sm:p-6">
+          <section className="overflow-hidden rounded-lg border border-[hsl(214,22%,88%)]" aria-labelledby="event-facts-title">
+            <h4 id="event-facts-title" className="border-b border-[hsl(214,22%,90%)] bg-[hsl(214,20%,96%)] px-4 py-3 text-sm font-semibold text-text-dark">
+              Informācija par notikumu
+            </h4>
+            <dl className="grid sm:grid-cols-2">
+              <div className="border-b border-[hsl(214,22%,90%)] px-4 py-3 sm:border-r sm:border-b-0">
+                <dt className="text-xs font-semibold leading-4 text-heading">Datums</dt>
+                <dd className="mt-1 text-sm leading-5 text-text-dark tabular-nums">{formatDate(event.date)}</dd>
+              </div>
+              <div className="px-4 py-3">
+                <dt className="text-xs font-semibold leading-4 text-heading">Ārstniecības iestāde</dt>
+                <dd className="mt-1 text-sm leading-5 text-text-dark">{event.facility}</dd>
+              </div>
+            </dl>
+          </section>
+
+          {event.details?.length ? (
+            <section className="mt-5 overflow-hidden rounded-lg border border-[hsl(214,22%,88%)]" aria-labelledby="event-summary-title">
+              <h4 id="event-summary-title" className="border-b border-[hsl(214,22%,90%)] bg-[hsl(214,20%,96%)] px-4 py-3 text-sm font-semibold text-text-dark">
+                Kopsavilkums
+              </h4>
+              <ul className="space-y-2.5 px-4 py-4">
+                {event.details.map((detail) => (
+                  <li key={detail} className="flex items-start gap-3 text-sm leading-5 text-text-dark">
+                    <span className={`mt-2 h-1.5 w-1.5 shrink-0 rounded-full ${config.detailDotClass}`} aria-hidden="true" />
+                    <span>{detail}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : null}
+
+          {event.originalDocumentUrl ? (
+            <a
+              href={event.originalDocumentUrl}
+              target="_blank"
+              rel="noreferrer"
+              className={`mt-5 inline-flex min-h-11 items-center gap-2 rounded-md border px-3 text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)] ${config.badgeClass}`}
+            >
+              {event.originalDocumentLabel ?? "Skatīt avota dokumentu"}
+              <ChevronRight size={16} aria-hidden="true" />
+            </a>
+          ) : null}
+        </div>
+      </section>
+    </CenteredOverlay>
+  );
+}
+
+function ClinicalEventTimeline() {
+  const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
+  const [selectedEvent, setSelectedEvent] = useState<TimelineEvent | null>(null);
+  const [isAllEventsOpen, setIsAllEventsOpen] = useState(false);
+
+  const filteredEvents = useMemo(
+    () => events
+      .filter((event) => selectedTypes.includes(event.type))
+      .sort((left, right) => new Date(right.date).getTime() - new Date(left.date).getTime()),
+    [selectedTypes],
+  );
+
+  const visibleEvents = filteredEvents.slice(0, 3);
+  const remainingEventCount = filteredEvents.length - visibleEvents.length;
+
+  const toggleType = (type: EventType) => {
+    setSelectedTypes((current) => current.includes(type)
+      ? current.filter((item) => item !== type)
+      : [...current, type]);
+  };
+
+  const filterControl = (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className="inline-flex min-h-10 items-center gap-2 rounded-md border border-[hsl(214,22%,84%)] bg-white px-3 text-sm text-text-dark transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
+          aria-label="Filtrēt notikumu veidus"
+        >
+          <ListFilter size={16} aria-hidden="true" />
+          <span>Notikumu veidi</span>
+          <span className="text-xs text-heading">({selectedTypes.length}/{allTypes.length})</span>
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-60 p-1">
+        {allTypes.map((type) => (
+          <DropdownMenuCheckboxItem
+            key={type}
+            checked={selectedTypes.includes(type)}
+            onSelect={(event) => event.preventDefault()}
+            onCheckedChange={() => toggleType(type)}
+            className="cursor-pointer gap-2 py-1.5 text-xs leading-4 hover:!bg-[hsl(214,20%,96%)] hover:!text-text-dark focus:!bg-[hsl(214,20%,96%)] focus:!text-text-dark"
+          >
+            <span className={typeConfig[type].textClass}>{typeConfig[type].icon}</span>
+            {typeConfig[type].label}
+          </DropdownMenuCheckboxItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+
+  const eventList = (items: TimelineEvent[]) => items.length ? (
+    <div className="clinical-list">
+      {items.map((event) => (
+        <ClinicalEventRow key={event.id} event={event} onOpen={() => setSelectedEvent(event)} />
+      ))}
+    </div>
+  ) : (
+    <div className="rounded-lg border border-dashed border-[hsl(214,22%,84%)] px-4 py-8 text-center text-sm leading-5 text-heading">
+      Nav atlasītu notikumu.
+    </div>
+  );
+
+  return (
+    <>
+      <section className="clinical-panel flex h-full w-full flex-col">
+        <DashboardCardHeader
+          title="Notikumu laika līnija"
+          infoLabel="Informācija par notikumu laika līniju"
+          infoDescription="Pacienta klīniskie notikumi hronoloģiskā secībā"
+        >
+          {filterControl}
+        </DashboardCardHeader>
+        <div className="mt-1 flex-1">{eventList(visibleEvents)}</div>
+        {remainingEventCount > 0 ? (
+          <div className="mt-4 overflow-hidden rounded-lg border border-[hsl(214,22%,88%)]">
+            <DashboardListFooter
+              label={`Vēl ${remainingEventCount} notikumi`}
+              onClick={() => setIsAllEventsOpen(true)}
+              ariaLabel={`Skatīt visus ${filteredEvents.length} notikumus`}
+            />
+          </div>
+        ) : null}
+      </section>
+
+      {isAllEventsOpen ? (
+        <CenteredOverlay
+          onClose={() => setIsAllEventsOpen(false)}
+          overlayClassName="bg-[rgba(15,23,42,0.32)]"
+          contentClassName="max-w-5xl"
+        >
+          <section role="dialog" aria-modal="true" aria-labelledby="all-events-title" className="mx-auto max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-lg border border-[hsl(214,22%,88%)] bg-white">
+            <header className="border-b border-[hsl(214,22%,90%)] px-5 py-5 sm:px-6">
+              <DashboardCardHeader
+                title="Notikumu laika līnija"
+                infoLabel="Informācija par notikumu laika līniju"
+                infoDescription="Pacienta klīniskie notikumi hronoloģiskā secībā"
+              >
+                {filterControl}
+                <button
+                  type="button"
+                  onClick={() => setIsAllEventsOpen(false)}
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md text-[hsl(215,14%,55%)] transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
+                  aria-label="Aizvērt notikumu laika līniju"
+                >
+                  <X size={20} />
+                </button>
+              </DashboardCardHeader>
+              <h2 id="all-events-title" className="sr-only">Visi notikumi</h2>
+            </header>
+            <div className="p-5 sm:p-6">{eventList(filteredEvents)}</div>
+          </section>
+        </CenteredOverlay>
+      ) : null}
+
+      {selectedEvent ? (
+        <EventDetailOverlay event={selectedEvent} onClose={() => setSelectedEvent(null)} />
+      ) : null}
+    </>
+  );
+}
+
 const EventTimelineHorizontal = () => {
+  return <LegacyEventTimelineHorizontal />;
+};
+
+const LegacyEventTimelineHorizontal = () => {
   const [selectedTypes, setSelectedTypes] = useState<EventType[]>(allTypes);
   const [activeEventId, setActiveEventId] = useState<string | null>(null);
   const [isExpandedOpen, setIsExpandedOpen] = useState(false);
@@ -725,19 +983,19 @@ const EventTimelineHorizontal = () => {
         <CenteredOverlay
           onClose={closeExpanded}
           overlayClassName="bg-[rgba(241,245,249,0.78)] backdrop-blur-[10px]"
-          contentClassName="max-w-[1280px]"
+          contentClassName="max-h-[calc(100vh-2rem)] max-w-[1280px] overflow-y-auto"
         >
           <div className="relative mx-auto w-full max-w-[1280px]">
             <button
               type="button"
               onClick={closeExpanded}
-              className="absolute right-5 top-5 z-20 flex h-6 w-6 items-center justify-center text-[hsl(215,14%,55%)] transition hover:opacity-70 hover:text-[hsl(215,22%,28%)]"
+              className="absolute right-5 top-5 z-20 flex h-10 w-10 items-center justify-center rounded-md text-[hsl(215,14%,55%)] transition-colors duration-200 hover:bg-[hsl(214,20%,96%)] hover:text-[hsl(215,22%,28%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
               aria-label="Aizvērt pilnskatu"
             >
-              <X className="h-4 w-4" />
+              <X className="h-5 w-5" />
             </button>
 
-            <div className="overflow-hidden">
+            <div className="overflow-visible">
               <TimelineContent
                 selectedTypes={selectedTypes}
                 activeEventId={activeEventId}

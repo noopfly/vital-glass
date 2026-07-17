@@ -2,10 +2,12 @@ import * as React from "react";
 import { useLocation } from "react-router-dom";
 import {
   Check,
+  CircleAlert,
   ChevronRight,
   ClipboardCheck,
   Download,
   Eye,
+  FileText,
   FolderPlus,
   Loader2,
   Maximize2,
@@ -85,8 +87,6 @@ const selectItemClassName =
   "focus:bg-[hsl(214,18%,34%)] focus:text-white data-[highlighted]:bg-[hsl(214,18%,34%)] data-[highlighted]:text-white";
 const fieldFocusClassName =
   "focus-visible:border-[hsl(217,38%,22%)] focus-visible:ring-[hsl(217,38%,22%)]";
-const reviewAlertClassName =
-  "rounded-lg border border-[hsl(39,55%,84%)] bg-[hsl(42,72%,96%)] px-3 py-3";
 
 const prepareLoadingSteps = [
   {
@@ -162,6 +162,10 @@ function statusClassName(status: TemplateFieldStatus) {
   }
 }
 
+function formatFieldCount(count: number) {
+  return `${count} ${count === 1 ? "lauks" : "lauki"}`;
+}
+
 function buildFieldStateMap(draft: PreparedDocumentDraft) {
   return Object.fromEntries(
     draft.fields.map((field) => [
@@ -196,21 +200,23 @@ function PrepareProgressPanel({
   prepareStepIndex: number;
 }) {
   return (
-    <div className="rounded-[10px] border border-[rgba(214,223,231,0.98)] bg-white shadow-[0_16px_34px_rgba(30,64,91,0.08)]">
-      <div className="px-6 py-6 sm:px-7 sm:py-7">
-        <div className="flex items-start gap-4">
-          <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-[10px] bg-[hsl(210,36%,96%)] text-[hsl(216,54%,34%)]">
-            <Loader2 className="h-7 w-7 animate-spin" />
-          </div>
-
-          <div className="min-w-0">
-            <p className="text-xs font-semibold text-[hsl(214,24%,46%)]">
+    <section
+      className="rounded-lg border border-[hsl(214,22%,88%)] bg-white p-5 sm:p-6"
+      aria-live="polite"
+      aria-labelledby="prepare-progress-title"
+    >
+        <div className="min-w-0">
+            <p className="flex items-center gap-2 text-xs font-semibold text-[hsl(214,24%,46%)]">
+              <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
               Notiek sagatavošana
             </p>
-            <h2 className="mt-2 text-2xl font-semibold tracking-[-0.04em] text-[hsl(217,40%,18%)]">
+            <h2
+              id="prepare-progress-title"
+              className="mt-1 text-xl font-semibold tracking-[-0.03em] text-[hsl(217,40%,18%)]"
+            >
               Sagatavojam dokumentu
             </h2>
-            <p className="mt-3 text-sm leading-6 text-[hsl(214,16%,44%)]">
+            <p className="mt-2 text-sm leading-5 text-[hsl(214,16%,44%)]">
               Tiek veidots melnraksts pacientam{" "}
               <span className="font-semibold text-[hsl(217,30%,22%)]">
                 {patientName}
@@ -224,10 +230,9 @@ function PrepareProgressPanel({
                 </>
               ) : "."}
             </p>
-          </div>
         </div>
 
-        <div className="mt-6 overflow-hidden rounded-[10px] border border-[rgba(214,223,231,0.98)] bg-[hsl(210,40%,99%)]">
+        <div className="mt-5 divide-y divide-[hsl(214,22%,90%)] border-y border-[hsl(214,22%,90%)]">
           {prepareLoadingSteps.map((step, index) => {
             const isCompleted = index < prepareStepIndex;
             const isActive = index === prepareStepIndex;
@@ -236,13 +241,13 @@ function PrepareProgressPanel({
               <div
                 key={step.title}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3",
-                  index > 0 && "border-t border-[rgba(223,230,237,0.96)]",
+                  "flex items-center gap-3 px-3 py-3.5",
+                  isActive && "bg-[hsl(214,38%,98%)]",
                 )}
               >
                 <div
                   className={cn(
-                    "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border",
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
                     isCompleted &&
                       "border-[hsl(154,34%,84%)] bg-[hsl(151,40%,96%)] text-[hsl(154,44%,30%)]",
                     isActive &&
@@ -253,9 +258,9 @@ function PrepareProgressPanel({
                   )}
                 >
                   {isCompleted ? (
-                    <Check className="h-3.5 w-3.5" />
+                    <Check className="h-4 w-4" />
                   ) : isActive ? (
-                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin" />
                   ) : (
                     <span className="text-xs font-semibold">{index + 1}</span>
                   )}
@@ -263,7 +268,7 @@ function PrepareProgressPanel({
                 <div className="min-w-0">
                   <p
                     className={cn(
-                      "text-sm font-normal",
+                      "text-sm font-semibold",
                       isCompleted || isActive
                         ? "text-[hsl(217,30%,22%)]"
                         : "text-[hsl(214,16%,44%)]",
@@ -271,7 +276,7 @@ function PrepareProgressPanel({
                   >
                     {step.title}
                   </p>
-                  <p className="mt-1 text-xs leading-5 text-[hsl(214,16%,52%)]">
+                  <p className="mt-1 text-xs leading-4 text-[hsl(214,16%,52%)]">
                     {step.description}
                   </p>
                 </div>
@@ -280,11 +285,10 @@ function PrepareProgressPanel({
           })}
         </div>
 
-        <p className="mt-4 text-xs leading-5 text-[hsl(214,16%,52%)]">
+        <p className="mt-4 text-xs leading-4 text-[hsl(214,16%,52%)]">
           Ekrāns tiks atjaunināts automātiski, tiklīdz melnraksts būs gatavs pārbaudei.
         </p>
-      </div>
-    </div>
+    </section>
   );
 }
 
@@ -313,9 +317,11 @@ function getRequiredIssues(
 function AutoResizeTextarea({
   value,
   onChange,
+  ariaLabel,
 }: {
   value: string;
   onChange: (nextValue: string) => void;
+  ariaLabel: string;
 }) {
   const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 
@@ -334,6 +340,7 @@ function AutoResizeTextarea({
       ref={textareaRef}
       value={value}
       rows={1}
+      aria-label={ariaLabel}
       onChange={(event) => onChange(event.target.value)}
       className={cn(
         "min-h-0 resize-none overflow-hidden rounded-[8px] border-[rgba(210,221,230,0.96)] bg-white px-3.5 py-3 text-sm leading-6 shadow-none",
@@ -401,10 +408,12 @@ function CheckboxFieldInput({
   field,
   value,
   onChange,
+  ariaLabel,
 }: {
   field: PreparedDraftField;
   value: string;
   onChange: (nextValue: string) => void;
+  ariaLabel: string;
 }) {
   const options = field.options ?? [];
   const { checked, customReason } = React.useMemo(
@@ -429,7 +438,11 @@ function CheckboxFieldInput({
   };
 
   return (
-    <div className="rounded-[8px] border border-[rgba(214,224,232,0.96)] bg-white px-3.5 py-3">
+    <div
+      role="group"
+      aria-label={ariaLabel}
+      className="rounded-[8px] border border-[rgba(214,224,232,0.96)] bg-white px-3.5 py-3"
+    >
       <div className="space-y-2.5">
         {options.map((option) => {
           const isChecked = checked.has(option);
@@ -471,27 +484,41 @@ function renderFieldInput(
   field: PreparedDraftField,
   value: string,
   onChange: (nextValue: string) => void,
+  ariaLabel: string,
 ) {
   if (!field.editable) {
     return (
-      <div className="rounded-[8px] border border-[rgba(214,224,232,0.96)] bg-white px-3.5 py-3 text-sm leading-6 text-[hsl(217,28%,22%)]">
+      <div
+        role="textbox"
+        aria-label={ariaLabel}
+        aria-readonly="true"
+        className="rounded-[8px] border border-[rgba(214,224,232,0.96)] bg-white px-3.5 py-3 text-sm leading-6 text-[hsl(217,28%,22%)]"
+      >
         {value || "Nav pieejams"}
       </div>
     );
   }
 
   if (field.inputType === "textarea") {
-    return <AutoResizeTextarea value={value} onChange={onChange} />;
+    return <AutoResizeTextarea value={value} onChange={onChange} ariaLabel={ariaLabel} />;
   }
 
   if (field.inputType === "checkbox") {
-    return <CheckboxFieldInput field={field} value={value} onChange={onChange} />;
+    return (
+      <CheckboxFieldInput
+        field={field}
+        value={value}
+        onChange={onChange}
+        ariaLabel={ariaLabel}
+      />
+    );
   }
 
   if (field.inputType === "select") {
     return (
       <Select value={value} onValueChange={onChange}>
         <SelectTrigger
+          aria-label={ariaLabel}
           className={cn(
             "h-11 rounded-[8px] border-[rgba(210,221,230,0.96)] bg-white text-sm",
             fieldFocusClassName,
@@ -514,6 +541,7 @@ function renderFieldInput(
     <Input
       type={field.inputType === "date" ? "date" : "text"}
       value={value}
+      aria-label={ariaLabel}
       onChange={(event) => onChange(event.target.value)}
       className={cn(
         "h-11 rounded-[8px] border-[rgba(210,221,230,0.96)] bg-white text-sm",
@@ -1015,32 +1043,49 @@ export default function DocumentDraftsPage() {
         onSaveLayoutOrder={setLayoutOrder}
       />
 
-      <main className="px-4 pb-6 pt-16 sm:px-5 lg:py-6 lg:pl-[calc(var(--dashboard-sidebar-width,280px)+24px)] lg:pr-8">
-        <div className="mx-auto w-full max-w-[1280px]">
-          <>
-            <section className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-              <div>
-                <h1 className="max-w-[700px] text-2xl font-semibold leading-tight tracking-[-0.05em] text-[hsl(217,40%,18%)] xl:text-3xl">
+      <div className="transition-[padding-left] duration-300 lg:pl-[var(--dashboard-sidebar-width,280px)]">
+        <header className="sticky top-0 z-40 border-b border-[hsl(214,22%,88%)] bg-[rgba(255,255,255,0.97)] backdrop-blur-xl">
+          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between gap-4 px-5 py-4 md:px-8">
+            <div className="flex min-w-0 items-center gap-4">
+              <div className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-md bg-[hsl(220,22%,94%)] text-[hsl(221,46%,22%)] sm:flex">
+                <FileText className="h-5 w-5" strokeWidth={1.9} />
+              </div>
+              <div className="min-w-0 pl-14 sm:pl-0">
+                <h1 className="text-2xl font-semibold leading-tight tracking-[-0.04em] text-[hsl(222,28%,16%)]">
                   Dokumentu sagataves
                 </h1>
-                <p className="mt-2 text-sm leading-6 text-[hsl(214,18%,44%)]">
-                  Automātiski sagatavoti dokumentu melnraksti, izmantojot
-                  pacienta datus.
+                <p className="mt-1 text-xs leading-5 text-[hsl(220,16%,52%)] md:text-sm">
+                  Melnraksti, kas sagatavoti no pacienta klīniskajiem datiem
                 </p>
               </div>
+            </div>
 
-              <Button
-                type="button"
-                onClick={handleStartNewDraft}
-                className="h-11 rounded-md bg-[hsl(220,36%,18%)] px-5 text-sm font-semibold text-white hover:bg-[hsl(220,36%,22%)]"
-              >
-                <FolderPlus className="h-4 w-4" />
-                Jauna sagatave
-              </Button>
-            </section>
+            <Button
+              type="button"
+              onClick={handleStartNewDraft}
+              className="h-11 shrink-0 rounded-md bg-[hsl(220,36%,18%)] px-3.5 text-sm font-semibold text-white hover:bg-[hsl(220,36%,22%)] sm:px-4"
+            >
+              <FolderPlus className="mr-2 h-4 w-4" />
+              <span className="hidden sm:inline">Jauna sagatave</span>
+              <span className="sm:hidden">Jauna</span>
+            </Button>
+          </div>
+        </header>
 
-            <section className={cn(surfaceClassName, "mt-6 overflow-hidden")}>
+      <main className="min-h-screen px-4 py-6 sm:px-5 md:px-6 lg:px-8">
+        <div className="mx-auto w-full max-w-[1280px]">
+          <>
+      <div className="flex flex-col gap-5">
+        <section className={surfaceClassName}>
               <div className="px-5 py-5 sm:px-6 sm:py-5">
+                <div className="mb-5 border-b border-[hsl(214,22%,90%)] pb-4">
+                  <h2 className="text-xl font-semibold tracking-[-0.03em] text-[hsl(217,40%,18%)]">
+                    Dokumenta iestatījumi
+                  </h2>
+                  <p className="mt-1 text-sm leading-5 text-[hsl(214,16%,48%)]">
+                    Izvēlieties pacientu un dokumenta veidu, lai sagatavotu melnrakstu.
+                  </p>
+                </div>
                 <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]">
                   <div>
                   <label className="text-xs font-semibold text-[hsl(217,28%,24%)]">
@@ -1059,7 +1104,7 @@ export default function DocumentDraftsPage() {
                       onBlur={() => window.setTimeout(() => setShowPatientSearch(false), 120)}
                       placeholder="Meklēt pacientu pēc vārda, uzvārda vai personas koda"
                       className={cn(
-                        "h-14 rounded-[10px] border-[rgba(210,221,230,0.96)] bg-white pl-11 pr-11 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)]",
+                        "h-11 rounded-md border-[hsl(214,22%,84%)] bg-white pl-11 pr-11 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)]",
                         fieldFocusClassName,
                       )}
                     />
@@ -1122,7 +1167,7 @@ export default function DocumentDraftsPage() {
                   >
                     <SelectTrigger
                       className={cn(
-                        "mt-2 h-14 rounded-[10px] border-[rgba(210,221,230,0.96)] bg-white px-4 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)]",
+                        "mt-2 h-11 rounded-md border-[hsl(214,22%,84%)] bg-white px-4 text-sm shadow-[inset_0_1px_2px_rgba(15,23,42,0.02)]",
                         fieldFocusClassName,
                       )}
                     >
@@ -1147,16 +1192,17 @@ export default function DocumentDraftsPage() {
                     type="button"
                     disabled={!selectedPatientId || !selectedTemplateId || isPreparing}
                     onClick={handlePrepareDocument}
-                    className="h-11 rounded-md bg-[hsl(220,36%,18%)] px-6 text-sm font-semibold text-white hover:bg-[hsl(220,36%,22%)]"
+                    className="h-11 w-full rounded-md bg-[hsl(220,36%,18%)] px-5 text-sm font-semibold text-white hover:bg-[hsl(220,36%,22%)] xl:w-auto"
                   >
                     {isPreparing ? "Notiek sagatavošana..." : "Sagatavot dokumentu"}
                   </Button>
                   </div>
+                </div>
               </div>
-              </div>
+            </section>
 
             {patientDocumentData && (
-              <section className="border-t border-[rgba(223,230,237,0.96)]">
+              <section className={surfaceClassName}>
                 <div className="px-4 py-4 sm:px-5 sm:py-4">
                   <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-[hsl(214,38%,96%)] text-[hsl(216,54%,40%)]">
@@ -1176,7 +1222,7 @@ export default function DocumentDraftsPage() {
                     </div>
                   </div>
 
-                  <div className="mt-4 grid overflow-hidden rounded-[10px] border border-[rgba(223,230,237,0.96)] bg-white sm:grid-cols-2 xl:grid-cols-6">
+                  <div className="mt-4 grid overflow-hidden rounded-[10px] border border-[rgba(223,230,237,0.96)] bg-white sm:grid-cols-2 xl:grid-cols-[1.12fr_0.78fr_0.9fr_1.1fr_0.9fr_1.55fr]">
                     {[
                       ["Personas kods", patientDocumentData.patient.personalCode],
                       ["Vecums", `${patientDocumentData.patient.age} gadi`],
@@ -1220,10 +1266,10 @@ export default function DocumentDraftsPage() {
             )}
 
             {(isPreparing || preparedDraft) && (
-              <section className="border-t border-[rgba(223,230,237,0.96)]">
+              <section className={cn(surfaceClassName, "overflow-hidden")}>
                 <div className="grid min-h-[calc(100vh-400px)] xl:grid-cols-2 xl:gap-0 xl:min-h-[600px]">
                   <section className="flex min-w-0 flex-col overflow-hidden">
-                    <div className="border-b border-[rgba(223,230,237,0.96)] px-5 py-4 sm:px-6">
+                    <div className="flex h-[72px] items-center border-b border-[rgba(223,230,237,0.96)] px-5 sm:px-6">
                       <div className="flex items-center gap-2 text-xs font-semibold text-[hsl(214,24%,46%)]">
                         <ClipboardCheck className="h-4 w-4" />
                         Sagatavošanas skats
@@ -1260,23 +1306,49 @@ export default function DocumentDraftsPage() {
                             }
 
                             const isAutoSection = key === "auto";
+                            const isReviewSection = key === "review";
 
                             return (
                               <section
                                 key={key}
                                 className={cn(
-                                  key === "review"
-                                    ? reviewAlertClassName
+                                  isReviewSection
+                                    ? "rounded-lg border border-[hsl(214,22%,88%)] bg-white p-4 sm:p-5"
                                     : sectionIndex > 0 &&
                                         "border-t border-[rgba(223,230,237,0.96)] pt-3",
                                 )}
                               >
-                                <div className="flex items-center justify-between gap-3">
-                                  <h3 className="text-sm font-semibold text-[hsl(217,34%,20%)]">
-                                    {title}
-                                  </h3>
-                                  <span className="text-xs font-normal text-[hsl(214,14%,54%)]">
-                                    {fields.length} lauki
+                                <div
+                                  className={cn(
+                                    "flex justify-between gap-3",
+                                    isReviewSection ? "items-center gap-4" : "items-start",
+                                  )}
+                                >
+                                  <div className={cn("min-w-0", isReviewSection && "flex items-center gap-3")}>
+                                    {isReviewSection && (
+                                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-[hsl(42,72%,96%)] text-[hsl(32,70%,35%)]">
+                                        <CircleAlert className="h-4 w-4" aria-hidden="true" />
+                                      </div>
+                                    )}
+                                    <div className="min-w-0">
+                                      <h3 className="text-sm font-semibold text-[hsl(217,34%,20%)]">
+                                        {title}
+                                      </h3>
+                                      {isAutoSection && (
+                                        <p className="mt-1 text-xs leading-4 text-[hsl(214,16%,48%)]">
+                                          Sistēma šos laukus aizpilda automātiski. Tos šeit nevar rediģēt.
+                                        </p>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <span
+                                    className={cn(
+                                      "shrink-0 text-xs font-normal text-[hsl(214,14%,54%)]",
+                                      isReviewSection &&
+                                        "rounded-full border border-[hsl(39,55%,84%)] bg-[hsl(42,72%,96%)] px-2.5 py-1 text-[hsl(32,62%,36%)]",
+                                    )}
+                                  >
+                                    {formatFieldCount(fields.length)}
                                   </span>
                                 </div>
 
@@ -1285,7 +1357,9 @@ export default function DocumentDraftsPage() {
                                     "mt-2",
                                     isAutoSection
                                       ? "grid gap-2 md:grid-cols-2"
-                                      : "space-y-2",
+                                      : isReviewSection
+                                        ? "mt-5 space-y-3"
+                                        : "space-y-2",
                                   )}
                                 >
                                   {fields.map((field) => {
@@ -1297,12 +1371,20 @@ export default function DocumentDraftsPage() {
                                       <div
                                         key={field.key}
                                         className={cn(
-                                          "rounded-[8px] border border-[rgba(216,225,233,0.96)] bg-white",
-                                          isAutoSection ? "p-3" : "p-3 md:p-4",
+                                          isAutoSection
+                                            ? "rounded-[8px] border border-[hsl(214,18%,88%)] bg-[hsl(214,24%,97%)] p-3"
+                                            : isReviewSection
+                                              ? "rounded-lg border border-[hsl(39,38%,86%)] bg-[hsl(42,72%,99%)] p-4 sm:p-5"
+                                              : "rounded-[8px] border border-[rgba(216,225,233,0.96)] bg-white p-3 md:p-4",
                                         )}
                                       >
                                         <div className="flex items-start justify-between gap-2.5">
-                                          <div className="min-w-0">
+                                          <div className="flex min-w-0 items-start gap-2">
+                                            {isReviewSection && (
+                                              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[hsl(42,72%,96%)] text-[hsl(32,70%,35%)]">
+                                                <CircleAlert className="h-3.5 w-3.5" aria-hidden="true" />
+                                              </span>
+                                            )}
                                             <p
                                               className={cn(
                                                 "font-semibold text-[hsl(217,34%,20%)]",
@@ -1316,7 +1398,7 @@ export default function DocumentDraftsPage() {
                                           {isAutoSection ? (
                                             <span
                                               className={cn(
-                                                "inline-flex w-fit shrink-0 flex-col rounded-full border px-2 py-1 text-center text-xs font-semibold leading-3",
+                                                "inline-flex w-fit shrink-0 flex-col rounded-full border px-1.5 py-1 text-center text-[10px] font-medium leading-3",
                                                 statusClassName(field.status),
                                               )}
                                             >
@@ -1346,12 +1428,17 @@ export default function DocumentDraftsPage() {
                                             {current.value || "[nav aizpildīts]"}
                                           </p>
                                         ) : (
-                                          <div className="mt-2 rounded-[8px] border border-[rgba(214,224,232,0.96)] bg-[hsl(210,40%,99%)] p-2.5">
-                                            <div>
-                                              {renderFieldInput(field, current.value, (nextValue) =>
-                                                handleDraftFieldChange(field.key, nextValue)
-                                              )}
-                                            </div>
+                                          <div
+                                            className={cn(
+                                              "mt-3",
+                                              !isReviewSection &&
+                                                "rounded-[8px] border border-[rgba(214,224,232,0.96)] bg-[hsl(210,40%,99%)] p-2.5",
+                                            )}
+                                          >
+                                            {renderFieldInput(field, current.value, (nextValue) =>
+                                              handleDraftFieldChange(field.key, nextValue),
+                                              field.label,
+                                            )}
                                           </div>
                                         )}
                                       </div>
@@ -1387,7 +1474,7 @@ export default function DocumentDraftsPage() {
                               </div>
                             </section>
 
-                            <section className={reviewAlertClassName}>
+                            <section className="rounded-lg border border-[hsl(214,22%,88%)] bg-white p-4 sm:p-5">
                               <div className="flex items-center justify-between gap-3">
                                 <h3 className="text-sm font-semibold text-[hsl(217,34%,20%)]">
                                   Nepieciešams ārsta apstiprinājums
@@ -1468,7 +1555,7 @@ export default function DocumentDraftsPage() {
                     ref={previewRef}
                     className="flex flex-col overflow-hidden border-t border-[rgba(223,230,237,0.96)] xl:border-l xl:border-t-0 xl:border-[rgba(223,230,237,0.96)]"
                   >
-                  <div className="flex items-center justify-between gap-3 border-b border-[rgba(223,230,237,0.96)] px-5 py-4 sm:px-6">
+                  <div className="flex h-[72px] items-center justify-between gap-3 border-b border-[rgba(223,230,237,0.96)] px-5 sm:px-6">
                     <div className="flex items-center gap-2 text-xs font-semibold text-[hsl(214,24%,46%)]">
                       <Eye className="h-4 w-4" />
                       Dokumenta priekšskatījums
@@ -1507,7 +1594,7 @@ export default function DocumentDraftsPage() {
 
                     {!isPreparing && preparedDraft && (
                       <div
-                        className="h-full cursor-zoom-in overflow-auto rounded-[10px] border border-[rgba(223,230,237,0.96)] bg-[hsl(0,0%,58%)] px-3 py-4"
+                        className="h-full cursor-zoom-in overflow-auto rounded-[10px] border border-[rgba(223,230,237,0.96)] bg-[hsl(214,34%,97%)] p-4"
                         onClick={() => setIsPreviewOpen(true)}
                       >
                         <div
@@ -1525,16 +1612,17 @@ export default function DocumentDraftsPage() {
                 </div>
               </section>
             )}
-            </section>
+            </div>
           </>
         </div>
       </main>
+      </div>
 
       {isPreparing && patientDocumentData && (
         <CenteredOverlay
           onClose={() => {}}
-          overlayClassName="bg-[rgba(241,245,249,0.76)] backdrop-blur-[10px]"
-          contentClassName="max-w-2xl"
+          overlayClassName="bg-[rgba(241,245,249,0.84)] backdrop-blur-[4px]"
+          contentClassName="max-w-xl"
         >
           <PrepareProgressPanel
             patientName={searchQuery || patientDocumentData.patient.fullName}

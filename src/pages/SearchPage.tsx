@@ -40,7 +40,6 @@ const personalCodeFirstPartLength = 6;
 const personalCodeSecondPartLength = 5;
 const personalCodeLength = personalCodeFirstPartLength + personalCodeSecondPartLength;
 
-// Format: xxxxxx-xxxxx
 function formatPersonalCode(
   raw: string,
   options?: {
@@ -79,7 +78,6 @@ export default function SearchPage({
   const navigate = useNavigate();
   const routeState = location.state as SearchLocationState | undefined;
   const specialtyId = routeState?.specialtyId ?? readStoredDashboardSpecialty();
-
   const activePatient =
     routeState?.patient ?? readStoredLastViewedPatient(patients) ?? patients[0];
 
@@ -92,28 +90,23 @@ export default function SearchPage({
         specialtyId,
       ),
   );
-
   const [query, setQuery] = React.useState(() =>
     formatPersonalCode(routeState?.searchQuery ?? ""),
   );
-
   const [error, setError] = React.useState("");
-
   const [loadingPatient, setLoadingPatient] = React.useState<Patient | null>(
     null,
   );
-
   const [loadingPatientComplete, setLoadingPatientComplete] =
     React.useState(false);
 
   const sidebarPatient = loadingPatient ?? activePatient;
-
   const recentPatients = React.useMemo(
     () =>
-      [
-        sidebarPatient,
-        ...patients.filter((p) => p.id !== sidebarPatient.id),
-      ].slice(0, 5),
+      [sidebarPatient, ...patients.filter((patient) => patient.id !== sidebarPatient.id)].slice(
+        0,
+        5,
+      ),
     [sidebarPatient],
   );
 
@@ -209,21 +202,15 @@ export default function SearchPage({
         loadingPatientComplete={loadingPatientComplete}
       />
 
-      {/* MAIN */}
       <main
         className="relative flex min-h-screen items-center justify-center"
         style={{
           paddingLeft: "var(--dashboard-sidebar-width, 280px)",
         }}
       >
-        {/* STATUS */}
-        <div
-          className={`absolute right-8 flex items-center gap-2 text-sm font-normal text-[hsl(214,18%,52%)] ${
-            variant === "prakses-asistents" ? "top-6" : "top-6"
-          }`}
-        >
+        <div className="absolute right-8 top-6 flex items-center gap-2 text-sm font-normal text-[hsl(214,18%,52%)]">
           <span className="h-2.5 w-2.5 rounded-full bg-[hsl(136,36%,34%)]" />
-          E-veseliba pieslegta
+          E-veselība pieslēgta
         </div>
 
         <div className="flex w-full max-w-5xl flex-col items-center px-6 text-center">
@@ -251,7 +238,6 @@ export default function SearchPage({
                 aria-hidden="true"
                 className="h-14 w-14 rounded-[14px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:h-16 md:w-16"
               />
-
               <img
                 src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
                 alt="Omnus"
@@ -262,12 +248,12 @@ export default function SearchPage({
 
           <form
             className="mt-6 w-full"
-            onSubmit={(e) => {
-              e.preventDefault();
+            onSubmit={(event) => {
+              event.preventDefault();
               handleSearch();
             }}
           >
-              <div className="mx-auto flex w-full max-w-[760px] flex-col items-center">
+            <div className="mx-auto flex w-full max-w-[760px] flex-col items-center">
               <div className="relative w-full">
                 <input
                   type="text"
@@ -275,6 +261,12 @@ export default function SearchPage({
                   autoFocus
                   value={query}
                   onChange={handleQueryChange}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleSearch();
+                    }
+                  }}
                   placeholder="Ievadiet personas kodu"
                   aria-label="Personas kods"
                   className="h-14 w-full rounded-full border border-[hsl(214,20%,86%)] bg-white py-0 pl-5 pr-14 text-sm font-normal tracking-[0.02em] text-[hsl(214,42%,17%)] shadow-[0_12px_32px_rgba(29,53,87,0.08)] outline-none transition placeholder:font-normal placeholder:text-[hsl(214,14%,62%)] focus:border-[hsl(214,42%,36%)] focus:shadow-[0_0_0_4px_rgba(37,99,235,0.08),0_12px_32px_rgba(29,53,87,0.08)]"
@@ -282,7 +274,7 @@ export default function SearchPage({
 
                 <button
                   type="submit"
-                  aria-label="Meklet pacientu"
+                  aria-label="Meklēt pacientu"
                   className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-[10px] text-[hsl(214,26%,38%)] transition hover:bg-[hsl(214,24%,95%)] hover:text-[hsl(218,46%,16%)]"
                 >
                   <Search className="h-5 w-5" />
@@ -290,13 +282,13 @@ export default function SearchPage({
               </div>
 
               <div className="mt-6 flex items-center justify-center gap-2 text-xs font-normal text-[#8A8F98]">
-  <ShieldCheck className="h-30 w-4 shrink-0 text-[#9AA0AA]" />
-  <span>Dati tiek apstrādāti droši un atbilstoši GDPR prasībām</span>
-</div>
+                <ShieldCheck className="h-4 w-4 shrink-0 text-[#9AA0AA]" />
+                <span>Dati tiek apstrādāti droši un atbilstoši GDPR prasībām</span>
+              </div>
             </div>
 
             {error && (
-              <div className="mt-6 flex justify-center">
+              <div className="mt-6 flex justify-center" role="alert" aria-live="polite">
                 <div className="inline-flex items-center gap-3 px-2 py-1 text-[hsl(0,72%,60%)]">
                   <CircleX className="h-6 w-6 shrink-0" />
                   <p className="text-sm font-normal">{error}</p>
@@ -307,7 +299,6 @@ export default function SearchPage({
         </div>
       </main>
 
-      {/* FIXED LOADING OVERLAY */}
       {loadingPatient && (
         <div className="fixed bottom-0 right-0 top-0 z-50 flex items-center justify-center bg-[hsl(210,32%,96%)] p-4 sm:p-6 lg:left-[var(--dashboard-sidebar-width,280px)]">
           <PatientLoadingPanel

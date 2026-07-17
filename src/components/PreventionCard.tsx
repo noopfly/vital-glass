@@ -118,9 +118,6 @@ const titleColor = "text-[#1D2150]";
 const mutedColor = "text-[#68738C]";
 const accentColor = "#23314D";
 
-const sectionIconClass =
-  "flex h-10 w-10 shrink-0 items-center justify-center rounded-[5px] border border-[rgba(210,219,228,0.96)] bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(243,246,249,0.96))] text-[hsl(220,16%,38%)] shadow-[inset_0_1px_0_rgba(255,255,255,0.82)]";
-
 function formatProgressLabel(items: PreventionGroupItem[]) {
   const completedCount = items.filter((item) => item.status === "done").length;
   return `${completedCount} no ${items.length} veikti`;
@@ -352,13 +349,13 @@ function PreventionGroupSummaryRow({
           <Icon className="h-4 w-4 text-[#23314D]" strokeWidth={1.9} />
         </RowIconTile>
 
-        <div className="min-w-0">
-          <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-            <p className={cn("min-w-fit text-xs font-semibold", titleColor)}>
+          <div className="min-w-0">
+          <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
+            <p className={cn("min-w-0 text-xs font-semibold", titleColor)}>
               {group.title}
             </p>
 
-            <div className="flex min-w-0 justify-end">
+            <div className="flex min-w-0 max-w-full">
                 {missingSummary ? (
                   <span className="inline-flex max-w-full items-center rounded-full border border-[#F0DEC5] bg-[#FFF8F0] px-2 py-0.5 text-[10px] font-semibold leading-4 text-[#B26A2B]">
                     <CircleAlert className="h-3 w-3 text-[#B26A2B] mr-1" strokeWidth={1.6} />
@@ -372,7 +369,7 @@ function PreventionGroupSummaryRow({
             </div>
           </div>
 
-          <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+          <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-2">
             <div className="h-1.5 overflow-hidden rounded-full bg-[#E2E6F1]">
               <div
                 className="h-full rounded-full"
@@ -383,7 +380,7 @@ function PreventionGroupSummaryRow({
               />
             </div>
 
-            <p className="whitespace-nowrap text-right text-xs font-normal text-[#68738C]">
+            <p className="text-xs font-normal text-[#68738C] sm:whitespace-nowrap sm:text-right">
               {group.progressLabel}
             </p>
           </div>
@@ -421,12 +418,12 @@ function PreventionGroupExpandableRow({
           </RowIconTile>
 
           <div className="min-w-0">
-            <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-3">
-              <p className={cn("min-w-fit text-xs font-semibold", titleColor)}>
+            <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-2">
+              <p className={cn("min-w-0 text-xs font-semibold", titleColor)}>
                 {group.title}
               </p>
 
-              <div className="flex min-w-0 justify-end">
+              <div className="flex min-w-0 max-w-full">
                 {missingSummary ? (
                   <span className="inline-flex max-w-full items-center rounded-full border border-[#F0DEC5] bg-[#FFF8F0] px-2 py-0.5 text-[10px] font-semibold leading-4 text-[#B26A2B]">
                     <CircleAlert className="h-3 w-3 text-[#B26A2B] mr-1" strokeWidth={1.6} />
@@ -440,7 +437,7 @@ function PreventionGroupExpandableRow({
               </div>
             </div>
 
-            <div className="mt-2 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
+            <div className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-2">
               <div className="h-1.5 overflow-hidden rounded-full bg-[#E2E6F1]">
                 <div
                   className="h-full rounded-full"
@@ -451,7 +448,7 @@ function PreventionGroupExpandableRow({
                 />
               </div>
 
-              <p className="whitespace-nowrap text-right text-xs font-normal text-[#68738C]">
+              <p className="text-xs font-normal text-[#68738C] sm:whitespace-nowrap sm:text-right">
                 {group.progressLabel}
               </p>
             </div>
@@ -477,7 +474,7 @@ function PreventionGroupExpandableRow({
               <div
                 key={item.label}
                 className={cn(
-                  "grid grid-cols-[20px_minmax(0,1fr)_auto] items-center gap-3 px-1 py-2",
+                  "grid grid-cols-[20px_minmax(0,1fr)] items-start gap-x-3 gap-y-2 px-1 py-2 sm:grid-cols-[20px_minmax(0,1fr)_auto] sm:items-center",
                   index !== 0 && "border-t border-[#EEF1F6]",
                 )}
               >
@@ -501,7 +498,7 @@ function PreventionGroupExpandableRow({
                   )}
                 </div>
 
-                <div className="text-right">
+                <div className="col-start-2 flex items-center justify-between gap-3 text-left sm:col-start-auto sm:block sm:text-right">
                   <span
                     className={cn(
                       "inline-flex rounded-full border px-1.5 py-0.5 text-[11px] font-semibold",
@@ -512,7 +509,7 @@ function PreventionGroupExpandableRow({
                   </span>
 
                   {item.actionLabel && item.status !== "done" && (
-                    <p className={cn("mt-1 text-xs", mutedColor)}>{item.dateLabel}</p>
+                    <p className={cn("text-xs sm:mt-1", mutedColor)}>{item.dateLabel}</p>
                   )}
                 </div>
               </div>
@@ -593,33 +590,21 @@ function PreventionFullViewModal({
       />
 
       <section className="relative flex max-h-[92vh] w-full max-w-[640px] flex-col overflow-hidden rounded-[8px] border border-[rgba(220,228,236,0.96)] bg-white shadow-[0_24px_70px_rgba(16,24,40,0.22)]">
-        <div className="flex shrink-0 items-center justify-between border-b border-[#E8EBF3] px-5 py-4">
-          <div className="flex min-w-0 items-start gap-3">
-            <div className={sectionIconClass}>
-              <Shield
-                className="h-[18px] w-[18px]"
-                strokeWidth={1.8}
-              />
-            </div>
-
-            <div className="min-w-0">
-              <p className="whitespace-normal break-words text-sm font-semibold text-[hsl(220,18%,30%)]">
-                Profilakse
-              </p>
-              <p className="whitespace-normal break-words text-xs font-normal text-[hsl(220,16%,52%)]">
-                Risks, skrīningi un vakcinācijas
-              </p>
-            </div>
-          </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[#E3E5EE] bg-white text-[#59627D] transition hover:bg-[#F7F8FC]"
-            aria-label="Aizvērt"
+        <div className="shrink-0 border-b border-[#E8EBF3] px-5 py-5">
+          <DashboardCardHeader
+            title="Profilakse"
+            infoLabel="Informācija par profilaksi"
+            infoDescription="Pacienta riska faktori, skrīningu statuss un vakcinācijas"
           >
-            <X className="h-4 w-4" strokeWidth={1.9} />
-          </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-[hsl(215,14%,42%)] transition hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
+              aria-label="Aizvērt"
+            >
+              <X className="h-[18px] w-[18px]" strokeWidth={1.9} />
+            </button>
+          </DashboardCardHeader>
         </div>
 
         <div className="flex-1 overflow-y-auto bg-white p-5">
