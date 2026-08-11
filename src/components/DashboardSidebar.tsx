@@ -18,6 +18,10 @@ import {
 import { Link, useNavigate } from "react-router-dom";
 
 import { CenteredOverlay } from "@/components/ui/centered-overlay";
+import {
+  IncompleteSourceReportEditor,
+  type ReviewStatus,
+} from "@/pages/SourceReportReviewPage";
 import { registeredDoctorAccount } from "@/lib/doctor-account";
 import {
   filterDashboardLayoutOrderBySpecialty,
@@ -138,16 +142,53 @@ const usedDocumentsGroupOrder = [
   "Citi",
 ] as const;
 
-const incompleteStatusConfig = {
-  review: {
+type SourceReportListStatus = ReviewStatus | "unrecognized";
+
+type SourceReportProgress = {
+  status: SourceReportListStatus;
+  confidence: string;
+};
+
+const incompleteStatusConfig: Record<
+  SourceReportListStatus,
+  { label: string; className: string }
+> = {
+  "needs-review": {
     label: "Jāpārskata",
-    className: "text-[hsl(220,28%,22%)]",
+    className:
+      "border-[hsl(38,82%,79%)] bg-[hsl(39,100%,96%)] text-[hsl(28,58%,35%)]",
   },
   unrecognized: {
     label: "Neatpazīts",
-    className: "text-[hsl(220,28%,22%)]",
+    className:
+      "border-[hsl(0,64%,76%)] bg-[hsl(0,75%,97%)] text-[hsl(0,58%,38%)]",
   },
-} as const;
+  "in-review": {
+    label: "Pārskatīšanā",
+    className:
+      "border-[hsl(205,68%,76%)] bg-[hsl(205,72%,96%)] text-[hsl(208,58%,34%)]",
+  },
+  confirmed: {
+    label: "Apstiprināts",
+    className:
+      "border-[hsl(151,35%,72%)] bg-[hsl(151,42%,96%)] text-[hsl(151,38%,27%)]",
+  },
+  "not-used": {
+    label: "Neizmantots",
+    className:
+      "border-[hsl(0,64%,76%)] bg-[hsl(0,75%,97%)] text-[hsl(0,58%,38%)]",
+  },
+  "waiting-for-support": {
+    label: "Gaida tehniskā atbalsta atbildi",
+    className:
+      "border-[hsl(38,82%,79%)] bg-[hsl(39,100%,96%)] text-[hsl(28,58%,35%)]",
+  },
+  "resolved-by-support": {
+    label: "Atrisināts tehniskajā atbalstā",
+    className:
+      "border-[hsl(151,35%,72%)] bg-[hsl(151,42%,96%)] text-[hsl(151,38%,27%)]",
+  },
+};
 
 const settingsModules = [
   {
@@ -546,6 +587,11 @@ export default function DashboardSidebar({
   const [isReportOpen, setIsReportOpen] = React.useState(false);
   const [isResourcesOpen, setIsResourcesOpen] = React.useState(false);
   const [isSourceDocumentsOpen, setIsSourceDocumentsOpen] = React.useState(false);
+  const [selectedIncompleteReportId, setSelectedIncompleteReportId] =
+    React.useState<string | null>(null);
+  const [incompleteReportProgress, setIncompleteReportProgress] = React.useState<
+    Record<string, SourceReportProgress>
+  >({});
   const [isAllPatientsOpen, setIsAllPatientsOpen] = React.useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [draggedSettingsKey, setDraggedSettingsKey] = React.useState<
@@ -571,6 +617,18 @@ export default function DashboardSidebar({
     ],
     [activePatient, allPatients],
   );
+
+  const selectedIncompleteReportRecord = incompleteSourceReports.find(
+    (report) => report.id === selectedIncompleteReportId,
+  );
+  const selectedIncompleteReport = selectedIncompleteReportRecord
+    ? {
+        ...selectedIncompleteReportRecord,
+        confidence:
+          incompleteReportProgress[selectedIncompleteReportRecord.id]?.confidence ??
+          selectedIncompleteReportRecord.confidence,
+      }
+    : undefined;
 
   const settingsModuleMap = React.useMemo(
     () =>
@@ -786,7 +844,7 @@ export default function DashboardSidebar({
                 aria-label="Atvērt sākuma paneli"
               >
                 <img
-                  src={`${import.meta.env.BASE_URL}omnus-icon-logo.svg`}
+                  src={`${import.meta.env.BASE_URL}prakses-asistents-icon.png`}
                   alt=""
                   className="h-10 w-10 rounded-[10px] object-contain"
                   aria-hidden="true"
@@ -1353,10 +1411,15 @@ export default function DashboardSidebar({
 
       {isSourceDocumentsOpen && (
         <CenteredOverlay
-          onClose={() => setIsSourceDocumentsOpen(false)}
+          onClose={() => {
+            setIsSourceDocumentsOpen(false);
+            setSelectedIncompleteReportId(null);
+          }}
           className="z-[110]"
           overlayClassName="bg-[rgba(15,23,42,0.32)] backdrop-blur-sm"
-          contentClassName="max-w-4xl"
+          contentClassName={
+            selectedIncompleteReport ? "max-w-[1500px]" : "max-w-4xl"
+          }
         >
           <div
             role="dialog"
@@ -1364,6 +1427,28 @@ export default function DashboardSidebar({
             aria-label="Izmantotie dokumenti"
             className="mx-auto w-full overflow-hidden rounded-[12px] border border-[hsl(214,22%,88%)] bg-white shadow-[0_28px_80px_rgba(15,23,42,0.16)]"
           >
+            {selectedIncompleteReport ? (
+              <div className="max-h-[88vh] overflow-y-auto">
+                <IncompleteSourceReportEditor
+                  report={selectedIncompleteReport}
+                  variant="dialog"
+                  onBack={() => setSelectedIncompleteReportId(null)}
+                  onReviewStateChange={({ status, confidence }) => {
+                    setIncompleteReportProgress((current) => ({
+                      ...current,
+                      [selectedIncompleteReport.id]: {
+                        status,
+                        confidence:
+                          confidence ??
+                          current[selectedIncompleteReport.id]?.confidence ??
+                          selectedIncompleteReport.confidence,
+                      },
+                    }));
+                  }}
+                />
+              </div>
+            ) : (
+              <>
             <div className="flex items-start justify-between gap-4 border-b border-[hsl(214,22%,90%)] px-5 py-5 sm:px-6">
               <div>
                 <h2 className="text-xl font-semibold tracking-[-0.035em] text-[hsl(222,28%,20%)]">
@@ -1376,7 +1461,10 @@ export default function DashboardSidebar({
 
               <button
                 type="button"
-                onClick={() => setIsSourceDocumentsOpen(false)}
+                onClick={() => {
+                  setIsSourceDocumentsOpen(false);
+                  setSelectedIncompleteReportId(null);
+                }}
                 className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-[hsl(215,14%,42%)] transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[hsl(214,45%,54%)]"
                 aria-label="Aizvērt izmantoto dokumentu logu"
               >
@@ -1406,16 +1494,22 @@ export default function DashboardSidebar({
                       </div>
 
                       {incompleteSourceReports.map((report, index) => {
-                        const status = incompleteStatusConfig[report.status];
+                        const progress = incompleteReportProgress[report.id];
+                        const status = incompleteStatusConfig[
+                          progress?.status ??
+                            (report.status === "unrecognized"
+                              ? "unrecognized"
+                              : "needs-review")
+                        ];
+                        const confidence = progress?.confidence ?? report.confidence;
 
                         return (
-                          <a
+                          <button
                             key={report.id}
-                            href={report.reviewUrl}
-                            target="_blank"
-                            rel="noreferrer"
+                            type="button"
+                            onClick={() => setSelectedIncompleteReportId(report.id)}
                             className={cn(
-                              "grid grid-cols-[1.3fr_1fr_0.8fr_0.95fr_0.9fr] items-center gap-3 px-4 py-3 text-sm transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)]",
+                              "grid w-full grid-cols-[1.3fr_1fr_0.8fr_0.95fr_0.9fr] items-center gap-3 px-4 py-3 text-left text-sm transition-colors hover:bg-[hsl(210,24%,96%)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-[hsl(214,45%,54%)]",
                               index !== incompleteSourceReports.length - 1 &&
                                 "border-b border-[hsl(214,22%,90%)]",
                             )}
@@ -1426,7 +1520,7 @@ export default function DashboardSidebar({
 
                             <span
                               className={cn(
-                                "font-semibold",
+                                "inline-flex w-fit items-center rounded-full border px-2.5 py-1 text-xs font-semibold",
                                 status.className,
                               )}
                             >
@@ -1434,17 +1528,17 @@ export default function DashboardSidebar({
                             </span>
 
                             <span className="text-[hsl(220,28%,22%)]">
-                              {report.confidence}
+                              {confidence}
                             </span>
 
                             <span className="text-[hsl(215,14%,52%)]">
                               {report.receivedDate}
                             </span>
 
-                            <span className="text-right text-sm font-semibold text-[hsl(220,36%,28%)]">
+                            <span className="ml-auto inline-flex min-h-11 items-center rounded-lg px-2 text-sm font-semibold text-[hsl(220,36%,28%)]">
                               Pārskatīt →
                             </span>
-                          </a>
+                          </button>
                         );
                       })}
                     </div>
@@ -1519,7 +1613,9 @@ export default function DashboardSidebar({
                   piekrišanas nosacījumiem.
                 </p>
               </div>
-            </div>
+              </div>
+              </>
+            )}
           </div>
         </CenteredOverlay>
       )}
