@@ -29,7 +29,7 @@ export default function WelcomePage() {
           </div>
 
           <h1 className="mt-6 text-2xl font-semibold tracking-[-0.05em] text-[hsl(219,40%,16%)] md:text-3xl">
-            Laipni lūdzam OMNUS
+            Laipni lūdzam Prakses Asistents
           </h1>
 
           <p className="mt-3 text-sm leading-7 text-[hsl(214,16%,48%)] md:text-xl">

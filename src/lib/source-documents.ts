@@ -316,7 +316,7 @@ export const incompleteSourceReports: IncompleteSourceReport[] = [
     indicatorCount: 1,
     issueCount: 1,
     receivedDate: "17.06.2026",
-    reviewUrl: `${documentBaseUrl}mri-galvas-zona-2026-03-04.pdf`,
+    reviewUrl: `${documentBaseUrl}laboratorijas-izraksts-2026-04-14.html`,
   },
   {
     id: "incomplete-pdf-2",

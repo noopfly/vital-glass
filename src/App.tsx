@@ -11,6 +11,7 @@ import DayListPage from "./pages/DayListPage.tsx";
 import SearchPage from "./pages/SearchPage.tsx";
 import WelcomePage from "./pages/WelcomePage.tsx";
 import DocumentDraftsPage from "./pages/DocumentDraftsPage.tsx";
+import SourceReportReviewPage from "./pages/SourceReportReviewPage.tsx";
 
 const queryClient = new QueryClient();
 const Router =
@@ -40,6 +41,10 @@ const App = () => (
             element={<DocumentDraftsPage />}
           />
           <Route path="/document-drafts" element={<DocumentDraftsPage />} />
+          <Route
+            path="/source-report-review/:reportId"
+            element={<SourceReportReviewPage />}
+          />
           <Route
             path="/search-PA"
             element={<SearchPage variant="prakses-asistents" />}

@@ -2,7 +2,6 @@ import * as React from "react";
 import { CircleX, Search, ShieldCheck } from "lucide-react";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import praksesAsistentsLogo from "@/assets/prakses-asistents-logo.png";
 import DashboardSidebar from "@/components/DashboardSidebar";
 import PatientLoadingPanel from "@/components/PatientLoadingPanel";
 import { patients } from "@/data/patients";
@@ -68,11 +67,11 @@ function getPersonalCodeDigits(value: string) {
 }
 
 type SearchPageProps = {
-  variant?: "omnus" | "prakses-asistents";
+  variant?: "prakses-asistents";
 };
 
 export default function SearchPage({
-  variant = "omnus",
+  variant = "prakses-asistents",
 }: SearchPageProps) {
   const location = useLocation();
   const navigate = useNavigate();
@@ -217,30 +216,22 @@ export default function SearchPage({
           {variant === "prakses-asistents" ? (
             <div className="flex items-center justify-center gap-3">
               <img
-                src={praksesAsistentsLogo}
+                src={`${import.meta.env.BASE_URL}prakses-asistents-logo.png`}
                 alt="Prakses asistents"
                 className="h-auto w-full max-w-[190px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:max-w-[220px]"
               />
-              <div className="flex shrink-0 items-center gap-2 text-xs font-semibold text-[hsl(214,18%,48%)]">
-                <span aria-hidden="true">x</span>
-                <img
-                  src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
-                  alt="Omnus"
-                  className="h-auto w-[86px] max-w-full opacity-90"
-                />
-              </div>
             </div>
           ) : (
             <div className="flex items-center justify-center gap-3">
               <img
-                src={`${import.meta.env.BASE_URL}omnus-icon-logo.svg`}
+                src={`${import.meta.env.BASE_URL}prakses-asistents-icon.png`}
                 alt=""
                 aria-hidden="true"
                 className="h-14 w-14 rounded-[14px] object-contain [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:h-16 md:w-16"
               />
               <img
-                src={`${import.meta.env.BASE_URL}omnus-logo.svg`}
-                alt="Omnus"
+                src={`${import.meta.env.BASE_URL}prakses-asistents-logo.png`}
+                alt="Prakses Asistents"
                 className="h-auto w-[190px] max-w-full [filter:drop-shadow(0_6px_18px_rgba(29,53,87,0.08))] md:w-[210px]"
               />
             </div>
