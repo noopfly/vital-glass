@@ -285,7 +285,10 @@ const defaultLayoutOrder: ModuleId[] = [
 const familyRegistrationLayoutOrder: ModuleId[] = [
   "patient-card",
   "prevention",
-  ...defaultLayoutOrder.filter((item) => item !== "patient-card"),
+  "medications",
+  ...defaultLayoutOrder.filter(
+    (item) => item !== "patient-card" && item !== "medications",
+  ),
 ];
 
 const moduleIdToDashboardComponentKey: Record<ModuleId, DashboardComponentKey> = {
@@ -345,9 +348,9 @@ const modulePreviewDefinitions: Record<ModuleId, ModulePreviewDefinition> = {
     note: "Medikamenti",
     summary: "Aktuālie medikamenti, devas un mijiedarbību signāli.",
     pattern: "table",
-    colSpan: 1,
+    colSpan: 2,
     rowSpan: 1,
-    previewClassName: "",
+    previewClassName: "col-span-2",
     surfaceClassName:
       "border-[rgba(220,228,236,0.96)] bg-white shadow-[0_8px_18px_rgba(29,53,87,0.05)]",
   },

@@ -19,7 +19,7 @@ export const layoutBaseClasses: Record<DashboardComponentKey, string> = {
   preventionCard: "lg:col-span-1",
   healthTrends: "lg:col-span-2",
   medicalImagingViewer: "lg:col-span-1",
-  medicationTable: "lg:col-span-1",
+  medicationTable: "lg:col-span-2",
   alertsCard: "lg:col-span-1",
   eventTimeline: "lg:col-span-2",
   humanBodyModel: "lg:col-span-1",
@@ -31,7 +31,7 @@ export const dashboardGridColumnSpans: Record<DashboardComponentKey, number> = {
   preventionCard: 1,
   healthTrends: 2,
   medicalImagingViewer: 1,
-  medicationTable: 1,
+  medicationTable: 2,
   alertsCard: 1,
   eventTimeline: 2,
   humanBodyModel: 1,
@@ -51,13 +51,13 @@ export const defaultDashboardLayoutOrder: DashboardComponentKey[] = [
 
 export const familyMedicineDashboardLayoutOrder: DashboardComponentKey[] = [
   "patientCard",
+  "preventionCard",
+  "medicationTable",
   "healthTrends",
   "alertsCard",
   "medicalImagingViewer",
-  "medicationTable",
   "humanBodyModel",
   "referralHistory",
-  "preventionCard",
   "eventTimeline",
 ];
 

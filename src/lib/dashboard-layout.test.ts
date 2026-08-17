@@ -12,11 +12,11 @@ describe("dashboard layout presets", () => {
     expect(familyMedicineDashboardLayoutOrder).toEqual([
       "patientCard",
       "preventionCard",
+      "medicationTable",
       "healthTrends",
       "alertsCard",
       "medicalImagingViewer",
       "humanBodyModel",
-      "medicationTable",
       "referralHistory",
       "eventTimeline",
     ]);
@@ -64,7 +64,7 @@ describe("dashboard layout presets", () => {
     );
   });
 
-  it("keeps the medication table at a single dashboard column", () => {
+  it("renders the medication table at two dashboard columns", () => {
     expect(
       getDashboardLayoutClasses([
         "patientCard",
@@ -75,6 +75,6 @@ describe("dashboard layout presets", () => {
         "medicationTable",
         "referralHistory",
       ]).medicationTable,
-    ).toBe("lg:col-span-1");
+    ).toBe("lg:col-span-2");
   });
 });
