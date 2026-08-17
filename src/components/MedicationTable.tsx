@@ -374,10 +374,10 @@ function MedicationRow({
       </div>
 
       <div
-        className={`medication-status-cell flex self-start pt-0.5 md:self-stretch md:items-center md:pt-0 ${isFullMode ? "md:justify-start" : "md:justify-end"}`}
+        className={`medication-status-cell flex self-start pt-0.5 md:self-stretch md:items-center md:pt-0 ${isFullMode ? "md:justify-start" : "md:justify-center"}`}
       >
         <div
-          className={`medication-status-content flex items-center gap-2 md:flex-col md:gap-0 ${isFullMode ? "md:items-start" : "md:items-end"}`}
+          className={`medication-status-content flex items-center gap-2 md:flex-col md:gap-0 ${isFullMode ? "md:items-start" : "md:items-center"}`}
         >
           <p className={`medication-column-label md:hidden ${headingClass}`}>{columnLabels.status}</p>
           <span
